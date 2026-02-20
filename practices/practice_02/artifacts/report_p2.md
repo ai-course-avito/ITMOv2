@@ -1,56 +1,13 @@
-import json
-import os
-from typing import List
+# Отчет по Практике 2: Черных Арсений
 
-"""
-ПРАКТИКА 2: ПРОФЕССИОНАЛЬНЫЙ ПРОМПТИНГ (R.C.T.F.)
-Курс: AI-инструменты в жизни инженера (ИТМО)
+## 1. Анализ промптов R.C.T.F.
 
-ИНСТРУКЦИЯ:
-В этой практике мы учимся не просто "болтать" с AI, а программировать его поведение
-с помощью фреймворка R.C.T.F. (Role, Context, Task, Format).
-"""
+⚠️ Журнал пуст!
+## 2. Улучшенные артефакты
 
-# =================================================================================================
-# 1. ИНФОРМАЦИЯ
-# =================================================================================================
-STUDENT_INFO = {
-    "full_name": "Черных Арсений",
-    "group_number": "M3303",
-    "date": "2026-02-20"
-}
+### Mermaid v2
+```mermaid
 
-# =================================================================================================
-# 2. ЖУРНАЛ R.C.T.F. (Самая важная часть!)
-# =================================================================================================
-class RCTF_Log:
-    def __init__(self, task_name: str, role: str, context: str, task: str, format_instruction: str, result: str):
-        self.task_name = task_name
-        self.role = role             # R: Кто такой AI? (Senior QA, Architect...)
-        self.context = context       # C: Контекст проекта (Веб-сервис, Python, FastAPI...)
-        self.task = task             # T: Что конкретно сделать?
-        self.format = format_instruction # F: В каком виде выдать ответ? (Markdown, Gherkin...)
-        self.result = result         # Итог (кратко)
-
-PROMPT_LOGS: List[RCTF_Log] = [
-    # TODO: Заполните лог для каждого задания
-    # Пример:
-    # RCTF_Log(
-    #     task_name="Gherkin Scenarios",
-    #     role="Senior QA Engineer",
-    #     context="Проект погодного сервиса, пользователь хочет подписаться через API.",
-    #     task="Напиши сценарии для фичи подписки.",
-    #     format="Gherkin syntax (Given/When/Then)",
-    #     result="Сгенерировал 3 сценария для API endpoints, но забыл негативные кейсы."
-    # )
-]
-
-# =================================================================================================
-# 3. АРТЕФАКТЫ (Улучшенные версии из Практики 1)
-# =================================================================================================
-
-# Задание 1: Улучшенная Архитектура (Mermaid v2)
-MERMAID_V2 = """
 C4Component
 title WeatherService — Caching + Subscriptions (C4 Component)
 
@@ -59,12 +16,16 @@ Person(client, "Client", "Web/Mobile/Service consumer")
 System_Boundary(ws, "WeatherService") {
   Container(fastapi, "FastAPI App", "Python / FastAPI", "REST API: subscriptions, weather lookup, notifications trigger")
 
-  ContainerDb(redis, "Redis", "Redis", "Weather cache (TTL 10 minutes)\nKey: weather:{location}:{units}\nValue: forecast JSON + metadata")
+  ContainerDb(redis, "Redis", "Redis", "Weather cache (TTL 10 minutes)
+Key: weather:{location}:{units}
+Value: forecast JSON + metadata")
 
   ContainerDb(pg, "PostgreSQL", "PostgreSQL", "Stores users & subscriptions")
   
-  Component(usersTbl, "users", "Table", "Users registry\nid (PK), email, timezone, created_at")
-  Component(subsTbl, "subscriptions", "Table", "User subscriptions to weather alerts\nid (PK), user_id (FK->users.id), location, conditions, cadence, is_active, created_at")
+  Component(usersTbl, "users", "Table", "Users registry
+id (PK), email, timezone, created_at")
+  Component(subsTbl, "subscriptions", "Table", "User subscriptions to weather alerts
+id (PK), user_id (FK->users.id), location, conditions, cadence, is_active, created_at")
 
   Rel(pg, usersTbl, "contains", "SQL")
   Rel(pg, subsTbl, "contains", "SQL")
@@ -75,20 +36,29 @@ System_Ext(weatherApi, "External Weather API", "3rd-party provider")
 
 Rel(client, fastapi, "Uses WeatherService API", "HTTP REST/JSON")
 
-Rel(fastapi, redis, "Read-through cache:\nGET weather by key\nMISS → fetch external → SETEX 600s", "Redis protocol (TCP)")
+Rel(fastapi, redis, "Read-through cache:
+GET weather by key
+MISS → fetch external → SETEX 600s", "Redis protocol (TCP)")
 Rel(fastapi, weatherApi, "Fetch weather on cache miss", "HTTP REST/JSON")
 
-Rel(fastapi, pg, "Manage users/subscriptions:\nCRUD, queries for active subscriptions", "SQL over TCP")
+Rel(fastapi, pg, "Manage users/subscriptions:
+CRUD, queries for active subscriptions", "SQL over TCP")
 
 %% Optional: explain the cache flow more explicitly as a note-like component
-Component(cachePolicy, "Cache Policy", "Logic", "TTL=600s\n- Try Redis first\n- On MISS call Weather API\n- Store response in Redis\n- Return to client")
+Component(cachePolicy, "Cache Policy", "Logic", "TTL=600s
+- Try Redis first
+- On MISS call Weather API
+- Store response in Redis
+- Return to client")
 Rel(fastapi, cachePolicy, "Implements", "Internal call")
 Rel(cachePolicy, redis, "SETEX 600s", "Redis protocol")
 Rel(cachePolicy, weatherApi, "GET /forecast", "HTTP REST/JSON")
-"""
 
-# Задание 2: Gherkin Scenarios (BDD)
-GHERKIN_SCENARIOS = """
+```
+
+### Gherkin Scenarios
+```gherkin
+
 Feature: Управление подписками на уведомления о погоде через REST API
   Как пользователь сервиса
   Я хочу зарегистрироваться и создать подписку на погоду
@@ -190,10 +160,11 @@ Feature: Управление подписками на уведомления �
     Then сервис возвращает HTTP статус 409
     And тело ответа содержит сообщение "City already subscribed"
     And новая запись о подписке не создается
-"""
 
-# Задание 3: Улучшенные DoR и DoD v2.0
-DOR_V2 = """
+```
+
+### DoR v2.0
+
 # Definition of Ready (DoR) v2.0 — WeatherService
 
 ## Requirements (Требования)
@@ -253,9 +224,10 @@ DOR_V2 = """
 - [ ] Описаны переменные окружения и конфигурация
 - [ ] Обновлены README / Wiki проекта
 - [ ] Добавлены заметки для QA и поддержки (known limitations)
-"""
 
-DOD_V2 = """
+
+### DoD v2.0
+
 # Definition of Done (DoD) v2.0 — WeatherService
 
 ## Requirements (Требования)
@@ -315,10 +287,10 @@ DOD_V2 = """
 - [ ] Документированы изменения в кэшировании/БД
 - [ ] Добавлены заметки для QA (как тестировать фичу)
 - [ ] Добавлены known issues / ограничения (если есть)
-"""
 
-# Задание 4: Тест-план v2 (Классифицированный)
-TEST_PLAN_V2 = """
+
+### Test Plan v2
+
 | Test ID          | Level       | Preconditions                                                                                                                                               | Steps                                                                                                                                                                                                                                                                                                             | Expected Result                                                                                                                                                                                                                                                                    |
 | ---------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | UT-VAL-001       | Unit        | 1) Есть функция `validate_city(city: str) -> NormalizedCity/ValidationError` (или аналог). 2) Известный список допустимых форматов (латиница/пробел/дефис). | 1) Вызвать `validate_city("  Helsinki ")` 2) Вызвать `validate_city("New-York")` 3) Вызвать `validate_city("")` и `validate_city("!!!")`                                                                                                                                                                          | 1) Корректные значения нормализуются (trim, возможно title-case) и проходят. 2) Пустая строка/некорректные символы → `ValidationError` (или исключение) с ожидаемым кодом/сообщением.                                                                                              |
@@ -328,10 +300,10 @@ TEST_PLAN_V2 = """
 | E2E-FLOW-005     | E2E         | 1) Развернут сервис целиком: FastAPI + PostgreSQL + Redis. 2) Weather API стаб/мок доступен. 3) Тестовый пользователь не существует.                        | 1) `POST /subscribe` `{ "email": "e2e1@example.com", "city": "Helsinki" }` 2) Проверить 201/200 3) `GET /weather/Helsinki` 4) Проверить 200 и корректную структуру payload 5) Повторить `GET /weather/Helsinki`                                                                                                   | 1) Подписка создается, возвращается подтверждение. 2) Погода по городу возвращается корректно. 3) Повторный `GET` обслуживается быстрее/без внешнего вызова (косвенно: по логам/метрикам или по счетчику вызовов мока Weather API = 1).                                            |
 | E2E-NEG-006      | E2E         | 1) Сервис поднят целиком. 2) Weather API мок настроен: неизвестный город → 404. 3) Redis/PG доступны.                                                       | 1) `POST /subscribe` `{ "email": "e2e2@example.com", "city": "UnknownCity" }` 2) Проверить ответ 404 (или согласованный код) 3) `GET /weather/UnknownCity` 4) Проверить 404 5) Проверить, что в БД нет подписки на UnknownCity для этого email                                                                    | 1) Подписка на несуществующий город не создается. 2) API возвращает корректный статус и сообщение ошибки (например, `City not found`). 3) В БД отсутствуют записи подписки (и/или пользователь не создан — в зависимости от правил). 4) В Redis не появляется ключ по UnknownCity. |
 
-"""
 
-# Задание 5: Улучшенный Functional Delivery v2.0
-FUNCTIONAL_DELIVERY_V2 = """
+
+### Functional Delivery v2.0
+
 # WeatherService v1.0 — Jira Tickets (v2.0)
 
 ---
@@ -465,106 +437,17 @@ FUNCTIONAL_DELIVERY_V2 = """
 **Estimate:** 8 story points  
 
 ---
-"""
 
-# =================================================================================================
-# 4. ДОМАШНЕЕ ЗАДАНИЕ (опционально)
-# =================================================================================================
 
-# Улучшение Event Storming v2.0 (опционально)
-HOMEWORK_EVENT_STORMING_V2 = """
-TODO: (Опционально) Улучшенный Event Storming с использованием R.C.T.F.
-Добавьте больше событий, уточните команды и акторов.
-"""
+## 3. Домашнее задание
 
-# Улучшение Roadmap v2.0 (опционально)
-HOMEWORK_ROADMAP_V2 = """
-TODO: (Опционально) Улучшенный Roadmap с использованием R.C.T.F.
-Детализируйте версии, добавьте метрики успеха для каждой версии.
-"""
+## 4. Рефлексия
 
-# Chain of Thought (многоэтапный промптинг)
-HOMEWORK_MULTIPROMPT_TASK = """
-TODO: Опишите задачу, которую вы разбили на шаги
-"""
-
-HOMEWORK_MULTIPROMPT_STEPS = """
-TODO: Список шагов (3-5 штук)
-"""
-
-HOMEWORK_MULTIPROMPT_SEQUENCE = """
-TODO: Последовательность промптов с результатами каждого шага
-"""
-
-HOMEWORK_MULTIPROMPT_RESULT = """
-TODO: Финальный результат после всех шагов
-"""
-
-# =================================================================================================
-# 5. РЕФЛЕКСИЯ
-# =================================================================================================
-REFLECTION = {
-    "before_after": """
+**Before/After:** 
     На простой промт не всегда идет ответ, который нужен. На прошлой практике я долго сидел с mermaid диаграмми, 
     т.к. нейронка генерила код с ошибками в синтаксисе. При RCTF всё ок (совпадение ли? думаю, нет, т.к. структурированный запрос)
     Так же, при RCTF как будто ты сам больше понимаешь, что хочешь от ИИ 
 
-    """,
     
-    "hardest_part": "Самая тяжелая часть - Task. Нужно правильно задать вопросы, чтобы получить именно то что нужно и при этом не тратить кучу токенов",
-}
 
-# =================================================================================================
-# ЭКСПОРТ
-# =================================================================================================
-def export_report():
-    if "TODO" in STUDENT_INFO["full_name"]:
-        print("❌ ОШИБКА: Заполните информацию о студенте.")
-        return
-
-    report = f"# Отчет по Практике 2: {STUDENT_INFO['full_name']}\n\n"
-    report += "## 1. Анализ промптов R.C.T.F.\n\n"
-    
-    if not PROMPT_LOGS:
-        report += "⚠️ Журнал пуст!\n"
-    
-    for log in PROMPT_LOGS:
-        report += f"### {log.task_name}\n"
-        report += f"**Role:** {log.role}\n"
-        report += f"**Context:** {log.context}\n"
-        report += f"**Task:** {log.task}\n"
-        report += f"**Format:** {log.format}\n"
-        report += f"**Результат:** {log.result}\n"
-        report += "---\n"
-
-    report += "## 2. Улучшенные артефакты\n\n"
-    report += "### Mermaid v2\n```mermaid\n" + MERMAID_V2 + "\n```\n\n"
-    report += "### Gherkin Scenarios\n```gherkin\n" + GHERKIN_SCENARIOS + "\n```\n\n"
-    report += "### DoR v2.0\n" + DOR_V2 + "\n\n"
-    report += "### DoD v2.0\n" + DOD_V2 + "\n\n"
-    report += "### Test Plan v2\n" + TEST_PLAN_V2 + "\n\n"
-    report += "### Functional Delivery v2.0\n" + FUNCTIONAL_DELIVERY_V2 + "\n\n"
-
-    report += "## 3. Домашнее задание\n\n"
-    if HOMEWORK_EVENT_STORMING_V2 and "TODO" not in HOMEWORK_EVENT_STORMING_V2:
-        report += "### Event Storming v2.0\n" + HOMEWORK_EVENT_STORMING_V2 + "\n\n"
-    if HOMEWORK_ROADMAP_V2 and "TODO" not in HOMEWORK_ROADMAP_V2:
-        report += "### Roadmap v2.0\n" + HOMEWORK_ROADMAP_V2 + "\n\n"
-    if HOMEWORK_MULTIPROMPT_TASK and "TODO" not in HOMEWORK_MULTIPROMPT_TASK:
-        report += "### Chain of Thought\n"
-        report += "**Задача:** " + HOMEWORK_MULTIPROMPT_TASK + "\n\n"
-        report += "**Шаги:** " + HOMEWORK_MULTIPROMPT_STEPS + "\n\n"
-        report += "**Последовательность:** " + HOMEWORK_MULTIPROMPT_SEQUENCE + "\n\n"
-        report += "**Результат:** " + HOMEWORK_MULTIPROMPT_RESULT + "\n\n"
-    
-    report += "## 4. Рефлексия\n\n"
-    report += f"**Before/After:** {REFLECTION['before_after']}\n\n"
-    report += f"**Сложности:** {REFLECTION['hardest_part']}\n"
-
-    os.makedirs("artifacts", exist_ok=True)
-    with open("artifacts/report_p2.md", "w", encoding="utf-8") as f:
-        f.write(report)
-    print(f"✅ Отчет успешно сгенерирован: artifacts/report_p2.md")
-
-if __name__ == "__main__":
-    export_report()
+**Сложности:** Самая тяжелая часть - Task. Нужно правильно задать вопросы, чтобы получить именно то что нужно и при этом не тратить кучу токенов
