@@ -14,8 +14,8 @@ from typing import List
 """
 
 STUDENT_INFO = {
-    "full_name": "TODO: Фамилия Имя",
-    "group_number": "TODO: Группа",
+    "full_name": "Фетисов Константин",
+    "group_number": "М3302",
 }
 
 # =================================================================================================
@@ -40,6 +40,36 @@ CONTEXT_LOGS: List[ContextLog] = [
     #     result="Generated model with EmailStr validator",
     #     analysis="@file помог AI понять, куда писать код. Без @models.py создал бы в chat."
     # )
+    ContextLog(
+        task="Создать ручку GET /weather/{city}",
+        context_used="@docs",
+        prompt="""
+        Роль: Вы являетесь Senior Backend Python разработчиком с более чем 10 годами опыта.
+        Контекст: @/docs
+        Задача: Сделай базовую реализацию сервиса, которая будет иметь одну ручку: GET /weather/{city}
+        Формат: проект на python
+        """,
+        result="рабочий код, который выдаёт погоду",
+        analysis="пока что конкретно указал откуда брать контекст, дальше попробую его сузить",
+    ),
+    ContextLog(
+        task="Создать ручку POST /subscribe",
+        context_used="@/docs/acceptance_criteria.md",
+        prompt="""
+        @/docs/acceptance_criteria.md опиши как бы ты реализовал ручку POST /subscribe
+        """,
+        result="описал план, который далее передам в режим code",
+        analysis="теперь я понял как пользоваться контекстом и понял как это удобно:) заметно меньше размер",
+    ),
+    ContextLog(
+        task="Создать ручку POST /subscribe",
+        context_used="@/plans/post_subscribe_implementation_plan.md",
+        prompt="""
+        @/plans/post_subscribe_implementation_plan.md реализуй ручку POST /subscribe
+        """,
+        result="получил реализацию подписки",
+        analysis="передал контекст в режиме code, но потом отдельной моделью с отдельным контекстом сделал тесты. Мне кажется это правильно",
+    ),
 ]
 
 # =================================================================================================
@@ -66,6 +96,46 @@ RULES_LOGS: List[RuleLog] = [
     #     result="AI automatically used field_validator instead of @validator",
     #     analysis="Auto-attached отлично работает для стандартных задач."
     # )
+    RuleLog(
+        rule_type="auto-attached",
+        rule="Не используй в проекте Pydantic",
+        task="Creating POST /subscribe endpoint",
+        applied=True,
+        result="Нейронка не использовала Pydantic вообще и сервис работает",
+        analysis="Пришлось избавиться от Pydantica из-за проблем с виндой."
+    ),
+    RuleLog(
+        rule_type="auto-attached",
+        rule="Добавляй комментарии в коде только в трудных для понимания местах",
+        task="Creating POST, GET /subscribe endpoint",
+        applied=True,
+        result="Нейронка вообще перестала комментарии оставлять, хотя раньше везде их вставляла",
+        analysis="Нейронка подхватила правила только в новом чате, увы"
+    ),
+    RuleLog(
+        rule_type="auto-attached",
+        rule="Названия всех функций и методов всегда заканчивай числом 239",
+        task="Creating POST, GET /subscribe endpoint",
+        applied=True,
+        result="Нейронка каждый метод заканчивала числом 239",
+        analysis="Сделал это чтобы точнбыть уверен, что поведение модели было вызвано именно правилом"
+    ),
+    RuleLog(
+        rule_type="auto-attached",
+        rule="Все методы/функции/поля должны быть в camel case",
+        task="Creating DELETE, POST, GET /subscribe endpoint",
+        applied=True,
+        result="Нейронка как писала в camel case так и продолжила",
+        analysis="Сделал это, чтобы нейронка в один момент резко не взяла и не начала писать в другом формате, она и правда не начала."
+    ),
+    RuleLog(
+        rule_type="auto-attached",
+        rule="Все классы должны быть в pascal case",
+        task="Creating DELETE, POST, GET /subscribe endpoint",
+        applied=True,
+        result="Нейронка продолжила называть классы в Pascal Case",
+        analysis="Вообще часть изменений я попробовал указать как в .roo/rules, так и в AGENTS.md. Мне кажется странным, что сначала просят сделать правила в .roo/rules, а только потом в AGENTS.md, когда .roo/rules более предпочтительный"
+    )
 ]
 
 # =================================================================================================
@@ -92,6 +162,30 @@ MULTICHAT_LOGS: List[MultiChatLog] = [
     #     context_size="Small (only @main.py, @models.py)",
     #     analysis="Separate chat prevented AI from suggesting unrelated changes."
     # )
+    MultiChatLog(
+        chat_number=1,
+        task="DELETE /subscribe/{email}",
+        reason="Изолировал архитектурные решения от самого написания кода",
+        result="готов md файлик с описанием реализации DELETE ручки",
+        context_size="Small (only project description)",
+        analysis=""
+    ),
+    MultiChatLog(
+        chat_number=2,
+        task="DELETE /subscribe/{email}",
+        reason="Изолировал написание кода от архитектурных решений и идей, которых не должно быть в готовом описании кода",
+        result="DELETE ручка готова с поддержкой всех корнер кейсов",
+        context_size="Small (only code plan)",
+        analysis="Разделил чаты, чтобы не засорять лишними идеями."
+    ),
+    MultiChatLog(
+        chat_number=3,
+        task="DELETE /subscribe/{email}",
+        reason="Убрал контекст об идеях, чтобы нейронка сама оценила код без знания идеи",
+        result="Нейронка дала критику по поводу реализации DELETE ручки",
+        context_size="Small (only code @subscription_service.py)",
+        analysis="Разделил чаты, чтобы не засорять лишними идеями."
+    )
 ]
 
 # =================================================================================================
@@ -99,14 +193,14 @@ MULTICHAT_LOGS: List[MultiChatLog] = [
 # =================================================================================================
 
 IMPLEMENTATION_CHECKLIST = {
-    "models_created": False,            # models.py с Subscription моделью
-    "cursorrules_created": False,       # .cursorrules с минимум 5 правилами
-    "health_endpoint": False,           # GET /health работает
-    "post_subscribe": False,            # POST /subscribe работает
-    "get_subscriptions": False,         # GET /subscriptions работает
-    "delete_subscribe": False,          # DELETE /subscribe/{email} работает
-    "response_models": False,           # Pydantic response models созданы
-    "swagger_tested": False,            # Протестировано через Swagger UI
+    "models_created": True,            # models.py с Subscription моделью
+    "cursorrules_created": True,       # .cursorrules с минимум 5 правилами
+    "health_endpoint": True,           # GET /health работает
+    "post_subscribe": True,            # POST /subscribe работает
+    "get_subscriptions": True,         # GET /subscriptions работает
+    "delete_subscribe": True,          # DELETE /subscribe/{email} работает
+    "response_models": True,           # Pydantic response models созданы
+    "swagger_tested": True,            # Протестировано через Swagger UI
 }
 
 # =================================================================================================
@@ -115,27 +209,23 @@ IMPLEMENTATION_CHECKLIST = {
 
 REFLECTION = {
     "context_management": """
-    TODO: Какие техники управления контекстом (@file, @codebase, фильтрация) были самыми полезными?
-    Приведите пример, когда правильный контекст значительно улучшил результат.
+    Да вообще понравилось указывать в контекст только те файлы, что действительно нужны. Среди артефактов было куча лишнего, что лишь засоряло бы контекст. Там ведь и пишет ещё сколько контекста занято, уменьшилось раз в 5.
     """,
 
     "rules_effectiveness": """
-    TODO: Как .cursorrules повлияли на consistency кода?
-    Сравните результаты с и без правил.
+    Как будто до правил я не был чётко уверен, как будет нейронка называть методы, переменные. Вдруг в один момент решит по-другому и никакой согласованности не выходит. 
     """,
 
     "multichat_benefits": """
-    TODO: Помог ли multi-chat workflow избежать смешения контекста?
-    Приведите пример ситуации, когда отдельный чат был критичен.
+    Как будто помог, в целом с этим переписка прям гораздо чище стала, нейронка сразу понимает что делать надо. Просто стало удобнее в roo code ориентироваться.
     """,
 
     "auto_run_opinion": """
-    TODO: В каких ситуациях вы бы использовали auto-run режим?
-    Какие риски видите?
+    ну когда важна скорость нежели результат. Иного смыла не вижу. Ну либо же лень когда много тыкать и сдаёшь в один момент. Такое ничем грозить не должно как-будто, если пользак нормально .rooignore настроил.
     """,
 
     "agents_md_preparation": """
-    TODO: Какие правила и контекст вы хотите зафиксировать в Agents.md для Практики 4?
+    я бы оставил правило с 239 просто чтобы убедиться, а реально ли он будет продолжать это делать? Мне скорее важно посмотреть на поведение нейронки, поэтому это правило самое важное. Но с точки зрения согласованности кода стоит оставить все.
     """
 }
 
@@ -186,7 +276,7 @@ def export_report():
     report += f"**Подготовка к Agents.md:** {REFLECTION['agents_md_preparation']}\n"
 
     os.makedirs("artifacts", exist_ok=True)
-    with open("artifacts/report_p3.md", "w", encoding="utf-8") as f:
+    with open("../../artifacts/report_p3.md", "w", encoding="utf-8") as f:
         f.write(report)
     print(f"✅ Отчет успешно сгенерирован: artifacts/report_p3.md")
 
