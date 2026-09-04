@@ -60,7 +60,7 @@ opencode --version
          "npm": "@ai-sdk/openai-compatible",
          "name": "VseLLM",
          "options": {
-            "baseURL": "https://api.vsellm.ru/v1",
+            "baseURL": "https://litellm.data-light.ru",
             "apiKey": "{env:VSELLM_API_KEY}"
          },
          "models": {
