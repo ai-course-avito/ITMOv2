@@ -4,9 +4,12 @@
 
 | ID | Артефакт и цель | Инструмент / модель | Тип промпта | Запрос или ссылка на него | Результат или ссылка | Что приняли | Что отклонили или исправили | Как проверили |
 |---|---|---|---|---|---|---|---|---|
-| P1-01 | Baseline-ревью `TRAINING_PR.diff` |  | zero-shot |  |  |  |  |  |
+| P1-01 | Baseline-ревью `TRAINING_PR.diff` |  | zero-shot | | P1_01 |  |  |  |
 | P1-02 | Повторное ревью с master prompt |  | master prompt |  |  |  |  |  |
 | P1-03 |  |  |  |  |  |  |  |  |
+
+## my personal info
+@practices/practice_01/TRAINING_PR.diff посмотри PR и найди проблемы 
 
 ## Master Prompt v1
 
