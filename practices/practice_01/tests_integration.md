@@ -1,11 +1,23 @@
 # Integration-проверки
 
+Проверяется взаимодействие компонентов из [`adr.md`](adr.md): FastAPI-эндпоинт `POST /api/reviews` (`app/api.py`) → `ReviewService` (`app/review_service.py`) → реализация `LLM` из `app.dependencies` → лог. Запросы отправляются через тестовый HTTP-клиент FastAPI к реальному приложению `app` (`api.py:5`), а зависимость `review_service` (`api.py:3`) подменяется на `ReviewService(mock_llm)`. Реальный внешний LLM-провайдер не вызывается — его реализация неизвестна (`context.md`).
+
 | Связь компонентов | Что может сломаться | Как воспроизводим | Ожидаемый результат | Evidence |
 |---|---|---|---|---|
-|  |  |  |  |  |
-|  |  |  |  |  |
+| HTTP-клиент → `create_review` (схема входа) | Тело без ключа `diff` доходит до `payload["diff"]` и падает `KeyError` → 500 | `POST /api/reviews` с телом `{}`; затем с `{"diff": 123}` | 422 в обоих случаях; `mock_llm.generate` не вызван; в логе статус 422 | `api.py:9-10`: `payload: dict`, `return review_service.review(payload["diff"])` — P1-02, check 5 |
+| `create_review` → проверка длины → `ReviewService` (API-1) | Проверка длины стоит после вызова сервиса или отсутствует, и большой diff уходит в LLM | `POST /api/reviews` с `{"diff": "a" * 20001}` | HTTP 413; `mock_llm.generate` не вызван ни разу | `api.py:10` сейчас передаёт diff в сервис без проверки (P1-02, Risk 2) |
+| `create_review` → `ReviewService.review` → `LLM.generate` (SEC-1 сквозь слои) | Редактирование секретов выполнено в одном слое, но эндпоинт передаёт в сервис исходный diff по другому пути | `POST /api/reviews` с diff, содержащим `token=abc123secret` | `mock_llm.last_prompt` не содержит `abc123secret`, содержит `[REDACTED]`; ответ 200 | `review_service.py:14-15`; хороший пример `CASE.md` |
+| `ReviewService` → `LLM.generate` (REL-1, таймаут) | Таймаут задан в `ReviewService`, но синхронный вызов `generate` блокирует воркер FastAPI дольше 10 с | `POST /api/reviews` с валидным diff, `mock_llm.generate` спит 15 с | HTTP-ответ получен не позже ~10 с; статус не 5xx; тело валидно по OUT-1 (`risks == []`, `summary` о сбое) | `review_service.py:15`, `review_service.py:5` — синхронный протокол без таймаута (P1-02, Risk 3) |
+| `ReviewService` → `LLM.generate` (REL-1, ошибка) | Исключение провайдера пробрасывается через `ReviewService` в FastAPI и превращается в 500 | `mock_llm.generate` бросает `RuntimeError`; `POST /api/reviews` с валидным diff | Статус не 5xx; тело валидно по OUT-1; трассировки исключения в теле нет | `review_service.py:15` без `try/except` (P1-02, Risk 3) |
+| `ReviewService` → `create_review` → HTTP-ответ (OUT-1) | Сервис возвращает новую структуру, а сигнатура эндпоинта `-> dict[str, str]` / сериализация FastAPI искажает или отклоняет вложенные списки | `mock_llm` возвращает структурированный текст с 2 рисками; `POST /api/reviews` | Тело ответа: `summary` строка, `risks` — список из 2 объектов с `file`, `line`, `evidence`, `risk`, `checks` — список строк; ключа `comment` нет | `api.py:9` аннотация `-> dict[str, str]`; `review_service.py:13` `-> dict[str, str]` и `:16` `{"comment": answer}` — тип ответа несовместим с OUT-1 |
+| `ReviewService` (фильтр QA-1) → HTTP-ответ | Фильтр применяется после усечения до 3, и в ответ попадает риск без evidence, а доказанный четвёртый теряется | `mock_llm` возвращает 4 риска: первый без `evidence`, остальные три с evidence | В ответе ровно 3 риска, все с непустым `evidence` | Правила OUT-1 и QA-1; `adr.md`, шаг 4: «отбрасываются до усечения до трёх» |
+| `create_review` → лог (OBS-1) | Middleware логирует тело запроса/ответа или пишет лог только при 200 | Три запроса: валидный (200), `{}` (422), `"a" * 20001` (413); diff валидного запроса содержит `MARKER_XYZ` | Три записи лога, в каждой ровно `request_id`, длительность, статус; статусы 200/422/413; `MARKER_XYZ` и текст ответа модели в логе отсутствуют | Правило OBS-1; в `TRAINING_PR.diff` логирования нет — компонент новый, интеграцию нужно проверить отдельно |
+| `app.dependencies.review_service` → `ReviewService(llm)` | Реальная зависимость конструирует сервис с реализацией `LLM`, не совместимой с протоколом (например, другой сигнатурой `generate`) | Импортировать `app.dependencies.review_service` и проверить `isinstance(review_service, ReviewService)` и наличие `review_service.llm.generate` | Объект — `ReviewService`, `llm.generate` вызываем с одним строковым аргументом | `api.py:3` `from app.dependencies import review_service`; `review_service.py:9-11` — конструктор принимает `llm: LLM`; содержимое `app/dependencies.py` требует уточнения |
+| `GET /health` рядом с `POST /api/reviews` | Добавление middleware/схем ломает существующий эндпоинт | `GET /health` после подключения логирования | 200 и `{"status": "ok"}`; запись в лог с этими же тремя полями либо явно отключена для `/health` — требует уточнения | `api.py:13-15` |
 
 ## Как использовали AI
 
-- Строка в [`prompts.md`](prompts.md):
-- Что проверили и исправили сами:
+- Для чего: перечисление связей между `api.py`, `ReviewService`, реализацией `LLM` и логом по схеме `adr.md`, выявление мест, где правила SEC-1/API-1/REL-1/OUT-1/QA-1/OBS-1 могут нарушаться на стыке слоёв, и шагов воспроизведения через тестовый HTTP-клиент с mock LLM.
+- Тип промпта: master prompt (build).
+- Строка в [`prompts.md`](prompts.md): P1-03.
+- Что проверили и исправили сами: проверила, что каждый сценарий стыка компонентов ссылается на конкретную строку diff (api.py:9-10, review_service.py:14-15) и что описанное поведение (KeyError, отсутствие таймаута) соответствует реальному коду TRAINING_PR.diff.
