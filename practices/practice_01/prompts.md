@@ -13,8 +13,12 @@ OpenCode записывает выполненные запросы, кратк�
 =======
 | P1-01 | Baseline-ревью `TRAINING_PR.diff` | openai/gpt-5 | zero-shot | take a look at TRAINING_PR.diff and tell me what problems there are | См. `problem.md` — раздел «Критические дефекты» и проверки | Приняты: отсутствие валидации `diff`, риск prompt injection, отсутствие лимита размера `diff`, отсутствие аутентификации, отсутствие обработки ошибок/таймаутов LLM | Отклонены: любые гипотезы без ссылок на строки diff; косметические изменения типа аннотаций типов | Проверки: curl без `diff` → 500; diff с инъекцией → влияет на промпт; большой diff → деградация; запрос без авторизации → 200; исключение из LLM → 500 |
 | P1-02 | Повторное ревью с master prompt | openai/gpt-5 | master prompt | См. раздел «Master Prompt v1» ниже | Подготовлен контракт мастера; запуск повторного ревью не выполнялся | — | — | — |
+<<<<<<< HEAD
 | P1-03 | — | — | — | — | — | — | — | — |
 >>>>>>> 16b76e9 (Practice work)
+=======
+| P1-03 | Комплект артефактов SDLC (adr/analysis/product/project/tests) | openai/gpt-5 | master prompt | См. файл prompt_03.txt | Изменены: adr.md, analysis.md, product_management.md, project_management.md, tests_e2e.md, tests_integration.md, tests_load.md, tests_unit.md; добавлен prompt_03.txt | Приняты: роли, сценарии тестирования, mermaid/gherkin схемы, согласование с CASE.md | Отклонены: любые изменения входных файлов; добавление зависимостей | Проверка: взаимные ссылки P1-03 во всех артефактах; соответствие правилам SEC-1..OBS-1 |
+>>>>>>> 044f792 (Home work)
 
 ## Master Prompt v1
 

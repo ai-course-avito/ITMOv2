@@ -16,9 +16,14 @@
 ## Как использовали AI
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 - Строка в [`prompts.md`](prompts.md): P1-03 (см. prompt_03.txt).
 - Что проверили и исправили сами: выровняли тесты с правилами SEC-1..OBS-1 и дефектами из problem.md.
 =======
 - Строка в [`prompts.md`](prompts.md):
 - Что проверил студент и какие исправления поручил агенту:
 >>>>>>> 831a1bd (Update from https://github.com/ai-course-avito/ITMO/commit/6ea9d951dd2a287fb6d09a6f8bb186444ce99bba)
+=======
+- Строка в [`prompts.md`](prompts.md): P1-03 (см. prompt_03.txt).
+- Что проверили и исправили сами: выровняли тесты с правилами SEC-1..OBS-1 и дефектами из problem.md.
+>>>>>>> 044f792 (Home work)
