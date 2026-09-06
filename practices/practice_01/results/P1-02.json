@@ -1,0 +1,28 @@
+{
+  "summary": "Добавлен ReviewService.review, который отправляет diff во внешний LLM, и POST /api/reviews. В коде нет схемы/валидации входа, нет редактирования секретов/защиты от prompt-injection и нет обработки ошибок/таймаутов для внешнего вызова.",
+  "risks": [
+    {
+      "file": "app/api.py",
+      "line": 10,
+      "risk": "Нет Pydantic-схемы/валидации; прямой доступ payload[\"diff\"] может привести к 500/KeyError вместо 422.",
+      "evidence": "return review_service.review(payload[\"diff\"])"
+    },
+    {
+      "file": "app/review_service.py",
+      "line": 15,
+      "risk": "Сырой diff вставляется в prompt без редактирования секретов и защиты от prompt-injection (SEC-1).",
+      "evidence": "prompt = f\"Review this pull request and find problems:\\n{diff}\""
+    },
+    {
+      "file": "app/review_service.py",
+      "line": 16,
+      "risk": "Внешний вызов LLM без обработки ошибок/таймаута; при сбое не формируется контролируемый ответ (REL-1).",
+      "evidence": "answer = self.llm.generate(prompt)"
+    }
+  ],
+  "checks": [
+    "POST /api/reviews с телом {} — ожидать 500; после добавления Pydantic-модели ожидать 422 с сообщением валидации.",
+    "Передать diff, содержащий 'token=abc123'; перехватить prompt (mock/spy LLM) и убедиться, что секреты редактируются до [REDACTED] (сейчас — не редактируются).",
+    "Заставить llm.generate бросать TimeoutError/Exception; убедиться, что сейчас возвращается необработанная ошибка, а после исправления — контролируемый ответ согласно REL-1."
+  ]
+}
