@@ -4,7 +4,7 @@
 
 | ID | Артефакт и цель | Инструмент / модель | Тип промпта | Запрос или ссылка на него | Результат или ссылка | Что приняли | Что отклонили или исправили | Как проверили |
 |---|---|---|---|---|---|---|---|---|
-| P1-01 | Baseline-ревью `TRAINING_PR.diff` | gpt-5 | zero-shot | Посмотри PR TRAINING_PR.diff и найди проблемы | ITMOv2/practices/practice_01/session-ses_f94a.md | create_review(payload: dict) без схемы и валидации; app/review_service.py: отсутствие обработки ошибок LLM; app/review_service.py: риск prompt-injection | app/api.py: отсутствуют механизмы защиты/ограничения для ресурсоемкого вызова | Проверили: пустой payload даёт 500; инъекция в diff влияет на ответ LLM (заглушка) |
+| P1-01 | Baseline-ревью `TRAINING_PR.diff` | gpt-5 | zero-shot | Посмотри PR TRAINING_PR.diff и найди проблемы | results/P1-01_zero_shot.md | create_review(payload: dict) без схемы и валидации; app/review_service.py: отсутствие обработки ошибок LLM; app/review_service.py: риск prompt-injection | app/api.py: отсутствуют механизмы защиты/ограничения для ресурсоемкого вызова | Проверили: пустой payload даёт 500; инъекция в diff влияет на ответ LLM (заглушка) |
 | P1-02 | Повторное ревью с master prompt | gpt-5 | master prompt | См. раздел «Master Prompt v1» ниже | results/P1-02.json | Приняли: отсутствие схемы/валидации; отсутствие обработки ошибок LLM; отсутствие редактирования секретов (SEC-1) | Отклонили: любые выводы без evidence вне diff/Context Pack | Проверки: см. checks в results/P1-02.json (422 вместо 500; редактирование секретов; контролируемый ответ при таймауте) |
 | P1-03 |  |  |  |  |  |  |  |  |
 
