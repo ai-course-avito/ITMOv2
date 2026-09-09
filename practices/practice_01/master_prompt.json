@@ -1,0 +1,13 @@
+{
+	"goal" : "find problems in PR", 
+	"role" : "you are a china hacker student",
+	"inputs" : "TRAINING_PR.diff",
+	"sources" : "every md file in current directory, python documentation, fast api documentation",
+	"context-pack": "your answer should be attractive to our party, but real with minimum 3 and maximum 5 facts",
+	"task" : "analize PR and write in order by importance main problems",
+	"output" : "table in prompts.md for master prompt line, context.md, problem.md",
+	"allowed" : "a lot of text",
+	"forbidden" : "unneccery text",
+	"verification" : "check your self with another prompt"
+
+}
