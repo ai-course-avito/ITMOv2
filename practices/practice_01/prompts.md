@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|---|---|---|
 | P1-01 | Baseline-ревью `TRAINING_PR.diff` |  | zero-shot | См. Raw Prompt P1-01 ниже | [P1-01.md](./P1-01.md) (сохранено как новый файл без запроса) |  |  |  |
 | P1-02 | Повторное ревью `TRAINING_PR.diff` | openai/gpt-5 | master prompt | См. Master Prompt v1 ниже | См. Раздел «Результат P1-02» ниже | 3 риска по FastAPI/OWASP правилам | Ничего | Воспроизводимые проверки указаны для каждого риска |
-| P1-03 |  |  |  |  |  |  |  |  |
+| P1-03 | Ревью по правилам SEC/API/REL/OUT | openai/gpt-5 | rules prompt | См. Raw Prompt P1-03 ниже | См. Раздел «Результат P1-03» ниже | Summary + ≤3 риска + checks | Ничего | Проверки приведены для каждого риска |
 
 ### Raw Prompt (verbatim) for P1-01
 
@@ -99,3 +99,43 @@ Summary: Добавлен метод ReviewService.review(diff) для форм�
 | 1 |  |  |
 | 2 |  |  |
 | 3 |  |  |
+
+### Raw Prompt (verbatim) for P1-03
+
+```
+Role: PR AI-reviewer.
+Inputs: @TRAINING_PR.diff .
+Return: summary + <=3 risks + checks.
+Output: @context.md @problem.md @analysis.md @product_management.md @project_management.md  @adr.md @tests_unit.md @tests_integration.md @tests_load.md @tests_e2e.md @prompts.md .
+Flow: candidate -> evidence (according to the rules) -> check. No evidence -> skip.
+Risk: file:line + evidence + rule.
+Rules:
+- `SEC-1`: Before sending the diff to an external LLM, tokens, passwords, and private keys are removed.
+- `API-1`: A diff longer than 20,000 characters is rejected with an HTTP 413 error.
+- `REL-1`: An external LLM call has a 10-second timeout; if it times out, a controlled response is returned.
+- `OUT-1`: The response contains a `summary`, a `risks` array, and a `checks` array. The `risks` array contains a maximum of three elements, each with the fields `file`, `line`, `evidence`, and `risk`.
+- `SCOPE-1`: The service only provides recommendations; it does not write code or perform actions on GitHub.
+- `QA-1`: A risk is included in the response only if it is confirmed by a diff line or a repository rule.
+- `OBS-1`: Only the `request_id`, duration, and status are logged. The contents of the diff and the model’s response are not logged.
+
+Forbidden: approve, merge, edit, do NOT invent the rules.
+Done: evidence + check for every risk; filled `context.md`, `problem.md`, `analysis.md`, `product_management.md`, `project_management.md`, `adr.md`, `tests_unit.md`, `tests_integration.md`, `tests_load.md`, `ests_e2e.md`, `prompts.md` for P1-03.
+Then save the prompt without editing to `prompts.md`.
+```
+
+## Результат P1-03
+
+summary: Добавлен метод ReviewService.review(diff) с прямой передачей сырого diff в LLM; добавлен POST /api/reviews, который принимает произвольный dict и возвращает словарь с полем "comment". В коде отсутствуют: редактирование секретов, проверка длины diff на 20,000+, таймаут LLM 10 сек.
+
+risks:
+1) candidate: Нет редактирования секретов до отправки diff во внешний LLM (SEC-1)
+   -> evidence: app/review_service.py:19-22 — diff конкатенируется в промпт и передается в llm.generate без фильтрации секретов.
+   -> check: Отправить POST /api/reviews с payload {"diff": "ref=token=sk_live_abc"} и заглушкой LLM, которая логирует входной промпт. Ожидание: текущий промпт содержит секрет без маскировки; по правилу SEC-1 должен быть отфильтрован.
+
+2) candidate: Нет отказа 413 при diff > 20,000 символов (API-1)
+   -> evidence: app/api.py:35-38 — обработчик create_review принимает payload["diff"], нет проверки длины и возврата 413.
+   -> check: Сформировать строку длиной 20,001 символ и отправить как diff. Ожидание текущего поведения: обычная обработка/200; по правилу API-1 должно быть 413 Payload Too Large.
+
+3) candidate: Нет таймаута 10 секунд и контролируемого ответа на таймаут внешнего LLM (REL-1)
+   -> evidence: app/review_service.py:19-22 — вызов self.llm.generate(prompt) без таймаута; app/api.py:35-38 также не обрабатывает таймаут.
+   -> check: Заглушка LLM, которая спит 15 секунд. Вызов create_review/ReviewService.review блокируется >10 сек и возвращает ответ только после сна; по правилу REL-1 ожидался таймаут через 10 сек и контролируемый ответ.
