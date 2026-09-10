@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1420 470" width="1420" height="470" font-family="DejaVu Sans, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1420" height="470" fill="#ffffff"/>
+  <text x="30" y="34" font-size="17" font-weight="bold" fill="#1f2328">TO BE. DFD уровня 1: подготовка ревью пул-реквеста</text>
+
+  <!-- внешние сущности -->
+  <rect x="30" y="206" width="150" height="76" fill="#eef2f7" stroke="#333" stroke-width="1.5"/>
+  <text x="105" y="238" font-size="13" text-anchor="middle" fill="#1f2328">Автор PR</text>
+  <text x="105" y="258" font-size="13" text-anchor="middle" fill="#1f2328">и GitHub</text>
+
+  <rect x="750" y="58" width="200" height="66" fill="#eef2f7" stroke="#333" stroke-width="1.5"/>
+  <text x="850" y="90" font-size="13" text-anchor="middle" fill="#1f2328">Внешний LLM</text>
+  <text x="850" y="110" font-size="13" text-anchor="middle" fill="#1f2328">провайдер</text>
+
+  <rect x="1260" y="206" width="130" height="76" fill="#eef2f7" stroke="#333" stroke-width="1.5"/>
+  <text x="1325" y="250" font-size="13" text-anchor="middle" fill="#1f2328">Ревьюер</text>
+
+  <!-- процессы -->
+  <rect x="250" y="200" width="200" height="88" rx="10" fill="#ffffff" stroke="#2b6cb0" stroke-width="1.8"/>
+  <text x="262" y="222" font-size="12" fill="#2b6cb0">1.0</text>
+  <text x="350" y="248" font-size="13" text-anchor="middle" fill="#1f2328">Приём запроса</text>
+  <text x="350" y="268" font-size="13" text-anchor="middle" fill="#1f2328">и проверка размера</text>
+
+  <rect x="500" y="200" width="200" height="88" rx="10" fill="#ffffff" stroke="#2b6cb0" stroke-width="1.8"/>
+  <text x="512" y="222" font-size="12" fill="#2b6cb0">2.0</text>
+  <text x="600" y="248" font-size="13" text-anchor="middle" fill="#1f2328">Удаление токенов,</text>
+  <text x="600" y="268" font-size="13" text-anchor="middle" fill="#1f2328">паролей и ключей</text>
+
+  <rect x="750" y="200" width="200" height="88" rx="10" fill="#ffffff" stroke="#2b6cb0" stroke-width="1.8"/>
+  <text x="762" y="222" font-size="12" fill="#2b6cb0">3.0</text>
+  <text x="850" y="248" font-size="13" text-anchor="middle" fill="#1f2328">Запрос ревью</text>
+  <text x="850" y="268" font-size="13" text-anchor="middle" fill="#1f2328">с таймаутом 10 с</text>
+
+  <rect x="1000" y="200" width="210" height="88" rx="10" fill="#ffffff" stroke="#2b6cb0" stroke-width="1.8"/>
+  <text x="1012" y="222" font-size="12" fill="#2b6cb0">4.0</text>
+  <text x="1105" y="248" font-size="13" text-anchor="middle" fill="#1f2328">Отбор рисков</text>
+  <text x="1105" y="268" font-size="13" text-anchor="middle" fill="#1f2328">и сборка ответа</text>
+
+  <!-- хранилища данных -->
+  <line x1="300" y1="392" x2="730" y2="392" stroke="#333" stroke-width="1.5"/>
+  <line x1="300" y1="440" x2="730" y2="440" stroke="#333" stroke-width="1.5"/>
+  <line x1="345" y1="392" x2="345" y2="440" stroke="#333" stroke-width="1.5"/>
+  <text x="322" y="422" font-size="13" text-anchor="middle" fill="#1f2328">D2</text>
+  <text x="360" y="422" font-size="13" fill="#1f2328">Журнал запросов: request_id, длительность, статус</text>
+
+  <line x1="1000" y1="392" x2="1300" y2="392" stroke="#333" stroke-width="1.5"/>
+  <line x1="1000" y1="440" x2="1300" y2="440" stroke="#333" stroke-width="1.5"/>
+  <line x1="1045" y1="392" x2="1045" y2="440" stroke="#333" stroke-width="1.5"/>
+  <text x="1022" y="422" font-size="13" text-anchor="middle" fill="#1f2328">D1</text>
+  <text x="1060" y="422" font-size="13" fill="#1f2328">Правила репозитория</text>
+
+  <!-- потоки данных -->
+  <line x1="180" y1="244" x2="245" y2="244" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="213" y="192" font-size="12" text-anchor="middle" fill="#444">diff PR</text>
+
+  <line x1="450" y1="244" x2="495" y2="244" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="473" y="192" font-size="12" text-anchor="middle" fill="#444">принятый diff</text>
+
+  <line x1="700" y1="244" x2="745" y2="244" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="723" y="192" font-size="12" text-anchor="middle" fill="#444">diff без секретов</text>
+
+  <line x1="950" y1="244" x2="995" y2="244" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="973" y="192" font-size="12" text-anchor="middle" fill="#444">риски или ошибка</text>
+
+  <line x1="1210" y1="244" x2="1255" y2="244" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="1232" y="192" font-size="12" text-anchor="middle" fill="#444">summary, risks, checks</text>
+
+  <line x1="810" y1="200" x2="810" y2="128" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="800" y="168" font-size="12" text-anchor="end" fill="#444">промпт без секретов</text>
+
+  <line x1="890" y1="128" x2="890" y2="196" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="900" y="146" font-size="12" fill="#444">черновик рисков</text>
+
+  <line x1="1105" y1="388" x2="1105" y2="292" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="1115" y="345" font-size="12" fill="#444">коды правил</text>
+
+  <line x1="350" y1="288" x2="350" y2="388" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="360" y="345" font-size="12" fill="#444">статус обработки</text>
+
+  <line x1="800" y1="288" x2="722" y2="388" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <path d="M 290 288 L 290 354 L 105 354 L 105 286" fill="none" stroke="#333" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="197" y="372" font-size="12" text-anchor="middle" fill="#444">HTTP 413, если diff больше 20000 символов</text>
+</svg>
