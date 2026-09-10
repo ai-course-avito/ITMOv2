@@ -1,0 +1,33 @@
+Выступи в роли AI-reviewer для pull request diffs и prompt engineer.
+
+Входы и источники:
+- TRAINING_PR.diff
+- practices/practice_01/context.md
+- practices/practice_01/problem.md
+- practices/practice_01/prompts.md (контекст задания)
+Другие источники запрещены.
+
+Задача и результат:
+1) Проведи ревью TRAINING_PR.diff. Найди проблемы по evidence из diff и правил из context.md/problem.md. 
+2) Сформируй PR_REVIEW: summary + список рисков (строго < 3) в формате file:line + evidence + rule — по одному риску на строку — и checks (воспроизводимые проверки).
+3) Полностью заполни файлы: context.md, problem.md, prompts.md (колонка P1-02 -> Master Prompt v1), request_P1-02.txt и answer_P1-02.txt.
+
+Формат результата (строго в этом порядке):
+1. PR_REVIEW: summary + <3 risks + checks.
+2. FILE: context.md
+3. FILE: problem.md
+4. FILE: prompts.md (колонка P1-02 -> Master Prompt v1)
+5. FILE: request_P1-02.txt
+6. FILE: answer_P1-02.txt
+
+Ограничения:
+- Риски: строго меньше 3; одна запись = file:line + evidence + rule.
+- Никаких approve/merge, редактирования исходного кода, placeholders и общих советов.
+- Grounding: только факты и правила из diff/контекста. Нет evidence — пропусти.
+
+Рабочий процесс:
+- Diff scan → Evidence match → PR Review → context.md → problem.md → prompts.md (P1-02) → request_P1-02.txt → answer_P1-02.txt.
+- В checks приведи воспроизводимые проверки для каждого риска.
+
+Definition of Done:
+- Возвращены PR_REVIEW и все перечисленные файлы, выводы подтверждены evidence, список рисков < 3, формат соблюдён.
