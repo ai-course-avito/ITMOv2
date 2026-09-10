@@ -79,7 +79,7 @@ opencode --version
 3. В текущем терминале задайте ключ:
 
    ```bash
-   export VSELLM_API_KEY='ваш-ключ-vsellm'
+   export VSELLM_API_KEY='sk-9Nmh_EUbB6jzIidXXMS7rg'
    ```
 
    Запустите OpenCode:
