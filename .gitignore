@@ -174,3 +174,5 @@ student_solutions/
 !.specify/
 !.vscode/
 .opencode.json
+/opencode.json
+*.json
