@@ -20,13 +20,28 @@
 
 ```mermaid
 sequenceDiagram
-    actor User as Пользователь
-    participant System as Система
-    participant AI as AI
-    User->>System: Событие или запрос
-    System->>AI: Ограниченный вход и контекст
-    AI-->>System: Предложение
-    System-->>User: Проверяемый результат
+    actor Dev as Разработчик или CI
+    participant API as FastAPI
+    participant Svc as ReviewService
+    participant LLM as LLM provider
+    participant Log as Logger (OBS-1)
+    Dev->>API: POST /api/reviews { diff }
+    alt API-1: длина diff > 20000
+        API-->>Dev: HTTP 413
+    else длина ≤ 20000
+        API->>Svc: review(diff)
+        Svc->>Svc: SEC-1: маскировать секреты
+        Svc->>LLM: generate(prompt), REL-1 timeout 10s
+        alt таймаут или ошибка LLM
+            LLM-->>Svc: exception
+            Svc-->>API: OUT-1 fallback (summary=timeout, risks=[])
+        else успех
+            LLM-->>Svc: answer
+            Svc-->>API: OUT-1 { summary, risks(≤3), checks }
+        end
+        API-->>Dev: 200 + OUT-1
+    end
+    API->>Log: request_id, duration, status (OBS-1)
 ```
 
 ## User stories и acceptance criteria

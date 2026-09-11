@@ -12,19 +12,27 @@
 
 ```mermaid
 gantt
-    title План первого рабочего сценария
+    title Поставка первого рабочего сценария AI-reviewer
     dateFormat  YYYY-MM-DD
+    axisFormat  %d.%m
+
     section Подготовка
-    Контекст и критерии :a1, 2026-09-10, 1d
+    Уточнить Context Pack и AC        :done,   a1, 2026-09-11, 1d
+    Согласовать OUT-1 JSON Schema     :active, a2, 2026-09-12, 1d
+
     section Реализация
-    OUT-1 (инкремент 1) :a2, after a1, 1d
-    REL-1 (инкремент 2) :a3, after a2, 1d
-    API-1/SEC-1 (инкремент 3) :a4, after a3, 1d
+    OUT-1 сборщик ответа + unit        :b1, after a2, 2d
+    REL-1 httpx timeout + fallback     :b2, after a2, 2d
+    API-1 валидация длины (413)        :b3, after b1, 1d
+    SEC-1 редактор секретов + regex    :b4, after b3, 2d
+
     section Проверка
-    Интеграция и ревью :a5, after a4, 1d
+    Integration /api/reviews (OUT-1)   :c1, after b2, 1d
+    E2E 200 / 413 / граничный          :c2, after b3, 1d
+    Peer review PR                     :milestone, m1, after b4 c1 c2, 0d
 ```
 
-Даты условные, отражают порядок поставки для первого рабочего сценария.
+Даты условные, стартовая точка — 2026-09-11 (день заполнения артефактов). Параллельность: OUT-1 и REL-1 идут одновременно после подготовки; API-1 и SEC-1 — по цепочке после OUT-1; интеграционные и E2E-проверки идут параллельно реализации; финальная веха — peer review PR.
 
 ## Как использовали AI
 
