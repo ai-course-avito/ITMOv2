@@ -2,52 +2,59 @@
 
 ## Первый рабочий сценарий
 
-**Когда** …, **система** …, **а пользователь получает** …
+Когда разработчик или CI отправляет diff в POST /api/reviews, система валидирует тело, проверяет длину, маскирует секреты, вызывает LLM с таймаутом 10 секунд и возвращает структурированный ответ summary+risks+checks; пользователь получает стабильный контракт и контролируемые ошибки.
 
 Не входит в этот сценарий:
 
-- 
+- Выбор провайдера LLM и оптимизация качества ревью.
+- Изменения в GitHub или автофиксы кода (SCOPE-1).
 
 ## Use case
 
 | Поле | Значение |
 |---|---|
-| Актор |  |
-| Триггер |  |
-| Предусловия |  |
-| Основной результат |  |
-| Ошибка или отказ |  |
+| Актор | Разработчик/CI |
+| Триггер | Отправка diff на ревью |
+| Предусловия | Доступен API сервиса |
+| Основной результат | Получен JSON с summary, risks (≤3), checks |
+| Ошибка или отказ | 422 при невалидном теле; 413 при >20,000 символов; контролируемый ответ при таймауте LLM |
 
 ```mermaid
 sequenceDiagram
     actor User as Пользователь
-    participant System as Система
-    participant AI as AI
-    User->>System: Событие или запрос
-    System->>AI: Ограниченный вход и контекст
-    AI-->>System: Предложение
-    System-->>User: Проверяемый результат
+    participant System as Сервис
+    participant AI as LLM
+    User->>System: POST /api/reviews {diff}
+    System->>System: Validate + length check + secret masking
+    System->>AI: Prompt (<=10s)
+    AI-->>System: Ответ
+    System-->>User: summary + risks + checks
 ```
 
 ## User stories и acceptance criteria
 
 ```gherkin
-Feature:
+Feature: AI review API
 
-  Scenario: Позитивный
-    Given
-    When
-    Then
+  Scenario: Успешное ревью
+    Given корректное тело с diff <= 20000 символов
+    When отправляем POST /api/reviews
+    Then получаем 200 и JSON с полями summary, risks, checks
 
-  Scenario: Негативный или граничный
-    Given
-    When
-    Then
+  Scenario: Слишком длинный diff
+    Given diff длиной 20001 символ
+    When отправляем POST /api/reviews
+    Then получаем 413 Payload Too Large
+
+  Scenario: Таймаут LLM
+    Given провайдер LLM отвечает дольше 10 секунд
+    When отправляем POST /api/reviews
+    Then получаем контролируемый ответ о таймауте
 ```
 
 ## Как использовали AI
 
-- Для чего:
-- Тип промпта:
-- Строка в [`prompts.md`](prompts.md):
-- Что проверили и исправили сами:
+- Для чего: сформировать сценарии и критерии приемки по заданным правилам.
+- Тип промпта: rules prompt.
+- Строка в [`prompts.md`](prompts.md): P1-03.
+- Что проверили и исправили сами: соответствие сценариев TRAINING_PR.diff и правилам SEC/API/REL/OUT.
