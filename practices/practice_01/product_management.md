@@ -69,6 +69,6 @@ Feature: Автоматизированный анализ diff pull request
 ## Как использовали AI
 
 - Для чего: формулирование use case, sequence diagram и gherkin-сценариев первого рабочего процесса.
-- Тип промпта: master prompt (P1-02).
-- Строка в [`prompts.md`](prompts.md): строка P1-02.
+- Тип промпта: master prompt (P1-03).
+- Строка в [`prompts.md`](prompts.md): строка P1-03.
 - Что проверили и исправили сами: синхронизировали сценарии с правилами SEC-1, API-1, REL-1, OUT-1, исключили автомерж (SCOPE-1).
