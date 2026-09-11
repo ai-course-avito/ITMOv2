@@ -7,7 +7,7 @@
 | Техника | Файл эксперимента | Изменённый файл Практики 1 | Конкретное изменение | Проверка | Что отклонили |
 |---|---|---|---|---|---|
 | Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) | `practice_01/analysis.md` | Заполнены AS IS, TO BE с mermaid, таблица «Разница» (5 строк), «Как использовали AI» | Ссылки на строки из TRAINING_PR.diff, валидность mermaid | Generic-рекомендации без ссылок на код |
-| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) |  |  |  |  |
+| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) | `practice_01/tests_load.md` | Переработан в `rctf/test_load_new.md`: 15 сценариев (smoke, capacity, peak, spike, stress, soak, read/write, листинги, деградация), назначение и регламент, SLO p95/p99/ошибки/CPU/RAM, Evidence (k6/Locust, Grafana, APM), критерии Pass/Fail | Пороги согласованы с правилами CASE.md (REL-1 → p99 ≤ 10 с, API-1 → 100% HTTP 413, OUT-1, OBS-1); у каждого сценария есть источник Evidence | Варианты без числовых SLA (`...`) и тесты без источников Evidence |
 | Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) |  |  |  |  |
 | Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) |  |  |  |  |
 | RAG | [`rag/experiment.md`](rag/experiment.md) |  |  |  |  |
