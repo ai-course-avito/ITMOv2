@@ -1,5 +1,6 @@
 {
     "$schema": "https://opencode.ai/config.json",
+    "plugin": ["opencode-ignore"],
     "provider": {
         "vsellm": {
             "npm": "@ai-sdk/openai-compatible",
