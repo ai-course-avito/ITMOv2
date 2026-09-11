@@ -173,3 +173,8 @@ student_solutions/
 !.roo/
 !.specify/
 !.vscode/
+<<<<<<< HEAD
+=======
+
+.env
+>>>>>>> 137af94 (my new)
