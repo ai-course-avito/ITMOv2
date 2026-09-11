@@ -1,0 +1,33 @@
+{
+  "summary": "PR добавляет POST /api/reviews, который передаёт diff во внешний LLM без валидации входа, без лимита размера и без схемы ответа.",
+  "risks": [
+    {
+      "file": "app/api.py",
+      "line": 36,
+      "evidence": "def create_review(payload: dict) -> dict[str, str]:\n    return review_service.review(payload[\"diff\"])",
+      "risk": "payload[\"diff\"] бросает KeyError при отсутствии поля -> необработанный 500 вместо 422. Нарушает ожидание OUT-1 о предсказуемом контракте: нет Pydantic-модели входа."
+    },
+    {
+      "file": "app/review_service.py",
+      "line": 20,
+      "evidence": "prompt = f\"Review this pull request and find problems:\\n{diff}\"",
+      "risk": "diff интерполируется в prompt без ограничения размера и без удаления секретов. Нарушает API-1 (нет отказа при diff > 20000 символов) и SEC-1 (токены/ключи из diff не редактируются перед отправкой во внешний LLM)."
+    },
+    {
+      "file": "app/review_service.py",
+      "line": 21,
+      "evidence": "answer = self.llm.generate(prompt)",
+      "risk": "Вызов llm.generate не имеет timeout и обработки исключений. Нарушает REL-1: сбой или зависание внешнего LLM превращается в неконтролируемый 500 вместо предсказуемого ответа."
+    }
+  ],
+  "checks": [
+    "POST /api/reviews без поля diff -> ожидать 422, а не 500 (проверка API-1/валидации).",
+    "POST /api/reviews с diff длиннее 20000 символов -> ожидать 413 (проверка API-1).",
+    "Замокать llm.generate так, чтобы он бросал исключение или превышал 10 секунд -> ожидать контролируемый ответ, а не зависание или голый 500 (проверка REL-1).",
+    "Передать diff, содержащий тестовый token (например, ghp_xxx) -> убедиться, что итоговый prompt содержит [REDACTED] вместо токена (проверка SEC-1)."
+  ],
+  "open_questions_for_human": [
+    "Нужны ли аутентификация и rate limiting для /api/reviews — вне скоупа этого ответа (SCOPE-1), требует решения человека.",
+    "Точный порог для API-1 (20000 символов) подтверждён CASE.md, но целевая доля отклонений по нему не измерена — см. problem.md."
+  ]
+}
