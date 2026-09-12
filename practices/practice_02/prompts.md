@@ -11,7 +11,7 @@
 | Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) |  |  |  |  |
 | Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) |  |  |  |  |
 | RAG | [`rag/experiment.md`](rag/experiment.md) |  |  |  |  |
-| ReAct | [`react/experiment.md`](react/experiment.md) |  |  |  |  |
+| ReAct | [`react/experiment.md`](react/experiment.md) | `practice_01/tests_load.md` | Переработан в `react/test_load_new.md`: 14 сценариев (smoke, baseline, sustained, capacity, peak, spike, stress, soak + 6 проверок бизнес-правил), ReAct-обоснование наблюдение→правило→сценарий, SLO p95/p99/ошибки/CPU/RAM, Evidence (k6/Locust, Grafana, APM, перехват промптов мок-LLM), Pass/Fail, gate-условия запуска | Пороги согласованы с правилами CASE.md (REL-1 → p99 ≤ 10 с, API-1 → 100% HTTP 413 и 0 вызовов LLM, SEC-1 → 0 утечек, OUT-1/OBS-1 → конформность и лог без тел); нет заглушек и «...»; каждая таблица с согласованным числом колонок | Сценарии GET-листинга и фоновые очереди/Kafka/тяжелые SQL-БД — `context.md` фиксирует синхронный Web API-вызов к LLM |
 
 ## Независимое ревью
 
