@@ -18,11 +18,12 @@ Patch
          + Сервис: {comments[{file,line?,text}], summary}. Добавить ссылки на источники.
 
 References
-practices/practice_01/CASE.md:64–72 | Место правок API-1/OUT-1.
+practices/practice_01/CASE.md:65 | "API-1: diff длиннее 64 KiB отклоняется с HTTP 413/422." (цитата)
+practices/practice_01/CASE.md:68–69 | "OUT-1: … Учебный… Сервис: {comments[…], summary}" (цитата)
 practices/practice_01/context.md:39–41 | Формат сервиса (comments+summary), лимит 64 KiB.
-practices/practice_01/tests_e2e.md:7–8 | Граничный кейс 64 KiB, статусы 413/422.
-practices/practice_01/tests_unit.md:28–31 | Бюджет 64 KiB (unit-проверка лимита).
-practices/practice_01/tests_integration.md:9–10 | Контракт API (422 на отсутствующий diff).
+practices/practice_01/tests_e2e.md:7–8 | Граничный кейс 64 KiB, статусы 413/422 (для превышения лимита).
+practices/practice_01/tests_unit.md:28–31 | Бюджет 64 KiB (unit‑проверка лимита).
+practices/practice_01/tests_integration.md:9–10 | Иной негативный кейс: 422 при отсутствии diff (не про лимит).
 <!-- OUTPUT:RCTF:END -->
 Патч с заменой «20 000 символов» на «64 KiB», уточнение «413/422». Раздел «OUT-1: Форматы» с двумя подпунктами (Учебный/Сервисный) и ссылками на tests_e2e.md, tests_integration.md, tests_unit.md и context.md.
 
