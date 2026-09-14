@@ -1,22 +1,40 @@
 # Журнал экспериментов Практики 2
 
-- Выбранный слабый артефакт Практики 1:
+- Выбранный слабый артефакт Практики 1: prompts.md
 - Что в нём нужно улучшить:
+  - Непоследовательный и «шумный» Master Prompt. В блоке “Master Prompt v2” расширены полномочия за рамки задачи второго запуска: “OUTPUT: Заполни файлы …” предлагает перезаполнять множество артефактов, тогда как по CASE.md второй запуск должен вернуть краткое ревью diff (summary, risks, checks) и работать в ограниченных границах. Это противоречит собственным разделам файла (ниже указано обновлять только context/problem/prompts).
+  - Дублирование и внутренние противоречия. После первого блока промпта идет второй код-блок (“Role: AI-reviewer. INPUTS: …”), который конфликтует по формату и ограничениях с предыдущим.
+  - Неполнота обязательных частей. Таблица “Сравнение двух запусков” (строки 102–109) и “Peer review” (строки 111–117) оставлены пустыми, из-за чего нельзя подтвердить улучшение качества между P1-01 и P1-02.
+  - Качество формулировок. Смешение языков, опечатки (“криетрям”), размытые или двусмысленные инструкции снижают воспроизводимость и управляемость запуска.
 - Как поймём, что изменение полезно:
+    - полезность видно по доказуемому улучшению результата и управляемости процесса. Для вашей практики это проверяется по четырем вещам: метрики из problem.md, сравнение P1-01 vs P1-02 в prompts.md, воспроизводимые проверки в tests_* и согласованность артефактов с CASE.md/README.md.
 
 | Техника | Файл эксперимента | Изменённый файл Практики 1 | Конкретное изменение | Проверка | Что отклонили |
 |---|---|---|---|---|---|
-| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) |  |  |  |  |
-| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) |  |  |  |  |
-| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) |  |  |  |  |
-| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) |  |  |  |  |
-| RAG | [`rag/experiment.md`](rag/experiment.md) |  |  |  |  |
-| ReAct | [`react/experiment.md`](react/experiment.md) |  |  |  |  |
+| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) | practices/practice_01/prompts.md (план правок); исправленная версия: [`few_shot/prompts.md`](few_shot/prompts.md) | Сузили полномочия до анализа diff; закрепили строгий формат candidate → evidence (file:lines) → check; максимум 3 риска; убрали дублирующий конфликтующий блок; добавили критерии DoD | Проверки ссылаются на app/api.py:35–38 и app/review_service.py:19–22; каждый риск имеет reproducible check (AS IS vs TO BE); отсутствие домыслов | Риски без evidence; требование «заполнить все файлы» в одном запуске; любые правила вне TRAINING_PR.diff |
+| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) | practices/practice_01/prompts.md (план правок); артефакт: [`rctf/prompts.md`](rctf/prompts.md) | RCTF: Role/Context/Task/Format; добавили НФТ, шаги выполнения и целевой формат (обзор, таблица рисков, Mermaid) | Формат артефакта стандартизирован; присутствуют file:lines и проверки; диаграмма отражает AS IS/TO BE ветки | Размытая роль и двусмысленные инструкции |
+| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) | practices/practice_01/prompts.md (план правок); артефакт: [`chain_of_verification/prompts.md`](chain_of_verification/prompts.md) | CoV-verified master prompt: удалены домыслы, все пункты подтверждены diff; список рисков очищен; добавлен улучшенный CoV-промпт | Независимые вопросы/ответы подтверждают: валидации нет, try/except нет, лимитов нет; каждый риск имеет evidence+check | Любые утверждения без прямого подтверждения diff |
+| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) | practices/practice_01/prompts.md (план правок); артефакт: [`tree_of_thoughts/prompts.md`](tree_of_thoughts/prompts.md) | Сравнили 3 подхода; выбрали минимальные корректные изменения (Pydantic + try/except), зафиксировали контракт валидации и обработку ошибок | Матрица критериев, Mermaid-поток, псевдокод контроллера/сервиса; покрытие негативных сценариев | Полноценная очередь/воркер (излишне для текущего кейса) |
+| RAG | [`rag/experiment.md`](rag/experiment.md) | practices/practice_01/prompts.md — «Список рисков» | Уточнили TO BE по правилам CASE.md: API-1 → 413 для длины diff > 20k; REL-1 → контролируемый 502/503 при таймауте 10s; SEC-1 → маскирование секретов перед LLM | Проверка: отправка diff=25k → 413; исключение/таймаут LLM → 502/503; дифф с token → [REDACTED] в prompt | Отклонено: 400/422 для большого diff; любые пункты без подтверждения в CASE.md/README/context |
+| ReAct | [`react/experiment.md`](react/experiment.md) | practices/practice_01/prompts.md (план правок); актуальная версия хранится также в [`chain_of_verification/prompts.md`](chain_of_verification/prompts.md) | ReAct-цикл устранил противоречия и зафиксировал DoD; итоговый master prompt и риски в строгом формате | Лог 3 циклов Thought→Action→Observation; финальный артефакт соответствует формату и содержит file:lines + checks | Вспомогательные рассуждения и любые непроверяемые требования |
 
 ## Независимое ревью
 
 | Замечание другой команды | Где исправили | Evidence |
 |---|---|---|
-| Двусмысленность |  |  |
-| Непроверяемое требование |  |  |
-| Пропущенный риск или источник |  |  |
+| Двусмысленность | few_shot/prompts.md (Master Prompt Few-shot), rctf/prompts.md | practices/practice_01/prompts.md: раздел «Master Prompt v2» (строки 30–41) содержит «OUTPUT: Заполни файлы …», что расширяет полномочия за пределы задачи. В исправлениях роль сузили до анализа diff; формат зафиксирован. |
+| Непроверяемое требование | chain_of_verification/prompts.md, react/experiment.md (Final Answer) | В practices/practice_01/prompts.md противоречие: «Нет evidence -> пропусти» (строка 27) и «Нет evidence -> check» (строка 57) — конфликт правил. В исправлениях закреплено единообразие: без evidence риск не включать. |
+| Пропущенный риск или источник | rag/experiment.md, rag/prompts.md | Добавлены правила CASE.md (API-1, REL-1, SEC-1), FastAPI 422; оформлены ссылки и изменения: 413 для >20k, 10s timeout → 502/503, маскирование секретов. |
+
+### Итоговое ревью
+- Хорошо:
+  - Для RCTF, CoV, ToT, ReAct выполнены осмысленные эксперименты с артефактами: везде присутствуют ссылки file:lines и формат candidate → evidence → check; добавлены Mermaid-диаграммы и чёткие DoD.
+  - Единый журнал (prompts.md) заполнен по всем применённым техникам с конкретикой изменений и проверок.
+- Что исправлено:
+  - Few-shot: раздел «Что получили» заполнен (few_shot/experiment.md) и синхронизирован с few_shot/prompts.md.
+  - RAG: проведён полностью — заполнен rag/experiment.md (контекст, строгий RAG‑промпт, заземлённый артефакт), создан rag/prompts.md; строка RAG в таблице обновлена.
+  - Единообразно зафиксирован код 413 для diff > 20k (API‑1 из CASE.md) и синхронизирован в ToT, CoV, ReAct артефактах и диаграммах.
+  - «Независимое ревью» дополнено конкретными исправлениями и evidence по местам.
+- Оставшиеся рекомендации:
+  1) Пропагировать очищенный master prompt обратно в practices/practice_01/prompts.md: убрать дублирующий конфликтующий блок, заполнить «Сравнение двух запусков» четырьмя проверками.
+  2) После любых правок по Практике 1 запустить make step2 из корня и убедиться, что все ссылки и проверки воспроизводимы.
