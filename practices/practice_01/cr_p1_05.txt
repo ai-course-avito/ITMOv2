@@ -1,0 +1,25 @@
+{
+  "summary": "Добавлены метод ReviewService.review и POST /api/reviews. Эндпоинт принимает произвольный dict без схемы, строит f-string промпт из raw diff и напрямую проксирует ответ LLM как {\"comment\": …}.",
+  "change_type": "feature",
+  "critical_issues": [
+    {"file":"app/api.py","line":36,"problem":"Нет валидации тела запроса и возможен KeyError при payload[\"diff\"].","suggestion":"Ввести Pydantic-модель для тела запроса и типизировать обработчик. Например:\n\nfrom pydantic import BaseModel\nclass ReviewRequest(BaseModel): diff: str\n\n@app.post(\"/api/reviews\")\ndef create_review(req: ReviewRequest) -> dict[str, Any]:\n    return review_service.review(req.diff)","reason":"problem.md: метрика 422/500 < 1%; CASE.md QA-1/OUT-1: нужен предсказуемый контракт"},
+    {"file":"app/review_service.py","line":20,"problem":"Промпт формируется из raw diff без редактирования секретов (SEC-1) и без проверки длины (API-1).","suggestion":"Перед генерацией промпта выполнить: (1) редактирование секретов (замена токенов на [REDACTED]); (2) отклонение входа длиннее 20000 символов с 413 на уровне API.","reason":"CASE.md SEC-1, API-1"},
+    {"file":"app/review_service.py","line":21,"problem":"Вызов LLM без таймаута/фолбэка нарушает REL-1.","suggestion":"Оборачивать вызов llm.generate таймаутом 10с и возвращать контролируемый ответ при превышении или ошибке.","reason":"CASE.md REL-1; adr.md Decision"},
+    {"file":"app/review_service.py","line":22,"problem":"Ответ не соответствует OUT-1: возвращается {comment} вместо {summary, risks[], checks[]}.","suggestion":"Ввести маппинг ответа LLM к контракту OUT-1 и валидацию перед возвратом.","reason":"CASE.md OUT-1; product_management.md US-05"}
+  ],
+  "minor_issues": [
+    {"file":"app/api.py","line":36,"problem":"Синхронная сигнатура обработчика; поведение таймаутов/потоков не определено явно.","suggestion":"Зафиксировать стратегию I/O: либо async с httpx AsyncClient, либо явная обёртка в threadpool + таймаут.","reason":"adr.md Options (A vs B)"},
+    {"file":"app/review_service.py","line":12,"problem":"Тело метода протокола содержит многоточие, но не явно документировано поведение ошибок/исключений.","suggestion":"Описать контракт generate: какие исключения/коды возвращает; добавить докстринг.","reason":"tests_integration.md: сценарии таймаутов и контролируемых ошибок"}
+  ],
+  "positive_aspects": [
+    "Выделен протокол LLM (typing.Protocol), что облегчает моки и тестирование.",
+    "Чёткое разделение API и доменного сервиса (ReviewService)."
+  ],
+  "test_coverage_note": "tests_unit.md и tests_integration.md описывают проверки схемы, SEC-1, API-1, REL-1 и маппинга OUT-1; текущий diff не содержит реализаций, поэтому потребуются доработки для прохождения этих тестов.",
+  "score": 4,
+  "merge_recommendation": "request_changes"
+}
+
+Короткий комментарий для автора PR:
+
+Добавили полезный каркас (протокол LLM, сервис + эндпоинт), но сейчас отсутствуют ключевые защитные контракты из CASE.md. Минимальный набор для мержа: (1) Pydantic‑схема тела запроса, (2) SEC‑1 редактирование секретов и API‑1 отклонение >20000 символов, (3) REL‑1 таймаут 10с и контролируемый фолбэк, (4) OUT‑1 структурированный ответ. Рекомендую начать с схемы и длины на уровне API, затем добавить таймаут/маппинг; сценарии и эскизы тестов приложены в tests_*.md.
