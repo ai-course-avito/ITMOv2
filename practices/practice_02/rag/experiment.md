@@ -20,11 +20,12 @@
 ## Ответ со ссылками на источники
 <!-- OUTPUT:RAG:START -->
 Findings
+- practices/practice_01/CASE.md:65 — "API-1: diff длиннее 64 KiB отклоняется с HTTP 413/422." (цитата текущей формулировки после исправления)
+- practices/practice_01/CASE.md:68–69 — "OUT-1: форматы результата различаются по контексту. … Сервис: { comments: [{file, line?, text}], summary }" (цитата)
 - practices/practice_01/context.md:39–41 — «Вход: { diff: string } … до 64 KiB текста … Выход: { comments[…], summary }».
 - practices/practice_01/tests_e2e.md:7–8 — «POST … diff 128 KiB … Ответ 413/422; запись о превышении лимита».
 - practices/practice_01/tests_unit.md:5–6 — «Ограничение размера diff … 80 KiB … Ошибка лимита или усечение до 64 KiB».
 - practices/practice_01/product_management.md:78–81 — «… diff более 64 KiB … 413 … или 422 …»; :90 — «структура comments[{file,line?,text}], summary».
-- practices/practice_01/CASE.md:64–72 — правила API-1/OUT-1 (место правок) и область применения.
 
 Synthesis
 Лимит diff согласован на 64 KiB с кодами 413/422; сервисный формат — comments+summary; учебный формат — summary/risks/checks. CASE.md должен явно отразить это.
@@ -35,12 +36,12 @@ Patch
 - OUT-1: + форматы результата разделены по областям: Учебный (P1): summary, risks[], checks[] (risks ≤3: file,line,evidence,risk). Сервис: {comments[{file,line?,text}], summary}. Добавить ссылки на context.md/tests_*.
 
 References
+- practices/practice_01/CASE.md:65,68–69
 - practices/practice_01/context.md:39–41
 - practices/practice_01/tests_e2e.md:7–8
 - practices/practice_01/tests_unit.md:5–6
 - practices/practice_01/tests_integration.md:9–10
 - practices/practice_01/product_management.md:78–81,90
-- practices/practice_01/CASE.md:64–72
 <!-- OUTPUT:RAG:END -->
 Лимит: 64 KiB подтверждён в context.md:39–41, tests_e2e.md:7–8, tests_unit.md:5–6, tests_integration.md:9–10, product_management.md:78–81. CASE.md содержит 20 000 символов — конфликтующая точка. Форматы: CASE.md — учебный OUT-1 (summary/risks/checks); context.md — сервисный (comments + summary). Нужна явная оговорка в CASE.md.
 

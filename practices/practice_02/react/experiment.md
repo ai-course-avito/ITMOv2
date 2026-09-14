@@ -39,17 +39,15 @@
 Steps
 | Шаг | Действие | Наблюдение (file:lines) | Решение |
 |---|---|---|---|
-| 1 | Search(API-1/лимит) | CASE.md:65 — «diff длиннее 64 KiB … 413/422»; context.md:39–41 — «до 64 KiB …» | Продолжить |
-| 2 | Read(форматы OUT-1) | CASE.md:67–70 — учебный формат; context.md:39–41 — «{comments[…], summary}» | Продолжить |
-| 3 | Compare(values) | Лимиты=64 KiB в context/tests_*; OUT-1 различается (учебный vs сервис) | Продолжить |
-| 4 | ProposePatch(changes) | Правки к CASE.md подготовлены | Продолжить |
-| 5 | Search(«20 000») | Нет актуальных упоминаний; всё=64 KiB | Остановиться |
+| 1 | Read(CASE.md) | CASE.md:65 — «diff длиннее 64 KiB … 413/422» (после патча), ранее было «20 000 символов» | Зафиксировать текущую цель — консолидация |
+| 2 | Read(context/tests) | context.md:39–41 — «до 64 KiB … {comments[…], summary}»; tests_e2e.md:7–8 — 413/422 при >64 KiB | Продолжить |
+| 3 | Read(форматы OUT-1) | CASE.md:68–69 — учебный vs сервисный формат; context.md:39–41 — сервисный формат | Продолжить |
+| 4 | Compare(values) | Конфликт был устранён: лимиты=64 KiB, форматы разделены | Продолжить |
+| 5 | Search("20 000") | Не найдено в репозитории practice_01/CASE.md | Остановиться |
 
 Result
 - Patch
-  - API-1: - diff длиннее 20 000 символов отклоняется с HTTP 413.
-           + diff длиннее 64 KiB отклоняется с HTTP 413/422.
-  - OUT-1: + разделить форматы: Учебный (P1): summary, risks[], checks[] (risks ≤3: file,line,evidence,risk). Сервис: {comments[{file,line?,text}], summary}. Добавить ссылки на context.md/tests_*.
+  - (Применён) API-1: 64 KiB с 413/422; OUT-1: разделение учебный/сервисный, ссылки на источники.
 - Acceptance
-  - grep не содержит «20 000»; все лимиты=64 KiB; OUT-1 разделён; ссылки на tests_* добавлены.
+  - grep не содержит «20 000»; все упоминания лимита — 64 KiB; OUT-1 разделён; есть ссылки на tests_* и context.md.
 <!-- OUTPUT:REACT:END -->

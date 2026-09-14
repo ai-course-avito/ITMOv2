@@ -29,12 +29,12 @@ API-1 оставляет «20 000 символов», OUT-1 смешивает �
           + Сервис: {comments[{file,line?,text}], summary}. Ссылки добавлены.
 
 2) References
-- practices/practice_01/CASE.md:64–72 — место правок (API-1/OUT-1) и область применения.
-- practices/practice_01/context.md:39–41 — формат сервиса (comments+summary), лимит 64 KiB.
-- practices/practice_01/tests_unit.md:28–31 — бюджет 64 KiB (unit проверка лимита).
-- practices/practice_01/tests_e2e.md:7–8 — граничный кейс 64 KiB, статусы 413/422.
-- practices/practice_01/product_management.md:69–81,88–91 — AC: лимит 64 KiB, структура comments+summary.
-- practices/practice_01/tests_integration.md:9–10 — 422 на отсутствующий diff (контракт API).
+ - practices/practice_01/CASE.md:65 — "API-1: diff длиннее 64 KiB отклоняется с HTTP 413/422." (цитата)
+ - practices/practice_01/CASE.md:68–69 — "OUT-1: форматы результата различаются… Учебный… Сервис: {comments[…], summary}" (цитата)
+ - practices/practice_01/context.md:39–41 — формат сервиса (comments+summary), лимит 64 KiB.
+ - practices/practice_01/tests_e2e.md:7–8 — граничный кейс 64 KiB, статусы 413/422 (подтверждает лимит/коды для превышения размера).
+ - practices/practice_01/tests_unit.md:28–31 — бюджет 64 KiB (unit‑проверка лимита).
+ - practices/practice_01/tests_integration.md:9–10 — 422 на отсутствующий diff (другой негативный кейс, не про лимит).
 <!-- OUTPUT:FEW_SHOT:END -->
 Патч-текст с заменой «20 000 символов» на «64 KiB»; примечание к OUT-1 с разделением форматов; ссылки на tests_unit.md (ограничение 64 KiB), tests_integration.md (413/422), tests_e2e.md (граничный кейс), context.md (64 KiB как ориентир).
 

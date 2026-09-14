@@ -50,7 +50,7 @@ Patch
          + Сервис: {comments[{file,line?,text}], summary}. Добавить ссылки на tests_* и context.md.
 
 References
-- practices/practice_01/CASE.md:64–72
+- practices/practice_01/CASE.md:65,68–69
 - practices/practice_01/context.md:39–41
 - practices/practice_01/tests_e2e.md:7–8
 - practices/practice_01/tests_unit.md:28–31
