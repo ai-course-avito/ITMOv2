@@ -1,17 +1,17 @@
 # Журнал экспериментов Практики 2
 
-- Выбранный слабый артефакт Практики 1:
-- Что в нём нужно улучшить:
-- Как поймём, что изменение полезно:
+- Выбранный слабый артефакт Практики 1: `practices/practice_01/tests_load.md` (нагрузочные проверки сервиса ревью PR)
+- Что в нём нужно улучшить: закрыть 5 проблем: (1) нет рабочего скрипта нагрузки и команды запуска; (2) не зафиксировано мокирование LLM; (3) пороги задержки (p99 < 20мс, 12с) не обоснованы характеристиками окружения и воркеров; (4) отсутствует сценарий деградации при параллельной нагрузке и таймауте LLM по REL-1; (5) не измеряются системные метрики (RAM и CPU).
+- Как поймём, что изменение полезно: файл содержит воспроизводимые команды запуска (k6/locust), явно исключает затраты токенов внешнего LLM через мок, согласует порог latency со спецификацией REL-1 (<= 10.5 с), проверяет контролируемый HTTP 504 при деградации и фиксирует лимиты CPU/RAM.
 
 | Техника | Файл эксперимента | Изменённый файл Практики 1 | Конкретное изменение | Проверка | Что отклонили |
 |---|---|---|---|---|---|
-| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) |  |  |  |  |
-| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) |  |  |  |  |
-| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) |  |  |  |  |
-| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) |  |  |  |  |
-| RAG | [`rag/experiment.md`](rag/experiment.md) |  |  |  |  |
-| ReAct | [`react/experiment.md`](react/experiment.md) |  |  |  |  |
+| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) | `few_shot/tests_load.md` (копия `tests_load.md`) | Добавлен k6-скрипт (`load/diff_review.js`) с порогами, фиксация mock-LLM (200мс), окружение (4 воркера, 1 vCPU, 2GB RAM), сценарий деградации (504 при задержке 11с) и замеры CPU/RSS RAM | Проверка по `context.md` (REL-1 = 10с, API-1 = 20 000 знаков), проверка синтаксиса k6 options и thresholds | Порог 12с без обоснования и обращение к реальному внешнему API LLM |
+| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) | `rctf/tests_load.md` (копия `tests_load.md`) | Добавлены столбцы Окружение, Деградация, Системные метрики, скрипт `load/load_tests.js` с командами CLI, мок LLM с задержкой 200мс, проверка таймаута REL-1 (11с -> 504) | Проверка соответствия правилам context.md (SEC-1, API-1, REL-1, OBS-1) и флагам CLI утилиты k6 | Увеличение таймаута REL-1 свыше 10с и внешние инструменты мониторинга вне контекста проекта |
+| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) | `chain_of_verification/tests_load.md` (копия `tests_load.md`) | Исправлены 6 утверждений-кандидатов: добавлены команды k6, мок LLM, обоснован порог < 10.5с (REL-1 10с + 0.5с допуск), тесты API-1 переведены на граничные значения 20 000 и 20 001 символ, добавлен сценарий 504 | Сверка каждого утверждения с evidence в context.md, CASE.md, tests_integration.md и TRAINING_PR.diff | Произвольную проверку на 25 000 знаков (заменена на 20 000/20 001) и нагрузку без мокирования LLM |
+| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) | `tree_of_thoughts/tests_load.md` (копия `tests_load.md`) | Выбрана стратегия C (инструментальная): встроен скрипт `load_test.js` без раздувания числа сценариев, зафиксированы 4 воркера на 1 vCPU, мок LLM (200мс), деградация (11с -> 504) и лимиты CPU/RAM | Оценка 3 альтернатив по 4 критериям (закрытие 5 дефектов, воспроизводимость, соразмерность объёма, сохранение порогов) | Стратегию B (избыточный chaos-инжиниринг вне рамок домашки) и изменение порогов REL-1/API-1 |
+| RAG | [`rag/experiment.md`](rag/experiment.md) | `rag/tests_load.md` (копия `tests_load.md`) | Закрыты 5 проблем: добавлен скрипт k6 с thresholds, мок LLM со сценарием деградации (таймаут REL-1), обоснованы пороги из REL-1/API-1, зафиксировано измерение RAM/CPU | Проверка по context.md (REL-1, API-1), CASE.md, tests_integration.md (допуск 10.5с), k6 docs: Thresholds | Произвольные лимиты CPU/RAM (источника нет) и порог 12с (превышает 10.5с) |
+| ReAct | [`react/experiment.md`](react/experiment.md) | `react/tests_load.md` (копия `tests_load.md`) | Добавлены CLI-команды locust (headless, tags), статус мока LLM для каждого сценария, порог 10.5с по прецеденту `tests_integration.md`, сценарий деградации (HTTP 504) и замеры CPU/RAM | Пошаговый цикл Thought-Action-Observation (8 шагов) со сверкой правил REL-1, API-1, OBS-1 | Обращение к реальной сети/LLM и добавление сценариев сверх исходных трёх |
 
 ## Независимое ревью
 
