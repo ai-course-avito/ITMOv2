@@ -1,6 +1,8 @@
 # Unit-проверки
 
-| Требование или правило | Что проверяем изолированно | Вход | Ожидаемый результат | Evidence |
+Файл ведёт OpenCode. Обсудите с агентом содержание и проверьте предложенный diff. Все дополнения и исправления поручайте агенту в чате.
+
+| Требование или правило | Что проверяем изолированно | Вход | Ожидаемый результат | Подтверждение |
 |---|---|---|---|---|
 | `ReviewService.review` формирует промпт с содержимым diff (TRAINING_PR.diff:20) | Что промпт, переданный в `llm.generate`, содержит подстроку `diff` и префикс "Review this pull request and find problems:" | Мок `LLM` с сохранением аргумента `prompt`; `diff = "some diff text"` | Мок зафиксировал вызов `generate` с prompt, содержащим `"some diff text"` | TRAINING_PR.diff:20 |
 | `ReviewService.review` возвращает `{"comment": answer}` (TRAINING_PR.diff:22) | Что возвращаемое значение — словарь с единственным ключом `comment`, равным ответу мок-LLM | Мок `LLM.generate` возвращает `"ok"` | `review(...)` возвращает `{"comment": "ok"}` | TRAINING_PR.diff:19-22 |
