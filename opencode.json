@@ -1,5 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "default_agent": "build",
   "provider": {
     "vsellm": {
       "npm": "@ai-sdk/openai-compatible",
@@ -7,6 +8,8 @@
       "options": {
          "baseURL": "https://litellm.data-light.ru",
          "apiKey": "{env:VSELLM_API_KEY}"
+        "baseURL": "https://litellm.data-light.ru",
+        "apiKey": "{env:VSELLM_API_KEY}"
       },
       "models": {
         "openai/gpt-5": {
