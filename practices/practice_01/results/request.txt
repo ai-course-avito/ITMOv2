@@ -1,0 +1,1 @@
+Ниже diff учебного PR. Посмотри PR и найди проблемы. @practices/practice_01/TRAINING_PR.diff ответ дай на русском
