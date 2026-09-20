@@ -1,0 +1,32 @@
+Разбор TRAINING_PR.diff
+Прочитал diff (2 файла: app/review_service.py, app/api.py), сопоставил с правилами из CASE.md/context.md. Работаю только с этими двумя файлами, web/shell для анализа не привлекал, код не менял, approve/merge не выполняю (SCOPE-1).
+Ниже — результат в формате, заданном OUT-1.
+{
+  "summary": "PR добавляет метод ReviewService.review() и эндпоинт POST /api/reviews, которые пересылают весь diff во внешний LLM и возвращают его ответ без обработки. Найдено 3 подтверждённых риска (SEC-1, OUT-1, REL-1); риск по API-1 (отсутствие проверки длины diff в api.py:10) не включён из-за лимита в три элемента и требует отдельного внимания ревьюера.",
+  "risks": [
+    {
+      "file": "app/review_service.py",
+      "line": 14,
+      "evidence": "prompt = f\"Review this pull request and find problems:\\n{diff}\"",
+      "risk": "Необработанный diff подставляется в prompt без удаления токенов/паролей/приватных ключей — нарушение SEC-1: перед отправкой во внешний LLM в PR нет ни одного вызова redact/mask."
+    },
+    {
+      "file": "app/review_service.py",
+      "line": 16,
+      "evidence": "return {\"comment\": answer}",
+      "risk": "Ответ сервиса содержит только поле comment, а не summary/risks/checks с полями file, line, evidence, risk — нарушение контракта OUT-1."
+    },
+    {
+      "file": "app/review_service.py",
+      "line": 15,
+      "evidence": "answer = self.llm.generate(prompt)",
+      "risk": "Вызов llm.generate сделан без timeout и без try/except — нет контролируемого ответа при ошибке или зависании вызова, нарушение REL-1."
+    }
+  ],
+  "checks": [
+    "Передать в review() diff с тестовым значением token=ABC123 и убедиться, что итоговый prompt, переданный в llm.generate, содержит [REDACTED] вместо токена (проверка SEC-1).",
+    "Вызвать POST /api/reviews с валидным diff и проверить, что тело ответа содержит ключи summary, risks (список объектов с file/line/evidence/risk, не более 3) и checks, а не только comment (проверка OUT-1).",
+    "Подставить в llm.generate заглушку, которая зависает дольше 10 секунд, и убедиться, что review() возвращает контролируемую ошибку, а не падает/висит без ограничения (проверка REL-1)."
+  ]
+}
+Не хватает для полноты картины: содержимого app/dependencies.py — не видно, добавляет ли он редактирование секретов или таймаут перед вызовом review_service.review; если это уже реализовано там, риски SEC-1/REL-1 могут быть закрыты на другом уровне, и это нужно уточнить у автора PR перед тем, как выносить финальное решение.
