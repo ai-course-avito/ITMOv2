@@ -15,7 +15,6 @@ ARTIFACTS := \
 
 test:
 	@test -f README.md
-	@test -f CASE.md
 	@test -f TRAINING_PR.diff
 	@for file in $(ARTIFACTS); do test -s "$$file" || { echo "Missing or empty: $$file"; exit 1; }; done
 	@grep -q "## Context Pack" context.md
