@@ -1,22 +1,22 @@
 # Журнал экспериментов Практики 2
 
-- Выбранный слабый артефакт Практики 1:
-- Что в нём нужно улучшить:
-- Как поймём, что изменение полезно:
+- Выбранный слабый артефакт Практики 1: practices/practice_01/TRAINING_PR.diff — добавление POST /api/reviews в app/api.py и метода review в app/review_service.py
+- Что в нём нужно улучшить: валидация входа и чёткий контракт запроса/ответа, предсказуемые коды ошибок (422/4xx вместо 500), ограничение размера diff, обработка ошибок LLM, снижение prompt-injection, конкретизация проверки /docs (наличие пути /api/reviews и схем запроса/ответа)
+- Как поймём, что изменение полезно: POST /api/reviews с пустым телом возвращает 422 (не 500); в /docs у эндпоинта есть схема запроса/ответа; превышение лимита размера даёт 413/422; сбой LLM маппится в 502 с понятным detail; успешный запрос стабильно возвращает {"comment": "…"}
 
 | Техника | Файл эксперимента | Изменённый файл Практики 1 | Конкретное изменение | Проверка | Что отклонили |
 |---|---|---|---|---|---|
-| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) |  |  |  |  |
-| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) |  |  |  |  |
-| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) |  |  |  |  |
-| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) |  |  |  |  |
-| RAG | [`rag/experiment.md`](rag/experiment.md) |  |  |  |  |
-| ReAct | [`react/experiment.md`](react/experiment.md) |  |  |  |  |
+| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) | app/api.py; app/review_service.py | Ввести Pydantic-модель запроса `diff` и `response_model` ответа; ограничить размер `diff`; обернуть вызов LLM в try/except; обрамить `diff` разделителями; сохранить синхронный обработчик | 1) POST /api/reviews с {} → 422; 2) /docs содержит схемы запроса/ответа; 3) POST с `diff` > N → 413/422; валидный запрос → 200 {"comment": …} | Перевод эндпоинта в async; глубокое версионирование OpenAPI |
+| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) | app/api.py; app/review_service.py | Добавить Pydantic ReviewRequest/Response и `response_model`; DI через `Depends`; лимит MAX_DIFF_CHARS; маппинг ошибок на 400/502; при совместимости <3.9 — `Dict[str, str]` | Рекомендации подтверждены TRAINING_PR.diff; наличие схем и валидации; ограничение размера; обработка исключений LLM | Аутентификация и rate limiting вынесены за рамки; архитектурный рефакторинг не выполнялся |
+| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) | app/api.py; app/review_service.py | Импорт `HTTPException`; `create_review` принимает `dict[str, str]`, использует `payload.get("diff")` и возвращает 422 при отсутствии; без Pydantic-моделей | Проверки: нет `KeyError`; 422 на невалидном; импорт корректен; синтаксис `dict[str, str]` валиден для Py3.9+; ответ соответствует {"comment": …}; минимальность правок сохранена | Введение Pydantic-моделей и изменение контрактов отклонены |
+| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) | app/api.py; app/review_service.py | Синтез: Pydantic-модели запроса/ответа и `response_model`; лимит размера diff; ограждение промпта (``` дифф ```); обработка исключений LLM с маппингом на 502; сохранить синхронный обработчик | 1) {} → 422; 2) /docs содержит схемы; 3) diff > N → 413/422; 4) исключение из LLM → 502; 5) валидный запрос → 200 {"comment": …} | Отложены: аутентификация/лимитирование, перевод в async, рефакторинг DI |
+| RAG | [`rag/experiment.md`](rag/experiment.md) | app/api.py; app/review_service.py | Ввести Pydantic `ReviewRequest` и `ReviewResponse`; задать `response_model`; заменить небезопасный доступ `payload["diff"]` на `payload.diff`; при необходимости — `Dict[str, str]` | Сопоставление с TRAINING_PR.diff: app/api.py L35-38; app/review_service.py L19-22; ожидать 422 при отсутствии `diff` и документированный контракт в OpenAPI | Обязательная замена на `Dict` (зависит от версии) и изменение маршрута/DI-паттернов отклонены |
+| ReAct | [`react/experiment.md`](react/experiment.md) | app/api.py; app/review_service.py | Минимальный патч: Pydantic ReviewRequest/ReviewResponse и `response_model`; лимит MAX_DIFF_CHARS=20_000 -> 413; обернуть `llm.generate` в try/except с маппингом в 502; синхронный обработчик, контракт ответа {"comment": str} | Проверки: {} -> 422; diff > 20_000 -> 413; сбой LLM -> 502 с detail; валидный diff -> 200 {"comment": …}; /docs содержит схемы | Отклонено: аутентификация, async, DI-рефакторинг, rate limiting |
 
 ## Независимое ревью
 
 | Замечание другой команды | Где исправили | Evidence |
 |---|---|---|
-| Двусмысленность |  |  |
-| Непроверяемое требование |  |  |
-| Пропущенный риск или источник |  |  |
+| Двусмысленность | practices/practice_02/prompts.md — формулировка «улучшение /docs» заменена на конкретную «конкретизация проверки /docs (наличие пути /api/reviews и схем запроса/ответа)» | Было: «… снижение prompt-injection, улучшение /docs». Стало: «… снижение prompt-injection, конкретизация проверки /docs (наличие пути /api/reviews и схем запроса/ответа)». |
+| Непроверяемое требование | practices/practice_02/few_shot/experiment.md, раздел «Что изменили в исходном артефакте» → «app/review_service.py», блок «Как проверили»: добавлен воспроизводимый шаг для prompt‑injection с ожидаемым признаком защиты | Было: «Инъекционный diff ("Ignore previous instructions…") → поведение модели стабилизируется…». Стало: «Инъекционный diff ("Ignore previous instructions…"): промпт содержит явные разделители ``` до/после diff; ответ остаётся в рамке comment и не содержит действий (например, "Approved"/выполнение команд). См. ADR: делимитеры в промпте». Ссылка: practices/practice_01/adr.md, раздел «Решение», пункт про делимитеры. |
+| Пропущенный риск или источник | practices/practice_02/rag/experiment.md, раздел «Разрешённые источники»: добавлен CASE.md как источник правил; скорректированы диапазоны строк TRAINING_PR.diff под фактический файл | Было: таблица источников содержала только TRAINING_PR.diff со строками «1-22, 23-41». Стало: добавлена строка «practices/practice_01/CASE.md — правила API-1/REL-1» и исправлено «23-37» вместо «23-41». Дополнительно в тексте пункта про размер добавлена ссылка на CASE.md: API-1. |
