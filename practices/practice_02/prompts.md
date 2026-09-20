@@ -1,16 +1,14 @@
 # Журнал экспериментов Практики 2
 
-Файл ведёт OpenCode по вашим запросам. Агент записывает фактические результаты экспериментов и вносит изменения в связанные файлы. Свою оценку сообщайте ему в чате; вручную заполнять шаблон не нужно.
-
-- Выбранный слабый артефакт Практики 1:
-- Что в нём нужно улучшить:
-- Как поймём, что изменение полезно:
+- Выбранный слабый артефакт Практики 1: `practices/practice_01/problem.md`
+- Что в нём нужно улучшить: убрать плейсхолдеры и неподтверждённые числа; согласовать лимит размера diff и статусы с CASE.md; сделать метрики проверяемыми и привязанными к тестам.
+- Как поймём, что изменение полезно: метрики формулируются через ожидаемые статусы/структуры и планы проверки; все упоминания лимита соответствуют API-1 (20 000 символов); отсутствуют «X ms» и «например»; статус для ошибок LLM обозначен как проектное решение и зафиксирован в контракте.
 
 | Техника | Файл эксперимента | Изменённый файл Практики 1 | Конкретное изменение | Проверка | Что отклонили |
 |---|---|---|---|---|---|
-| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) |  |  |  |  |
-| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) |  |  |  |  |
-| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) |  |  |  |  |
-| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) |  |  |  |  |
-| RAG | [`rag/experiment.md`](rag/experiment.md) |  |  |  |  |
-| ReAct | [`react/experiment.md`](react/experiment.md) |  |  |  |  |
+| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) | `practices/practice_01/problem.md` | Убрали плейсхолдеры; зафиксировали границы 19 999/20 000/20 001, статусы 422/413/502 и baseline для P95 | Ручная верификация + план тестов | Отклонены неподтверждённые числовые цели и «100% try/except» |
+| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) | `practices/practice_01/problem.md` | Добавлен протокол измерений: Role/Context/Task/Format и JSON-шаблон с `expected_result`, `actual_result=null`, `evidence_status=not_collected` | Проверка структуры JSON и критериев | Отклонены вымышленные результаты, пути тестов и логов |
+| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) | `practices/practice_01/problem.md` | Добавили вопросы проверки, evidence-статус и исправленные формулировки в терминах «ожидается…» | Ручная верификация вопросов и согласованности | Отклонены утверждения «Да, статус …» без запуска |
+| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) | `practices/practice_01/adr.md` | Сравнили проверку только в API, только в service и в двух слоях; выбрали двухслойную защиту | Все варианты оценены по одинаковым критериям; обновлён ADR | Отклонены поздняя проверка и отсутствие защиты при обходе endpoint |
+| RAG | [`rag/experiment.md`](rag/experiment.md) | `practices/practice_01/problem.md`, `practices/practice_01/context.md` | Разделили источники: CASE.md задаёт лимит, RFC 9110 — семантику статусов, problem.md — проектный контракт | Сверка каждого вывода с разрешённым источником | Отклонено утверждение, что RFC задаёт числовой лимит или требует 502 |
+| ReAct | [`react/experiment.md`](react/experiment.md) | `practices/practice_01/problem.md` | Выполнили ограниченную проверку файлов без сети и внешнего LLM; зафиксировали `make step2` | Поиск по репозиторию, `git diff --check`, `make step2` | Отклонены HTTP-запросы и неограниченное редактирование файлов |
