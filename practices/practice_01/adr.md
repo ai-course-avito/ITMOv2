@@ -54,6 +54,45 @@ flowchart LR
 
 Трассировка: валидация — U1–U2/I1–I3; адаптер — U4/I5–I6; ответ — U3/U5/I4/I7/E5; наблюдаемость — I8/L1–L3. Все эти продуктовые проверки пока являются планом.
 
+## Диаграмма последовательностей
+
+Основной успешный сценарий TO BE для `POST /api/reviews`. Это проектируемое поведение по [контракту R1–R7](context.md#context-pack).
+
+```mermaid
+sequenceDiagram
+    actor User as Инженер
+    participant API as API
+    participant Service as ReviewService
+    participant Adapter as LLM-адаптер
+    participant LLM as LLM
+
+    User->>API: Отправить diff
+    API->>API: Проверить вход
+    API->>Service: review(diff)
+    Service->>Service: Собрать промпт
+    Service->>Adapter: generate(prompt)
+    Adapter->>LLM: Запрос к модели
+    Note over Adapter,LLM: Дедлайн 5 секунд, без повторов
+    LLM-->>Adapter: Ответ
+    Adapter-->>Service: Ответ
+    Service->>Service: Проверить ответ
+    Service-->>API: Комментарий
+    API-->>User: 200 / comment
+    Note over API: Записать итоговое событие
+```
+
+После получения комментария инженер проверяет доказательства и принимает решение по PR.
+
+Альтернативные исходы:
+
+| Условие | Результат |
+|---|---|
+| Невалидный ввод / превышен лимит длины | 422 / 413; LLM не вызывается |
+| Сбой провайдера / некорректный ответ | 502 |
+| Истёк дедлайн | Отмена операции адаптера, 504 |
+
+При любом исходе записывается ровно одно событие `review_completed` без diff, промпта и ответа LLM (R6). Формат и коды ошибок определены в R4–R5.
+
 ## Как использовали AI
 
 - Сессия: [P1-03](prompts.md#журнал), OpenCode / anthropic/claude-sonnet-5.
