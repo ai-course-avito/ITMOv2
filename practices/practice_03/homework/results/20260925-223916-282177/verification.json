@@ -1,0 +1,62 @@
+{
+  "runs": 18,
+  "independent_sessions": 18,
+  "requests_verified": 36,
+  "completed_reads": 35,
+  "reasoning_events_in_artifacts": 0,
+  "all_tools": "read/completed",
+  "context_all_runs": 8192,
+  "system_hashes_by_variant": {
+    "A": [
+      "d25deab6b7d6e44e8222132111c73b574a7d3bb4f1c1659f6475064f136570a6"
+    ],
+    "B": [
+      "25f38ea2a1a8cabc63f14c86214018e2d5d3fd0aeb8ec3bf5f9e08373b358cda"
+    ]
+  },
+  "protected_lab_files_unchanged": 65,
+  "experiment_files_unchanged": true,
+  "benchmark_answer_review": [
+    {
+      "stem": "benchmark-A-1",
+      "wall_seconds": 56.95286683299855,
+      "core_answer_correct": true,
+      "note": "Final text manually reviewed; source-line quality varies."
+    },
+    {
+      "stem": "benchmark-B-1",
+      "wall_seconds": 50.48744966600134,
+      "core_answer_correct": true,
+      "note": "Final text manually reviewed; source-line quality varies."
+    },
+    {
+      "stem": "benchmark-B-2",
+      "wall_seconds": 51.987830334001046,
+      "core_answer_correct": true,
+      "note": "Final text manually reviewed; source-line quality varies."
+    },
+    {
+      "stem": "benchmark-A-2",
+      "wall_seconds": 51.134041708999575,
+      "core_answer_correct": true,
+      "note": "Final text manually reviewed; source-line quality varies."
+    },
+    {
+      "stem": "benchmark-A-3",
+      "wall_seconds": 52.41636308399757,
+      "core_answer_correct": true,
+      "note": "Final text manually reviewed; source-line quality varies."
+    },
+    {
+      "stem": "benchmark-B-3",
+      "wall_seconds": 62.21814174999963,
+      "core_answer_correct": true,
+      "note": "Final text manually reviewed; source-line quality varies."
+    }
+  ],
+  "medians_seconds": {
+    "A": 52.41636308399757,
+    "B": 51.987830334001046
+  },
+  "make_test": "3/3 passed, PYTHONDONTWRITEBYTECODE=1 make -C lab test"
+}

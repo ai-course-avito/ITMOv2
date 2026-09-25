@@ -1,0 +1,44 @@
+{
+  "request": {
+    "model": "qwen3.5:4b",
+    "messages": [
+      {
+        "role": "system",
+        "content": "Ты помощник по учебному проекту. Используй только переданный контекст.\nНе выдумывай CI, зависимости, функции или настройки.\nЕсли данных нет, напиши «В предоставленных материалах нет ответа».\nФормат: короткий ответ, затем основание из контекста.\n\n"
+      },
+      {
+        "role": "user",
+        "content": "# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\nКакая CI-система запускает тесты проекта?"
+      }
+    ],
+    "stream": false,
+    "think": false,
+    "options": {
+      "temperature": 0.2,
+      "seed": 42,
+      "num_ctx": 4096,
+      "num_predict": 512
+    }
+  },
+  "response": {
+    "model": "qwen3.5:4b",
+    "created_at": "2026-09-25T08:04:11.570352Z",
+    "message": {
+      "role": "assistant",
+      "content": "В предоставленных материалах нет ответа.\n\n**Основание:** В тексте описаны функциональность сервиса, формат проверки (`make test`) и зависимости (стандартная библиотека Python 3.10+), но не указана конкретная CI-система (например, GitHub Actions, GitLab CI, Jenkins)."
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 13377900167,
+    "load_duration": 6636937542,
+    "prompt_eval_count": 167,
+    "prompt_eval_cached_count": 0,
+    "prompt_eval_duration": 1926679000,
+    "eval_count": 66,
+    "eval_duration": 4747615000
+  },
+  "wall_seconds": 13.463115665999794,
+  "load_seconds": 6.636937542,
+  "total_seconds": 13.377900167,
+  "decode_tokens_per_second": 13.901716967361507
+}

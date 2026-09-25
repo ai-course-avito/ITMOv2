@@ -1,0 +1,6 @@
+{
+  "question": "Какая CI-система запускает тесты? Если сведений нет, скажи об этом.",
+  "exit_code": 0,
+  "wall_seconds": 56.3,
+  "model": "ollama/itmo-agent-local"
+}

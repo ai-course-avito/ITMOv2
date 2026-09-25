@@ -1,0 +1,79 @@
+{
+  "runs": [
+    {
+      "question": 1,
+      "file": "question1.retry.jsonl",
+      "sessionID": "ses_f271ed3fcffeQ3JgjQNwBzGpEJ",
+      "wall_seconds": 25.66,
+      "answer": "Тесты запускаются командой **`make test`**.\n\nИсточник: `/Users/vasilijpanfilov/Soft_eng_2026/AI/ITMOv2/practices/practice_03/lab/demo/README.md`, строка 6.",
+      "tools": [
+        "glob",
+        "glob",
+        "read"
+      ]
+    },
+    {
+      "question": 2,
+      "file": "question2.jsonl",
+      "sessionID": "ses_f271e6f60ffebxjlzwhawSbwtp",
+      "wall_seconds": 101.87,
+      "answer": "Пустое имя подписчика отвергается:\n\n**Код проверки (service.py, строки 4-8):**\n```python\ndef subscribe(name):\n    if not name.strip():         # Строка 5: проверка пустого имени\n        raise ValueError(\"empty name\")  # Строка 6: выброс ошибки\n    subscribers.add(name.strip())  # Строка 7: только если имя не пустое\n    return {\"subscribed\": True}   # Строка 8\n```\n\n**Тест (test_service.py, строки 13-15):**\n```python\ndef test_empty(self):\n    with self.assertRaises(ValueError):\n        subscribe(\" \")  # Пробельное имя вызывает ValueError\n```\n\nПри пустом имени (`\"\"`, `\" \"`, `\"  \\\"\"`) функция `subscribe` выбрасывает `ValueError` с сообщением `\"empty name\"` и подписка не происходит.",
+      "tools": [
+        "grep",
+        "glob",
+        "glob",
+        "read",
+        "read"
+      ]
+    },
+    {
+      "question": 3,
+      "file": "question3.jsonl",
+      "sessionID": "ses_f271ce0d0ffeNLR7Rn7KXTkwsz",
+      "wall_seconds": 37.7,
+      "answer": "Функция `unsubscribe` **не реализована** в проекте. Исследование поиск её реализации не дал результатов ни в одном из файлов:\n\n*   **Паттерн:** `unsubscribe`\n*   **Результат:** Не найдено совпадений (`No files found`)\n\nПредпосылка вопроса (чтобы ответить на него) неверна — такого метода или функции в представленном коде нет.",
+      "tools": [
+        "grep"
+      ]
+    },
+    {
+      "question": 4,
+      "file": "question4.jsonl",
+      "sessionID": "ses_f271c4825ffewe1UISjQewAGDX",
+      "wall_seconds": 56.3,
+      "answer": "Сведения о CI-системе в проекте отсутствуют. Файлы наподобие `.gitlab-ci.yml`, `github/workflows/*.yml` или файлы с указателями на Travis, Jenkins, Appveyor не обнаружены.",
+      "tools": [
+        "glob",
+        "glob",
+        "grep"
+      ]
+    },
+    {
+      "question": 5,
+      "file": "question5.retry.jsonl",
+      "sessionID": "ses_f27197bbaffeAxCXUWp20q1HTz",
+      "wall_seconds": 41.02,
+      "answer": "Нет, подписки **не сохраняются** после перезапуска процесса. Переменная `subscribers` хранится только в памяти и исчезает при завершении интерпректора.\n\n**Подтверждение:**\n*   `service.py`, строка 1: `subscribers = set()`\n*   `test_service.py`, строка 7: в каждом запуске теста `setUp()` очищает переменную заново (`subscribers.clear()`).",
+      "tools": [
+        "glob",
+        "glob",
+        "glob",
+        "read",
+        "read",
+        "read"
+      ]
+    }
+  ],
+  "distinct_sessions": 5,
+  "protected_files_unchanged": true,
+  "model64_unchanged": true,
+  "reasoning_events_in_selected_jsonl": false,
+  "tests": "3 tests passed; see local8k-make-test.txt",
+  "q2_extra_example_check": {
+    "input": "  \"",
+    "actual_result": {
+      "subscribed": true
+    },
+    "note": "Whitespace followed by quote is not an empty name."
+  }
+}

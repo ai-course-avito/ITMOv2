@@ -1,0 +1,2 @@
+NAME                       ID              SIZE      PROCESSOR          CONTEXT    UNTIL              
+itmo-agent-local:latest    cbca2d1ed2b2    4.0 GB    21%/79% CPU/GPU    8192       4 minutes from now    

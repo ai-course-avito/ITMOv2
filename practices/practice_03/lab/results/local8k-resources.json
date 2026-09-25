@@ -1,0 +1,23 @@
+{
+  "models": [
+    {
+      "name": "itmo-agent-local:latest",
+      "model": "itmo-agent-local:latest",
+      "size": 3963187359,
+      "digest": "cbca2d1ed2b2f9fc3204a3cd5605c4dc40e1aa85d9367176223b7eefdb1d00db",
+      "details": {
+        "parent_model": "",
+        "format": "gguf",
+        "family": "qwen35",
+        "families": [
+          "qwen35"
+        ],
+        "parameter_size": "4.7B",
+        "quantization_level": "Q4_K_M"
+      },
+      "expires_at": "2026-09-25T17:11:34.588838+03:00",
+      "size_vram": 3118035105,
+      "context_length": 8192
+    }
+  ]
+}

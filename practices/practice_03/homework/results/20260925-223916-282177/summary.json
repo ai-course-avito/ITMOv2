@@ -1,0 +1,580 @@
+{
+  "runs": [
+    {
+      "stem": "warmup-A",
+      "variant": "A",
+      "question": "Какой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nКакой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "wall_seconds": 34.85713779100115,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25eba37affeKINSRo1EK8A917"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "warmup-B",
+      "variant": "B",
+      "question": "Какой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nКакой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "wall_seconds": 38.91991387499729,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25eb1c6fffegy7o2wQHhgtyHV"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "A-question1",
+      "variant": "A",
+      "question": "Какой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nКакой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "wall_seconds": 40.369592957998975,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25ea8386fferUGIOS6xg2EKgL"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "B-question1",
+      "variant": "B",
+      "question": "Какой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nКакой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "wall_seconds": 54.907603332998406,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e9e4d9ffe7uLNudlr7NJ0ID"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "B-question2",
+      "variant": "B",
+      "question": "Что произойдёт внутри показанного обработчика create_review, если передать пустой словарь payload? Отдели поведение Python-кода от неизвестных настроек HTTP-обработки ошибок.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nЧто произойдёт внутри показанного обработчика create_review, если передать пустой словарь payload? Отдели поведение Python-кода от неизвестных настроек HTTP-обработки ошибок.",
+      "wall_seconds": 48.998419208000996,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e90f61ffeA0xPJBCDNs96Gn"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "A-question2",
+      "variant": "A",
+      "question": "Что произойдёт внутри показанного обработчика create_review, если передать пустой словарь payload? Отдели поведение Python-кода от неизвестных настроек HTTP-обработки ошибок.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nЧто произойдёт внутри показанного обработчика create_review, если передать пустой словарь payload? Отдели поведение Python-кода от неизвестных настроек HTTP-обработки ошибок.",
+      "wall_seconds": 53.5400648750001,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e84fd3ffelTDxMP08J9FYDC"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "A-question3",
+      "variant": "A",
+      "question": "Удаляет ли показанный код секреты из diff перед вызовом LLM? Сопоставь реализацию с требованиями проекта и укажи доказательства.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nУдаляет ли показанный код секреты из diff перед вызовом LLM? Сопоставь реализацию с требованиями проекта и укажи доказательства.",
+      "wall_seconds": 59.046021457997995,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e77e87ffe5CB0w4ysj5UFnf"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "B-question3",
+      "variant": "B",
+      "question": "Удаляет ли показанный код секреты из diff перед вызовом LLM? Сопоставь реализацию с требованиями проекта и укажи доказательства.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nУдаляет ли показанный код секреты из diff перед вызовом LLM? Сопоставь реализацию с требованиями проекта и укажи доказательства.",
+      "wall_seconds": 50.70936058299776,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e69694ffeRwRKjRXfaPpr7C"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "B-question4",
+      "variant": "B",
+      "question": "Где реализовано автоматическое слияние pull request после положительного ревью? Проверь предпосылку вопроса по доступным материалам.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nГде реализовано автоматическое слияние pull request после положительного ревью? Проверь предпосылку вопроса по доступным материалам.",
+      "wall_seconds": 37.557330208001076,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e5d021ffe4jXjEO78TsRxTL"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "A-question4",
+      "variant": "A",
+      "question": "Где реализовано автоматическое слияние pull request после положительного ревью? Проверь предпосылку вопроса по доступным материалам.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nГде реализовано автоматическое слияние pull request после положительного ревью? Проверь предпосылку вопроса по доступным материалам.",
+      "wall_seconds": 45.29135920800036,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e53f15ffeX4nXF9M18weMIt"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "A-question5",
+      "variant": "A",
+      "question": "Какая конкретная модель LLM и её версия развёрнуты в production этого сервиса? Если сведений недостаточно, скажи об этом.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nКакая конкретная модель LLM и её версия развёрнуты в production этого сервиса? Если сведений недостаточно, скажи об этом.",
+      "wall_seconds": 34.66501329099992,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e48d61ffeuApEEBHfO7O4pY"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "B-question5",
+      "variant": "B",
+      "question": "Какая конкретная модель LLM и её версия развёрнуты в production этого сервиса? Если сведений недостаточно, скажи об этом.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nКакая конкретная модель LLM и её версия развёрнуты в production этого сервиса? Если сведений недостаточно, скажи об этом.",
+      "wall_seconds": 42.60608291700191,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e40464ffeuq4g1G9iu4P52m"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "benchmark-A-1",
+      "variant": "A",
+      "question": "Какой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nКакой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "wall_seconds": 56.95286683299855,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e35faaffe4zG6ulqwhY2BjV"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "benchmark-B-1",
+      "variant": "B",
+      "question": "Какой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nКакой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "wall_seconds": 50.48744966600134,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e28021ffeF01hLhejG3stqG"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "benchmark-B-2",
+      "variant": "B",
+      "question": "Какой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nКакой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "wall_seconds": 51.987830334001046,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e1b843ffeyOHH549Jv0cAmL"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "benchmark-A-2",
+      "variant": "A",
+      "question": "Какой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nКакой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "wall_seconds": 51.134041708999575,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e0ef7fffeWT6x0oQw2crXMS"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "benchmark-A-3",
+      "variant": "A",
+      "question": "Какой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nКакой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "wall_seconds": 52.41636308399757,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25e025eaffeSvsEIXFS7MjRQY"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    },
+    {
+      "stem": "benchmark-B-3",
+      "variant": "B",
+      "question": "Какой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "user_prompt": "Доступные материалы проекта в текущем каталоге: CASE.md и TRAINING_PR.diff.\n\nКакой HTTP endpoint для ревью добавляет представленный diff и какую структуру результата возвращает ReviewService.review? Укажи источники.",
+      "wall_seconds": 62.21814174999963,
+      "exit_code": 0,
+      "timed_out": false,
+      "invalid_lines": 0,
+      "sessionIDs": [
+        "ses_f25df5a58ffes0aQX5DJaXmO4U"
+      ],
+      "duplicate_session": false,
+      "has_final_text": true,
+      "completed_reads": [
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/CASE.md",
+        "/private/var/folders/40/rm2p0r3550977n956dhh18t00000gn/T/itmo-hw03-_gaabgtf/TRAINING_PR.diff"
+      ],
+      "isolation_violations": [],
+      "request_parameters_verified": true,
+      "tools": [
+        {
+          "tool": "read",
+          "status": "completed"
+        },
+        {
+          "tool": "read",
+          "status": "completed"
+        }
+      ],
+      "valid_execution": true
+    }
+  ],
+  "median_agent_wall_seconds_question1": {
+    "A": 52.41636308399757,
+    "B": 51.987830334001046
+  },
+  "assessment": "Execution checks are not factual grading. Review final answers against GOLD.md."
+}

@@ -1,0 +1,23 @@
+{
+  "model": "ollama/itmo-agent-local",
+  "small_model": "ollama/itmo-agent-local",
+  "enabled_providers": [
+    "ollama"
+  ],
+  "share": "disabled",
+  "autoupdate": false,
+  "snapshot": false,
+  "provider": {
+    "ollama": {
+      "models": {
+        "itmo-agent-local": {
+          "name": "ITMO local 8k",
+          "limit": {
+            "context": 8192,
+            "output": 4096
+          }
+        }
+      }
+    }
+  }
+}

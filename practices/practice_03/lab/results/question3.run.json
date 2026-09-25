@@ -1,0 +1,6 @@
+{
+  "question": "Где реализован unsubscribe? Проверь предпосылку вопроса.",
+  "exit_code": 0,
+  "wall_seconds": 37.7,
+  "model": "ollama/itmo-agent-local"
+}

@@ -1,0 +1,6 @@
+{
+  "model": "ollama/itmo-agent-local",
+  "status": "interrupted",
+  "reason": "No final answer after several minutes; retry uses explicit session title",
+  "sessionID": "ses_f272409a6ffeX3LBJ5SHDHV5td"
+}

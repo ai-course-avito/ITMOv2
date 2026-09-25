@@ -1,0 +1,17 @@
+{
+  "repository": "https://github.com/bronY9/ITMOv2",
+  "revision": "66915c2",
+  "scope": "Учебный case из практик 1–2; код представлен diff, не полным приложением",
+  "files": [
+    {
+      "source": "/Users/vasilijpanfilov/Soft_eng_2026/AI/ITMOv2/practices/practice_01/TRAINING_PR.diff",
+      "snapshot": "corpus/TRAINING_PR.diff",
+      "sha256": "a2e7b12c6df3769a548681fe63031a4bcd30e94b787d4ad04d89b87964bf0872"
+    },
+    {
+      "source": "/Users/vasilijpanfilov/Soft_eng_2026/AI/ITMOv2/practices/practice_01/CASE.md",
+      "snapshot": "corpus/CASE.md",
+      "sha256": "61f0494b0eef07dcd09ed38720c0c61a102d218b62945e9c6af68668f9e5045a"
+    }
+  ]
+}

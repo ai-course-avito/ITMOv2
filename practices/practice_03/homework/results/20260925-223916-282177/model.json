@@ -1,0 +1,19 @@
+{
+  "details": {
+    "parent_model": "qwen3.5:4b",
+    "format": "gguf",
+    "family": "qwen35",
+    "families": [
+      "qwen35"
+    ],
+    "parameter_size": "4.7B",
+    "quantization_level": "Q4_K_M"
+  },
+  "parameters": "top_p                          0.95\nnum_ctx                        8192\npresence_penalty               1.5\ntemperature                    0.2\ntop_k                          20",
+  "capabilities": [
+    "completion",
+    "vision",
+    "tools",
+    "thinking"
+  ]
+}

@@ -1,0 +1,258 @@
+{
+  "info": {
+    "id": "ses_f284c6fe9fferD9QF6qvbP5Jx0",
+    "slug": "eager-otter",
+    "projectID": "b10c6a63d7f324d7427fb14c358488d47a974d06",
+    "directory": "/Users/vasilijpanfilov/Soft_eng_2026/AI/ITMOv2/practices/practice_03/lab/demo",
+    "path": "practices/practice_03/lab/demo",
+    "title": "New session - 2026-09-25T08:34:24.406Z",
+    "agent": "local-guide",
+    "model": {
+      "id": "itmo-agent",
+      "providerID": "ollama",
+      "variant": "default"
+    },
+    "version": "1.18.30",
+    "summary": {
+      "additions": 0,
+      "deletions": 0,
+      "files": 0
+    },
+    "cost": 0,
+    "tokens": {
+      "input": 1658,
+      "output": 190,
+      "reasoning": 0,
+      "cache": {
+        "read": 1416,
+        "write": 0
+      }
+    },
+    "permission": [
+      {
+        "permission": "question",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_enter",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "plan_exit",
+        "pattern": "*",
+        "action": "deny"
+      }
+    ],
+    "time": {
+      "created": 1790325264406,
+      "updated": 1790325948207
+    }
+  },
+  "messages": [
+    {
+      "info": {
+        "role": "user",
+        "time": {
+          "created": 1790325264434
+        },
+        "agent": "local-guide",
+        "model": {
+          "providerID": "ollama",
+          "modelID": "itmo-agent"
+        },
+        "summary": {
+          "diffs": []
+        },
+        "id": "msg_0d7b39032001GRa30mhfD06K06",
+        "sessionID": "ses_f284c6fe9fferD9QF6qvbP5Jx0"
+      },
+      "parts": [
+        {
+          "type": "text",
+          "text": "\"Прочитай README.md инструментом read. Назови команду тестирования со ссылкой на файл\"",
+          "id": "prt_0d7b39036001Bk2ZN3lmQbzuyb",
+          "sessionID": "ses_f284c6fe9fferD9QF6qvbP5Jx0",
+          "messageID": "msg_0d7b39032001GRa30mhfD06K06"
+        }
+      ]
+    },
+    {
+      "info": {
+        "parentID": "msg_0d7b39032001GRa30mhfD06K06",
+        "role": "assistant",
+        "mode": "local-guide",
+        "agent": "local-guide",
+        "path": {
+          "cwd": "/Users/vasilijpanfilov/Soft_eng_2026/AI/ITMOv2/practices/practice_03/lab/demo",
+          "root": "/Users/vasilijpanfilov/Soft_eng_2026/AI/ITMOv2"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 1554,
+          "input": 1420,
+          "output": 134,
+          "reasoning": 0,
+          "cache": {
+            "write": 0,
+            "read": 0
+          }
+        },
+        "modelID": "itmo-agent",
+        "providerID": "ollama",
+        "time": {
+          "created": 1790325264656,
+          "completed": 1790325938474
+        },
+        "finish": "tool-calls",
+        "id": "msg_0d7b39110001jTH7z7fSYDClmH",
+        "sessionID": "ses_f284c6fe9fferD9QF6qvbP5Jx0"
+      },
+      "parts": [
+        {
+          "snapshot": "1e33922025181dcfdf931c8bb922760f15dd1ed6",
+          "type": "step-start",
+          "id": "prt_0d7bd9791001fRHTUXBpTmh3EJ",
+          "sessionID": "ses_f284c6fe9fferD9QF6qvbP5Jx0",
+          "messageID": "msg_0d7b39110001jTH7z7fSYDClmH"
+        },
+        {
+          "type": "reasoning",
+          "text": "Требования к ответу:\n1. Использовать инструмент read для чтения файла\n2. Выделить информацию о команде тестирования из прочитанного файла\n3. Привести ссылку на конкретную строку/файл\n\nНачну с чтения файла README.md в указанный директории демо-репозитория.",
+          "time": {
+            "start": 1790325922007,
+            "end": 1790325937474
+          },
+          "id": "prt_0d7bd98d7001c61QTHjeLx8YVm",
+          "sessionID": "ses_f284c6fe9fferD9QF6qvbP5Jx0",
+          "messageID": "msg_0d7b39110001jTH7z7fSYDClmH"
+        },
+        {
+          "type": "tool",
+          "tool": "read",
+          "callID": "call_42nu1ki3",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/Users/vasilijpanfilov/Soft_eng_2026/AI/ITMOv2/practices/practice_03/lab/demo/README.md"
+            },
+            "output": "<path>/Users/vasilijpanfilov/Soft_eng_2026/AI/ITMOv2/practices/practice_03/lab/demo/README.md</path>\n<type>file</type>\n<content>\n1: # Notify Mini\n2: Учебный сервис подписки. Подписчики хранятся в памяти процесса.\n3: В service.py функция subscribe добавляет непустое имя в множество.\n4: Повторное добавление имени не создаёт дубликат.\n5: \n6: Проверка: make test.\n7: Зависимости: стандартная библиотека Python 3.10+.\n8: \n\n(End of file - total 8 lines)\n</content>",
+            "metadata": {
+              "preview": "# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n",
+              "truncated": false,
+              "loaded": [],
+              "display": {
+                "type": "file",
+                "path": "/Users/vasilijpanfilov/Soft_eng_2026/AI/ITMOv2/practices/practice_03/lab/demo/README.md",
+                "text": "# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n",
+                "lineStart": 1,
+                "lineEnd": 8,
+                "totalLines": 8,
+                "truncated": false
+              }
+            },
+            "title": "practices/practice_03/lab/demo/README.md",
+            "time": {
+              "start": 1790325937552,
+              "end": 1790325937781
+            }
+          },
+          "id": "prt_0d7bdd560001Kf2FcJoBkvkrMG",
+          "sessionID": "ses_f284c6fe9fferD9QF6qvbP5Jx0",
+          "messageID": "msg_0d7b39110001jTH7z7fSYDClmH"
+        },
+        {
+          "reason": "tool-calls",
+          "snapshot": "1e33922025181dcfdf931c8bb922760f15dd1ed6",
+          "type": "step-finish",
+          "tokens": {
+            "total": 1554,
+            "input": 1420,
+            "output": 134,
+            "reasoning": 0,
+            "cache": {
+              "write": 0,
+              "read": 0
+            }
+          },
+          "cost": 0,
+          "id": "prt_0d7bdd8ec001Lv3AgLGTbo4egK",
+          "sessionID": "ses_f284c6fe9fferD9QF6qvbP5Jx0",
+          "messageID": "msg_0d7b39110001jTH7z7fSYDClmH"
+        }
+      ]
+    },
+    {
+      "info": {
+        "parentID": "msg_0d7b39032001GRa30mhfD06K06",
+        "role": "assistant",
+        "mode": "local-guide",
+        "agent": "local-guide",
+        "path": {
+          "cwd": "/Users/vasilijpanfilov/Soft_eng_2026/AI/ITMOv2/practices/practice_03/lab/demo",
+          "root": "/Users/vasilijpanfilov/Soft_eng_2026/AI/ITMOv2"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 1710,
+          "input": 238,
+          "output": 56,
+          "reasoning": 0,
+          "cache": {
+            "write": 0,
+            "read": 1416
+          }
+        },
+        "modelID": "itmo-agent",
+        "providerID": "ollama",
+        "time": {
+          "created": 1790325938497,
+          "completed": 1790325948185
+        },
+        "finish": "stop",
+        "id": "msg_0d7bdd941001kyWkgC9MtPmYd8",
+        "sessionID": "ses_f284c6fe9fferD9QF6qvbP5Jx0"
+      },
+      "parts": [
+        {
+          "snapshot": "1e33922025181dcfdf931c8bb922760f15dd1ed6",
+          "type": "step-start",
+          "id": "prt_0d7bdebae001tYDTHPN2Y9bY4q",
+          "sessionID": "ses_f284c6fe9fferD9QF6qvbP5Jx0",
+          "messageID": "msg_0d7bdd941001kyWkgC9MtPmYd8"
+        },
+        {
+          "type": "reasoning",
+          "text": "Файл прочитан. Команда: `make test`. Файл: `/Users/vasilijpanfilov/Soft_eng_2026/AI/ITMOv2/practices/practice_03/lab/demo/README.md`.",
+          "time": {
+            "start": 1790325943245,
+            "end": 1790325948043
+          },
+          "id": "prt_0d7bdebcd001k3kcUmx9VcQEGt",
+          "sessionID": "ses_f284c6fe9fferD9QF6qvbP5Jx0",
+          "messageID": "msg_0d7bdd941001kyWkgC9MtPmYd8"
+        },
+        {
+          "reason": "stop",
+          "snapshot": "1e33922025181dcfdf931c8bb922760f15dd1ed6",
+          "type": "step-finish",
+          "tokens": {
+            "total": 1710,
+            "input": 238,
+            "output": 56,
+            "reasoning": 0,
+            "cache": {
+              "write": 0,
+              "read": 1416
+            }
+          },
+          "cost": 0,
+          "id": "prt_0d7bdfee80019x0QJ7CyAeml31",
+          "sessionID": "ses_f284c6fe9fferD9QF6qvbP5Jx0",
+          "messageID": "msg_0d7bdd941001kyWkgC9MtPmYd8"
+        }
+      ]
+    }
+  ]
+}

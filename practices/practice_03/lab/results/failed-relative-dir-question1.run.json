@@ -1,0 +1,6 @@
+{
+  "question": "Как запустить тесты? Укажи файл-источник.",
+  "exit_code": 1,
+  "wall_seconds": 0.55,
+  "model": "ollama/itmo-agent-local"
+}

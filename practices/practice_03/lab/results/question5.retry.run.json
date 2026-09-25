@@ -1,0 +1,6 @@
+{
+  "question": "Сохраняются ли подписки после перезапуска процесса? Подтверди кодом.",
+  "exit_code": 0,
+  "wall_seconds": 41.02,
+  "model": "ollama/itmo-agent-local"
+}

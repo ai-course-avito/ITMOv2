@@ -1,0 +1,6 @@
+{
+  "question": "Что будет при пустом имени подписчика? Подтверди кодом.",
+  "exit_code": 0,
+  "wall_seconds": 101.87,
+  "model": "ollama/itmo-agent-local"
+}

@@ -1,0 +1,11 @@
+Standard library only: ready
+/Library/Developer/CommandLineTools/usr/bin/make -C demo test
+python3 -m unittest -v
+test_duplicate (test_service.SubscribeTest.test_duplicate) ... ok
+test_empty (test_service.SubscribeTest.test_empty) ... ok
+test_subscribe (test_service.SubscribeTest.test_subscribe) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+OK
