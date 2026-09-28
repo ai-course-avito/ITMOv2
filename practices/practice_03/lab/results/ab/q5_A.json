@@ -1,0 +1,125 @@
+[
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Сохраняются ли подписки после перезапуска процесса? Подтверди кодом.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 42,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:42:12.8431318Z",
+      "message": {
+        "role": "assistant",
+        "content": "В предоставленных материалах нет ответа.\n\nОснование: Файлы `service.py` и `test_service.py` показывают, что подписчики хранятся в памяти процесса, но не упоминается, как происходит сохранение данных после перезапуска процесса."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 10833906500,
+      "load_duration": 25066200,
+      "prompt_eval_count": 363,
+      "prompt_eval_cached_count": 362,
+      "prompt_eval_duration": 194948000,
+      "eval_count": 66,
+      "eval_duration": 10590855000
+    },
+    "wall_seconds": 10.844552199996542,
+    "load_seconds": 0.0250662,
+    "total_seconds": 10.8339065,
+    "decode_tokens_per_second": 6.231791484256937,
+    "text": "В предоставленных материалах нет ответа.\n\nОснование: Файлы `service.py` и `test_service.py` показывают, что подписчики хранятся в памяти процесса, но не упоминается, как происходит сохранение данных после перезапуска процесса."
+  },
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Сохраняются ли подписки после перезапуска процесса? Подтверди кодом.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 43,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:42:23.205139Z",
+      "message": {
+        "role": "assistant",
+        "content": "В предоставленных материалах нет ответа.\n\nОснование: Файлы `service.py` и `test_service.py` показывают, что подписчики хранятся в памяти процесса, но не упоминается, что будет с данными при перезапуске процесса."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 10346685100,
+      "load_duration": 20338000,
+      "prompt_eval_count": 363,
+      "prompt_eval_cached_count": 362,
+      "prompt_eval_duration": 149703000,
+      "eval_count": 66,
+      "eval_duration": 10159787000
+    },
+    "wall_seconds": 10.357083699986106,
+    "load_seconds": 0.020338,
+    "total_seconds": 10.3466851,
+    "decode_tokens_per_second": 6.496199182128523,
+    "text": "В предоставленных материалах нет ответа.\n\nОснование: Файлы `service.py` и `test_service.py` показывают, что подписчики хранятся в памяти процесса, но не упоминается, что будет с данными при перезапуске процесса."
+  },
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Сохраняются ли подписки после перезапуска процесса? Подтверди кодом.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 44,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:42:39.9652574Z",
+      "message": {
+        "role": "assistant",
+        "content": "В предоставленных материалах нет ответа.\n\nОснование: Файлы `service.py` и `test_service.py` показывают, что подписчики хранятся в памяти процесса, но не упоминается, что будет с данными при перезапуске процесса. Для проверки этого нужно было бы добавить соответствующий тест или изменить существующий, чтобы проверить поведение после перезапуска."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 16747230200,
+      "load_duration": 20521200,
+      "prompt_eval_count": 363,
+      "prompt_eval_cached_count": 362,
+      "prompt_eval_duration": 132348000,
+      "eval_count": 99,
+      "eval_duration": 16576641000
+    },
+    "wall_seconds": 16.75660210000933,
+    "load_seconds": 0.0205212,
+    "total_seconds": 16.7472302,
+    "decode_tokens_per_second": 5.972259398028829,
+    "text": "В предоставленных материалах нет ответа.\n\nОснование: Файлы `service.py` и `test_service.py` показывают, что подписчики хранятся в памяти процесса, но не упоминается, что будет с данными при перезапуске процесса. Для проверки этого нужно было бы добавить соответствующий тест или изменить существующий, чтобы проверить поведение после перезапуска."
+  }
+]

@@ -1,0 +1,137 @@
+[
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Ты помощник по учебному проекту. Используй только переданный контекст.\nНе выдумывай CI, зависимости, функции или настройки.\nЕсли данных нет, напиши «В предоставленных материалах нет ответа».\nФормат: короткий ответ, затем основание из контекста.\n\n"
+        },
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Какая CI-система запускает тесты? Если сведений нет, скажи об этом.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 42,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:41:23.2216329Z",
+      "message": {
+        "role": "assistant",
+        "content": "В предоставленных материалах нет ответа\n\nОснование из контекста: В файлах нет упоминания о CI-системе или процессе автоматического тестирования. Система тестирования определена в файле `demo/README.md`, где указано, что тесты запускаются командой `make test`, но это не указывает на конкретную CI-систему."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 16204936400,
+      "load_duration": 21012300,
+      "prompt_eval_count": 380,
+      "prompt_eval_cached_count": 379,
+      "prompt_eval_duration": 140451000,
+      "eval_count": 87,
+      "eval_duration": 16021903000
+    },
+    "wall_seconds": 16.215916899993317,
+    "load_seconds": 0.0210123,
+    "total_seconds": 16.2049364,
+    "decode_tokens_per_second": 5.43006657823356,
+    "text": "В предоставленных материалах нет ответа\n\nОснование из контекста: В файлах нет упоминания о CI-системе или процессе автоматического тестирования. Система тестирования определена в файле `demo/README.md`, где указано, что тесты запускаются командой `make test`, но это не указывает на конкретную CI-систему."
+  },
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Ты помощник по учебному проекту. Используй только переданный контекст.\nНе выдумывай CI, зависимости, функции или настройки.\nЕсли данных нет, напиши «В предоставленных материалах нет ответа».\nФормат: короткий ответ, затем основание из контекста.\n\n"
+        },
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Какая CI-система запускает тесты? Если сведений нет, скажи об этом.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 43,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:41:36.5558192Z",
+      "message": {
+        "role": "assistant",
+        "content": "В предоставленных материалах нет ответа\n\nОснование из контекста: В файлах нет упоминания о какой-либо CI-системе. Тесты запускаются командой `make test`, но это не указывает на использование какой-либо конкретной системы непрерывной интеграции."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 13308874100,
+      "load_duration": 29200200,
+      "prompt_eval_count": 380,
+      "prompt_eval_cached_count": 379,
+      "prompt_eval_duration": 213461000,
+      "eval_count": 74,
+      "eval_duration": 13028291000
+    },
+    "wall_seconds": 13.323517099983292,
+    "load_seconds": 0.0292002,
+    "total_seconds": 13.3088741,
+    "decode_tokens_per_second": 5.679946817276341,
+    "text": "В предоставленных материалах нет ответа\n\nОснование из контекста: В файлах нет упоминания о какой-либо CI-системе. Тесты запускаются командой `make test`, но это не указывает на использование какой-либо конкретной системы непрерывной интеграции."
+  },
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Ты помощник по учебному проекту. Используй только переданный контекст.\nНе выдумывай CI, зависимости, функции или настройки.\nЕсли данных нет, напиши «В предоставленных материалах нет ответа».\nФормат: короткий ответ, затем основание из контекста.\n\n"
+        },
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Какая CI-система запускает тесты? Если сведений нет, скажи об этом.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 44,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:41:46.8390753Z",
+      "message": {
+        "role": "assistant",
+        "content": "В предоставленных материалах нет ответа\n\nОснование из контекста: В файлах нет упоминания о какой-либо CI-системе. Система тестирования определена через команду `make test`, но это не CI, а просто способ запуска тестов."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 10265221100,
+      "load_duration": 18981700,
+      "prompt_eval_count": 380,
+      "prompt_eval_cached_count": 379,
+      "prompt_eval_duration": 123631000,
+      "eval_count": 65,
+      "eval_duration": 10107563000
+    },
+    "wall_seconds": 10.2752667000168,
+    "load_seconds": 0.0189817,
+    "total_seconds": 10.2652211,
+    "decode_tokens_per_second": 6.430828083881346,
+    "text": "В предоставленных материалах нет ответа\n\nОснование из контекста: В файлах нет упоминания о какой-либо CI-системе. Система тестирования определена через команду `make test`, но это не CI, а просто способ запуска тестов."
+  }
+]

@@ -1,0 +1,125 @@
+[
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Что будет при пустом имени подписчика? Подтверди кодом.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 42,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:36:57.9893127Z",
+      "message": {
+        "role": "assistant",
+        "content": "При пустом имени подписчика будет вызван ValueError. Это подтверждается кодом в файле `service.py`, где функция `subscribe` проверяет, что имя не пустое, и если это так, добавляет его в множество `subscribers`. Если имя пустое или содержит только пробелы, функция выбрасывает исключение ValueError.\n\nТест `test_empty` в файле `test_service.py` также подтверждает это поведение, проверяя, что вызов `subscribe(\" \")` вызывает исключение ValueError."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 22591906400,
+      "load_duration": 15127900,
+      "prompt_eval_count": 358,
+      "prompt_eval_cached_count": 357,
+      "prompt_eval_duration": 145491000,
+      "eval_count": 120,
+      "eval_duration": 22415550000
+    },
+    "wall_seconds": 22.61710810000659,
+    "load_seconds": 0.0151279,
+    "total_seconds": 22.5919064,
+    "decode_tokens_per_second": 5.353426527566801,
+    "text": "При пустом имени подписчика будет вызван ValueError. Это подтверждается кодом в файле `service.py`, где функция `subscribe` проверяет, что имя не пустое, и если это так, добавляет его в множество `subscribers`. Если имя пустое или содержит только пробелы, функция выбрасывает исключение ValueError.\n\nТест `test_empty` в файле `test_service.py` также подтверждает это поведение, проверяя, что вызов `subscribe(\" \")` вызывает исключение ValueError."
+  },
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Что будет при пустом имени подписчика? Подтверди кодом.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 43,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:37:19.5986227Z",
+      "message": {
+        "role": "assistant",
+        "content": "При пустом имени подписчика будет вызвано исключение ValueError. Это подтверждается кодом в файле `service.py`, где функция `subscribe` проверяет, что имя не пустое, и в противном случае выбрасывает исключение:\n\n```python\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n```\n\nТакже это проверено в тесте `test_empty` в файле `test_service.py`:\n\n```python\ndef test_empty(self):\n    with self.assertRaises(ValueError):\n        subscribe(\" \")\n```"
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 21569733300,
+      "load_duration": 11989000,
+      "prompt_eval_count": 358,
+      "prompt_eval_cached_count": 357,
+      "prompt_eval_duration": 114492000,
+      "eval_count": 135,
+      "eval_duration": 21426760000
+    },
+    "wall_seconds": 21.602714000007836,
+    "load_seconds": 0.011989,
+    "total_seconds": 21.5697333,
+    "decode_tokens_per_second": 6.300532605022878,
+    "text": "При пустом имени подписчика будет вызвано исключение ValueError. Это подтверждается кодом в файле `service.py`, где функция `subscribe` проверяет, что имя не пустое, и в противном случае выбрасывает исключение:\n\n```python\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n```\n\nТакже это проверено в тесте `test_empty` в файле `test_service.py`:\n\n```python\ndef test_empty(self):\n    with self.assertRaises(ValueError):\n        subscribe(\" \")\n```"
+  },
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Что будет при пустом имени подписчика? Подтверди кодом.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 44,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:37:41.4452218Z",
+      "message": {
+        "role": "assistant",
+        "content": "При пустом имени подписчика будет вызвано исключение ValueError. Это подтверждается кодом в файле `service.py`, где функция `subscribe` проверяет, что имя не пустое, и если это так, добавляет его в множество `subscribers`. Если имя пустое, функция выбрасывает исключение ValueError.\n\nТакже это подтверждается тестом `test_empty` в файле `test_service.py`, где проверяется, что вызов `subscribe(\" \")` (т.е. пустая строка) вызывает исключение ValueError."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 21819842200,
+      "load_duration": 21885600,
+      "prompt_eval_count": 358,
+      "prompt_eval_cached_count": 357,
+      "prompt_eval_duration": 171940000,
+      "eval_count": 127,
+      "eval_duration": 21606441000
+    },
+    "wall_seconds": 21.841893299977528,
+    "load_seconds": 0.0218856,
+    "total_seconds": 21.8198422,
+    "decode_tokens_per_second": 5.877876879399064,
+    "text": "При пустом имени подписчика будет вызвано исключение ValueError. Это подтверждается кодом в файле `service.py`, где функция `subscribe` проверяет, что имя не пустое, и если это так, добавляет его в множество `subscribers`. Если имя пустое, функция выбрасывает исключение ValueError.\n\nТакже это подтверждается тестом `test_empty` в файле `test_service.py`, где проверяется, что вызов `subscribe(\" \")` (т.е. пустая строка) вызывает исключение ValueError."
+  }
+]

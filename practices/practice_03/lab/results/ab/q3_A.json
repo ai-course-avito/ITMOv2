@@ -1,0 +1,125 @@
+[
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Где реализован unsubscribe? Проверь предпосылку вопроса.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 42,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:39:02.5484459Z",
+      "message": {
+        "role": "assistant",
+        "content": "В предоставленных материалах нет ответа.\n\nОснование: В файлах `service.py` и `test_service.py` нет реализации функции `unsubscribe`."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 5761074900,
+      "load_duration": 24920400,
+      "prompt_eval_count": 359,
+      "prompt_eval_cached_count": 358,
+      "prompt_eval_duration": 137196000,
+      "eval_count": 35,
+      "eval_duration": 5583537000
+    },
+    "wall_seconds": 5.7878942000097595,
+    "load_seconds": 0.0249204,
+    "total_seconds": 5.7610749,
+    "decode_tokens_per_second": 6.268428059131694,
+    "text": "В предоставленных материалах нет ответа.\n\nОснование: В файлах `service.py` и `test_service.py` нет реализации функции `unsubscribe`."
+  },
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Где реализован unsubscribe? Проверь предпосылку вопроса.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 43,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:39:08.2969603Z",
+      "message": {
+        "role": "assistant",
+        "content": "В предоставленных материалах нет ответа.\n\nОснование: В файлах `service.py` и `test_service.py` нет реализации функции `unsubscribe`."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 5718425600,
+      "load_duration": 25677300,
+      "prompt_eval_count": 359,
+      "prompt_eval_cached_count": 358,
+      "prompt_eval_duration": 152513000,
+      "eval_count": 35,
+      "eval_duration": 5523074000
+    },
+    "wall_seconds": 5.743676000012783,
+    "load_seconds": 0.0256773,
+    "total_seconds": 5.7184256,
+    "decode_tokens_per_second": 6.337050707631294,
+    "text": "В предоставленных материалах нет ответа.\n\nОснование: В файлах `service.py` и `test_service.py` нет реализации функции `unsubscribe`."
+  },
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Где реализован unsubscribe? Проверь предпосылку вопроса.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 44,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:39:14.1039732Z",
+      "message": {
+        "role": "assistant",
+        "content": "В предоставленных материалах нет ответа.\n\nОснование: В файлах `service.py` и `test_service.py` нет реализации функции `unsubscribe`."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 5791711200,
+      "load_duration": 22955700,
+      "prompt_eval_count": 359,
+      "prompt_eval_cached_count": 358,
+      "prompt_eval_duration": 147246000,
+      "eval_count": 35,
+      "eval_duration": 5598561000
+    },
+    "wall_seconds": 5.802326400007587,
+    "load_seconds": 0.0229557,
+    "total_seconds": 5.7917112,
+    "decode_tokens_per_second": 6.251606439583314,
+    "text": "В предоставленных материалах нет ответа.\n\nОснование: В файлах `service.py` и `test_service.py` нет реализации функции `unsubscribe`."
+  }
+]

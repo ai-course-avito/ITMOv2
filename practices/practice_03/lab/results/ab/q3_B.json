@@ -1,0 +1,137 @@
+[
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Ты помощник по учебному проекту. Используй только переданный контекст.\nНе выдумывай CI, зависимости, функции или настройки.\nЕсли данных нет, напиши «В предоставленных материалах нет ответа».\nФормат: короткий ответ, затем основание из контекста.\n\n"
+        },
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Где реализован unsubscribe? Проверь предпосылку вопроса.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 42,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:39:39.7121308Z",
+      "message": {
+        "role": "assistant",
+        "content": "В предоставленных материалах нет ответа\n\nОснование из контекста: В файле `service.py` реализован метод `subscribe`, но нет метода `unsubscribe`. В файле `test_service.py` также нет теста, связанного с отпиской, что подтверждает отсутствие реализации `unsubscribe`."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 11697576700,
+      "load_duration": 16238800,
+      "prompt_eval_count": 373,
+      "prompt_eval_cached_count": 372,
+      "prompt_eval_duration": 126154000,
+      "eval_count": 70,
+      "eval_duration": 11541077000
+    },
+    "wall_seconds": 11.71770799998194,
+    "load_seconds": 0.0162388,
+    "total_seconds": 11.6975767,
+    "decode_tokens_per_second": 6.0652918267506575,
+    "text": "В предоставленных материалах нет ответа\n\nОснование из контекста: В файле `service.py` реализован метод `subscribe`, но нет метода `unsubscribe`. В файле `test_service.py` также нет теста, связанного с отпиской, что подтверждает отсутствие реализации `unsubscribe`."
+  },
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Ты помощник по учебному проекту. Используй только переданный контекст.\nНе выдумывай CI, зависимости, функции или настройки.\nЕсли данных нет, напиши «В предоставленных материалах нет ответа».\nФормат: короткий ответ, затем основание из контекста.\n\n"
+        },
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Где реализован unsubscribe? Проверь предпосылку вопроса.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 43,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:39:50.3065869Z",
+      "message": {
+        "role": "assistant",
+        "content": "В предоставленных материалах нет ответа\n\nОснование из контекста: В файле `service.py` реализован метод `subscribe`, но нет метода `unsubscribe`. В файле `test_service.py` также нет теста, который проверял бы функциональность `unsubscribe`."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 10568826700,
+      "load_duration": 25977600,
+      "prompt_eval_count": 373,
+      "prompt_eval_cached_count": 372,
+      "prompt_eval_duration": 161259000,
+      "eval_count": 63,
+      "eval_duration": 10364030000
+    },
+    "wall_seconds": 10.588356299995212,
+    "load_seconds": 0.0259776,
+    "total_seconds": 10.5688267,
+    "decode_tokens_per_second": 6.078716483838816,
+    "text": "В предоставленных материалах нет ответа\n\nОснование из контекста: В файле `service.py` реализован метод `subscribe`, но нет метода `unsubscribe`. В файле `test_service.py` также нет теста, который проверял бы функциональность `unsubscribe`."
+  },
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Ты помощник по учебному проекту. Используй только переданный контекст.\nНе выдумывай CI, зависимости, функции или настройки.\nЕсли данных нет, напиши «В предоставленных материалах нет ответа».\nФормат: короткий ответ, затем основание из контекста.\n\n"
+        },
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Где реализован unsubscribe? Проверь предпосылку вопроса.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 44,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:40:00.5433985Z",
+      "message": {
+        "role": "assistant",
+        "content": "В предоставленных материалах нет ответа\n\nОснование из контекста: В файле `service.py` реализована функция `subscribe`, которая добавляет имя в множество `subscribers`, но нет функции `unsubscribe`, которая бы удаляла имя из множества."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 10202162300,
+      "load_duration": 9882600,
+      "prompt_eval_count": 373,
+      "prompt_eval_cached_count": 372,
+      "prompt_eval_duration": 144036000,
+      "eval_count": 62,
+      "eval_duration": 10032734000
+    },
+    "wall_seconds": 10.23157179998816,
+    "load_seconds": 0.0098826,
+    "total_seconds": 10.2021623,
+    "decode_tokens_per_second": 6.179771137159622,
+    "text": "В предоставленных материалах нет ответа\n\nОснование из контекста: В файле `service.py` реализована функция `subscribe`, которая добавляет имя в множество `subscribers`, но нет функции `unsubscribe`, которая бы удаляла имя из множества."
+  }
+]

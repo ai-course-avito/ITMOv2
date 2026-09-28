@@ -1,0 +1,137 @@
+[
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Ты помощник по учебному проекту. Используй только переданный контекст.\nНе выдумывай CI, зависимости, функции или настройки.\nЕсли данных нет, напиши «В предоставленных материалах нет ответа».\nФормат: короткий ответ, затем основание из контекста.\n\n"
+        },
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Как запустить тесты? Укажи файл-источник.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 42,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:35:55.8413901Z",
+      "message": {
+        "role": "assistant",
+        "content": "Файл-источник: demo/test_service.py\n\nОснование из контекста: В файле demo/test_service.py есть строка `if __name__ == \"__main__\": unittest.main()`, что указывает на то, что этот файл содержит код для запуска тестов."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 12238880800,
+      "load_duration": 24460400,
+      "prompt_eval_count": 371,
+      "prompt_eval_cached_count": 370,
+      "prompt_eval_duration": 198766000,
+      "eval_count": 62,
+      "eval_duration": 11984255000
+    },
+    "wall_seconds": 12.250210800004425,
+    "load_seconds": 0.0244604,
+    "total_seconds": 12.2388808,
+    "decode_tokens_per_second": 5.173454670315343,
+    "text": "Файл-источник: demo/test_service.py\n\nОснование из контекста: В файле demo/test_service.py есть строка `if __name__ == \"__main__\": unittest.main()`, что указывает на то, что этот файл содержит код для запуска тестов."
+  },
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Ты помощник по учебному проекту. Используй только переданный контекст.\nНе выдумывай CI, зависимости, функции или настройки.\nЕсли данных нет, напиши «В предоставленных материалах нет ответа».\nФормат: короткий ответ, затем основание из контекста.\n\n"
+        },
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Как запустить тесты? Укажи файл-источник.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 43,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:36:06.1353824Z",
+      "message": {
+        "role": "assistant",
+        "content": "Файл-источник: demo/test_service.py\n\nОснование из контекста: В файле demo/test_service.py есть строка `if __name__ == \"__main__\": unittest.main()`, что указывает на то, что этот файл содержит код для запуска тестов."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 10243914700,
+      "load_duration": 10194300,
+      "prompt_eval_count": 371,
+      "prompt_eval_cached_count": 370,
+      "prompt_eval_duration": 150716000,
+      "eval_count": 62,
+      "eval_duration": 10066994000
+    },
+    "wall_seconds": 10.287142999994103,
+    "load_seconds": 0.0101943,
+    "total_seconds": 10.2439147,
+    "decode_tokens_per_second": 6.158740136330667,
+    "text": "Файл-источник: demo/test_service.py\n\nОснование из контекста: В файле demo/test_service.py есть строка `if __name__ == \"__main__\": unittest.main()`, что указывает на то, что этот файл содержит код для запуска тестов."
+  },
+  {
+    "request": {
+      "model": "itmo-local",
+      "messages": [
+        {
+          "role": "system",
+          "content": "Ты помощник по учебному проекту. Используй только переданный контекст.\nНе выдумывай CI, зависимости, функции или настройки.\nЕсли данных нет, напиши «В предоставленных материалах нет ответа».\nФормат: короткий ответ, затем основание из контекста.\n\n"
+        },
+        {
+          "role": "user",
+          "content": "=== demo/README.md ===\n# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\n=== demo/service.py ===\nsubscribers = set()\n\n\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n\n\n=== demo/test_service.py ===\nimport unittest\nfrom service import subscribe, subscribers\n\n\nclass SubscribeTest(unittest.TestCase):\n    def setUp(self):\n        subscribers.clear()\n\n    def test_subscribe(self):\n        self.assertEqual(subscribe(\"Ann\"), {\"subscribed\": True})\n        self.assertEqual(subscribers, {\"Ann\"})\n\n    def test_empty(self):\n        with self.assertRaises(ValueError):\n            subscribe(\" \")\n\n    def test_duplicate(self):\n        subscribe(\"Ann\")\n        subscribe(\"Ann\")\n        self.assertEqual(len(subscribers), 1)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n\n\n\nВопрос: Как запустить тесты? Укажи файл-источник.\nОтвечай по приведённым файлам."
+        }
+      ],
+      "stream": false,
+      "think": false,
+      "options": {
+        "temperature": 0.2,
+        "seed": 44,
+        "num_ctx": 4096,
+        "num_predict": 512
+      }
+    },
+    "response": {
+      "model": "itmo-local",
+      "created_at": "2026-09-28T15:36:18.3136163Z",
+      "message": {
+        "role": "assistant",
+        "content": "Файл-источник: demo/test_service.py\n\nОснование из контекста: В файле README.md указано, что проверка осуществляется командой `make test`, но для ответа на вопрос о том, как запустить тесты, достаточно указать файл-источник, который содержит тесты, а именно `demo/test_service.py`."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 12136424500,
+      "load_duration": 8842800,
+      "prompt_eval_count": 371,
+      "prompt_eval_cached_count": 370,
+      "prompt_eval_duration": 118968000,
+      "eval_count": 77,
+      "eval_duration": 11994036000
+    },
+    "wall_seconds": 12.172330500005046,
+    "load_seconds": 0.0088428,
+    "total_seconds": 12.1364245,
+    "decode_tokens_per_second": 6.419857335762541,
+    "text": "Файл-источник: demo/test_service.py\n\nОснование из контекста: В файле README.md указано, что проверка осуществляется командой `make test`, но для ответа на вопрос о том, как запустить тесты, достаточно указать файл-источник, который содержит тесты, а именно `demo/test_service.py`."
+  }
+]
