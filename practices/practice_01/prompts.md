@@ -9,6 +9,7 @@ OpenCode записывает выполненные запросы, кратк�
 | P1-01 | Baseline-ревью `TRAINING_PR.diff` |  | zero-shot | См. Raw Prompt P1-01 ниже | [P1-01.md](./P1-01.md) (сохранено как новый файл без запроса) |  |  |  |
 | P1-02 | Повторное ревью `TRAINING_PR.diff` | openai/gpt-5 | master prompt | См. Master Prompt v1 ниже | См. Раздел «Результат P1-02» ниже | 3 риска по FastAPI/OWASP правилам | Ничего | Воспроизводимые проверки указаны для каждого риска |
 | P1-03 | Ревью по правилам SEC/API/REL/OUT | openai/gpt-5 | rules prompt | См. Raw Prompt P1-03 ниже | См. Раздел «Результат P1-03» ниже | Summary + ≤3 риска + checks | Ничего | Проверки приведены для каждого риска |
+| P1-03-ART | Снимок problem.md и доказ-ва ненадёжности | openai/gpt-5 | artifact QA | См. задание в чате | См. разделы ниже: snapshot и proof | Противоречие API-1, фазовая несогласованность, пробелы метрик | Ничего | file:line ссылки по всем артефактам |
 
 ### Raw Prompt (verbatim) for P1-01
 
