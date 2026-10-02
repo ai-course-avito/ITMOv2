@@ -2,15 +2,15 @@
 
 Файл ведёт OpenCode по вашим запросам. Агент записывает фактические результаты экспериментов и вносит изменения в связанные файлы. Свою оценку сообщайте ему в чате; вручную заполнять шаблон не нужно.
 
-- Выбранный слабый артефакт Практики 1:
-- Что в нём нужно улучшить:
-- Как поймём, что изменение полезно:
+- Выбранный слабый артефакт Практики 1: [`analysis.md`](../practice_01/analysis.md).
+- Что в нём нужно улучшить: сделать границы участников и неизвестные контракты явными, добавить трассировку утверждений и убрать предположения из целевого процесса.
+- Как поймём, что изменение полезно: другой инженер сможет восстановить процесс и вывести проверки без устных пояснений; каждое целевое требование связано с Context Pack, а факт текущего поведения — с diff.
 
 | Техника | Файл эксперимента | Изменённый файл Практики 1 | Конкретное изменение | Проверка | Что отклонили |
 |---|---|---|---|---|---|
-| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) |  |  |  |  |
-| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) |  |  |  |  |
-| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) |  |  |  |  |
-| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) |  |  |  |  |
-| RAG | [`rag/experiment.md`](rag/experiment.md) |  |  |  |  |
-| ReAct | [`react/experiment.md`](react/experiment.md) |  |  |  |  |
+| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) | [`analysis.md`](../practice_01/analysis.md), AS IS и «Разница» | Текущий процесс дополнен точками задержки, потери структуры и воспроизводимыми проверками | Шаги сверены со строками diff, целевые проверки — с Context Pack | Неподтверждённые метрики ускорения, автоматический merge и конкретный статус ошибки LLM |
+| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) | [`analysis.md`](../practice_01/analysis.md), «Участники и границы ответственности» | Разделены бизнес-актор и технические компоненты; неизвестные владельцы проверок отмечены явно | AS IS сверено с diff, TO BE — с Context Pack | Отдельный `ValidationService`, роль API-клиента как пользователя и выдуманная схема ошибки |
+| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) | [`analysis.md`](../practice_01/analysis.md), TO BE и «Разница» | Неподтверждённые способы обработки невалидного ответа и события логирования заменены на явно неизвестные | Четыре вопроса проверены по `REL-1`, `OUT-1`, `QA-1`, `OBS-1` | Общая error-ветка для всех ошибок, обязательный лог каждого исхода и конкретное отклонение четвёртого риска |
+| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) | [`analysis.md`](../practice_01/analysis.md), AS IS, TO BE и «Разница» | Из трёх способов описания одной проблемы выбран вариант, сохраняющий неизвестный контракт поля `diff` явным | Варианты оценены по четырём критериям; текущее поведение выведено из `app/api.py:8–10` | Выдуманный HTTP-контракт и удаление проблемы из целевой схемы |
+| RAG | [`rag/experiment.md`](rag/experiment.md) | [`analysis.md`](../practice_01/analysis.md), «Карта источников» | Добавлена трассировка AS IS, TO BE и неизвестных контрактов | Проверены пути, строки diff и идентификаторы Context Pack | Нерелевантные правила и конкретные ответы, отсутствующие в источниках |
+| ReAct | [`react/experiment.md`](react/experiment.md) | [`analysis.md`](../practice_01/analysis.md), Mermaid-схема TO BE | Ограничение `OBS-1` отделено от неподтверждённых событий логирования | Схема сверена с Context Pack и отсутствием логирования в diff | Обязательное логирование всех ветвей и полное удаление ограничения `OBS-1` |
