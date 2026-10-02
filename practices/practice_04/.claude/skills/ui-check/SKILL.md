@@ -4,7 +4,7 @@ description: Use for implementing or reviewing Olympiad Start UI changes. Follow
 ---
 
 # Procedure
-1. Read `requirements.md`, `AGENTS.md` and the current `index.html` / `styles.css`.
+1. Read `docs/requirements.md`, `AGENTS.md` and the current `index.html` / `styles.css`.
 2. Restate observable acceptance criteria for the requested feature: exact sections, counts, names, prices, CTA texts and anchors.
 3. Before implementation, create or identify a check that fails when the requested behavior is missing (a Playwright scenario or a `browser_evaluate` assertion).
 4. Make the smallest coherent implementation. Vanilla HTML/CSS/JS only. Do not add a framework, library or npm package.

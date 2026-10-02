@@ -2,14 +2,14 @@
 
 ## Project
 Olympiad Start: a fictional one-page landing for a math olympiad training camp for kids.
-`requirements.md` is the source of truth for what to build. Read it before any change.
-If this file and `requirements.md` disagree, follow `requirements.md` and point out the conflict.
+`docs/requirements.md` is the source of truth for what to build. Read it before any change.
+If this file and `docs/requirements.md` disagree, follow `docs/requirements.md` and point out the conflict.
 
 ## Files
 - `index.html`: the only page.
 - `styles.css`: the only stylesheet.
 - `script.js`: optional, only if a feature needs JavaScript.
-- `requirements.md`: product requirements. Do not edit unless asked.
+- `docs/requirements.md`: product requirements. Do not edit unless asked.
 
 Do not create other pages, stylesheets, folders or build files.
 
@@ -24,7 +24,7 @@ Do not create other pages, stylesheets, folders or build files.
 
 ## Content rules
 - All visible text is in Russian. Code, class names and comments are in English.
-- Use only the content given in `requirements.md` (names, prices, counts, steps).
+- Use only the content given in `docs/requirements.md` (names, prices, counts, steps).
 - Never invent real-world facts: addresses, real people, olympiad results, reviews,
   guarantees, years of operation.
 - No photos of children or real people.
@@ -43,12 +43,12 @@ Do not create other pages, stylesheets, folders or build files.
 - Text contrast at least WCAG AA.
 
 ## Before finishing a task
-- [ ] Everything listed for the current feature in `requirements.md` is present, with exact counts.
+- [ ] Everything listed for the current feature in `docs/requirements.md` is present, with exact counts.
 - [ ] Every anchor link and CTA scrolls to an existing section.
 - [ ] Layout works at 360px, 768px and 1280px with no horizontal scroll.
 - [ ] Tab through the whole page: nothing is skipped or trapped.
 - [ ] No console errors.
-- [ ] No content that is not in `requirements.md`.
+- [ ] No content that is not in `docs/requirements.md`.
 
 ## Workflow
 - Build one feature at a time. Do not start Feature B until asked.
