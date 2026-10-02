@@ -8,9 +8,9 @@
 
 | Техника | Файл эксперимента | Изменённый файл Практики 1 | Конкретное изменение | Проверка | Что отклонили |
 |---|---|---|---|---|---|
-| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) |  |  |  |  |
-| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) |  |  |  |  |
-| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) |  |  |  |  |
-| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) |  |  |  |  |
-| RAG | [`rag/experiment.md`](rag/experiment.md) |  |  |  |  |
-| ReAct | [`react/experiment.md`](react/experiment.md) |  |  |  |  |
+| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) | `practices/practice_01/problem.md` | Уточнён раздел «## Проблема»: оставлены факты из TRAINING_PR.diff, удалены непроверяемые утверждения | Статическая проверка по TRAINING_PR.diff:35–37 и 19–22 | Утверждения про 500, неверный тип тела, задержки, безопасность и роль пользователя без источника |
+| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) | `practices/practice_01/problem.md` | Переработан раздел «## Метрики»: разделены AS IS, способ измерения и target; убраны недоказуемые runtime-утверждения | Проверка: наличие новой таблицы и ссылок на TRAINING_PR.diff; отсутствие конкретных порогов до согласования | Конкретные пороги SLA и коды статусов без подтверждения |
+| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) | `practices/practice_01/problem.md` | Проверены утверждения против источников; актуализированы формулировки метрик без непроверенных фактов | Проверка: сопоставление пунктов с TRAINING_PR.diff, context.md, analysis.md, adr.md, tests_* | Числовые пороги и статусы ответов без источника |
+| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) | `practices/practice_01/problem.md` | Выбрана структура вариантов метрик (B): раздельные AS IS, измерение, TO BE и неизвестные | Проверка: наличие секций и отсутствие неподтверждённых чисел/кодов | Варианты А и В отклонены по критериям |
+| RAG | [`rag/experiment.md`](rag/experiment.md) | `practices/practice_01/problem.md` | Добавлены явные ссылки на разрешённые источники и пометки «не подтверждено»/«требует согласования» | Проверка: соответствие ссылок TRAINING_PR.diff:19–22, 35–37 и context.md:10–11; отсутствие неподтверждённых чисел | Неподтверждённые коды (500/422), SLA и численные пороги |
+| ReAct | [`react/experiment.md`](react/experiment.md) | `practices/practice_01/problem.md` | Финальный проход: добавлены ссылки на источники, пометки подтверждённости; сохранена структура AS IS/Измерение/TO BE/Неизвестно | Проверка: `git diff --check`, `make step2`, визуальная сверка ссылок и отсутствия неподтверждённых runtime-фактов | Числовые пороги и конкретные коды без источника |
