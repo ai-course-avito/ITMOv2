@@ -1,0 +1,64 @@
+Model: ollama/itmo-agent
+
+### Вопрос 1
+> Как запустить тесты? Укажи файл-источник.
+
+Найду файл с информацией о тестах.
+В файле `/Users/igor/Documents/vibe/ITMOv2/practices/practice_03/lab/demo/README.md` строка **6** указывает на файл-источник: `make test`.
+Исходя из данных из файлов проекта:
+
+1. **Файл-источник с инструкцией**  
+   - `/Users/igor/Documents/vibe/ITMOv2/practices/practice_03/lab/demo/README.md` строка **6**: `make test`.
+
+2. **Доступные файлы**  
+   - `/Users/igor/Documents/vibe/ITMOv2/practices/practice_03/lab/demo/test_service.py` — тесты  
+   - `/Users/igor/Documents/vibe/ITMOv2/practices/practice_03/lab/demo/service.py` — код сервиса
+
+3. **Отсутствуют** файлы `Makefile`, `pytest.ini`, `requirements.txt`.
+
+Попробуйте запустить командой в корневом каталоге проекта (workspace root /Users/igor/Documents/vibe/ITMOv2):  
+   - Если Makefile отсутствует, возможно требуется установка pytest: `pip install pytest`, затем запуск `pytest test_service.py`.
+   - Или выполните поиск Makefile в поддиректориях.
+
+### Вопрос 2
+> Что будет при пустом имени подписчика? Подтверди кодом.
+
+При пустом имени (`""` или `"   "`):
+
+- вызывается `subscribers = set()`, 
+- в функции `subscribe()` условие `if not name.strip():` истинно, 
+- выбрасывается `raise ValueError("empty name")`.
+
+**Подтверждение кодом:**
+
+- [service.py:5–6](file:///Users/igor/Documents/vibe/ITMOv2/practices/practice_03/lab/demo/service.py#L5-L6):
+```python
+if not name.strip():
+    raise ValueError("empty name")
+```
+
+### Вопрос 3
+> Где реализован unsubscribe? Проверь предпосылку вопроса.
+
+Посмотрел файлы:
+- `/practice_03/lab/demo/README.md` — описывает сервис подписки с функцией `subscribe`, но нет упоминания `unsubscribe` и самого кода.
+- В поддиректориях практики есть задания (`QUESTIONS.md`), ответы в `_private/gold_answers.md`.
+
+Предпосылка вопроса: где реализован `unsubscribe`? — **не подтверждается** текущим контекстом. Вероятно, речь о другом файле или задании. Уточни:
+- К какому заданию/файлу относится вопрос?
+- Нужен ли поиск по коду в архивах/других задачах практики
+
+### Вопрос 4
+> Какая CI-система запускает тесты? Если сведений нет, скажи об этом.
+
+Сведений о CI-системе в текущем репозитории нет.
+
+**Проверенные места:**
+*   **Конфигурации CI:** Файлы `.github/*`, `Jenkinsfile`, `.travis.yml` и подобные отсутствуют.
+*   **JSON конфигурации:** Оказалось только два файла (`opencode.json`, `opencode.chat.json`), в них не обнаружено ссылок на внешние CI-сервисы или описание автоматизации тестирования.
+
+Сведения об используемой системе CI отсутствуют.
+
+### Вопрос 5
+> Сохраняются ли подписки после перезапуска процесса? Подтверди кодом.
+
