@@ -1,0 +1,3 @@
+# Local evidence from the check hook and Playwright runs
+.claude/check-hook.log
+.playwright-mcp/

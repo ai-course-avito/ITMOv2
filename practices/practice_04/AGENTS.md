@@ -20,6 +20,8 @@ Project tooling lives only in `docs/`, `scripts/` and `.claude/`.
 - Run `sh scripts/check.sh` from this folder. Exit code 0 = PASS, 1 = FAIL.
 - It checks the page contract from `docs/requirements.md` (sections, exact counts, prices, anchors),
   stack rules (no `<img>`, no external resources) and `git diff --check`.
+- A `PostToolUse` hook (`.claude/settings.json`) runs it after every Edit/Write in this folder.
+  On FAIL it blocks with the failing checks: fix the cause, never the runner.
 - It does not open a browser: keyboard, layout, contrast and console still need a browser check.
 
 ## Stack rules
