@@ -7,6 +7,7 @@
   --color-text: #2b2f36;
   --color-muted: #4a5160;
   --color-marker: #ffe14d;
+  --color-marker-hover: #ffd91a;
   --color-white: #ffffff;
 
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -120,7 +121,7 @@ a {
 }
 
 .button--primary:hover {
-  background: #ffd91a;
+  background: var(--color-marker-hover);
 }
 
 .button--primary:active {

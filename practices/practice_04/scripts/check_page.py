@@ -167,6 +167,10 @@ def check(project_dir):
   css_no_comments = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
   expect(css_no_comments.count("{") == css_no_comments.count("}"), "styles.css braces are balanced")
   expect(":root" in css, "styles.css defines :root custom properties")
+  outside_root = re.sub(r":root\s*\{[^}]*\}", "", css_no_comments)
+  raw_hex = sorted(set(re.findall(r"#[0-9a-fA-F]{3,8}\b", outside_root)))
+  expect(not raw_hex, "no raw hex colors outside :root (style guide rule 2)"
+         + (f" (found: {', '.join(raw_hex)})" if raw_hex else ""))
 
   return results
 

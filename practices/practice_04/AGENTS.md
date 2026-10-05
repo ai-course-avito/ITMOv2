@@ -3,6 +3,7 @@
 ## Project
 Olympiad Start: a fictional one-page landing for a math olympiad training camp for kids.
 `docs/requirements.md` is the source of truth for what to build. Read it before any change.
+Before changing code, read `docs/style-guide.md` (5 rules that are easy to break).
 If this file and `docs/requirements.md` disagree, follow `docs/requirements.md` and point out the conflict.
 
 ## Files
