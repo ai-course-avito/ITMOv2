@@ -14,6 +14,7 @@
 | Собственный MCP | _TODO_ |
 | `reflection.md` | _TODO_ |
 | Feature B проверена отдельно | [independent-check-b.md](independent-check-b.md), скриншоты [`signup-1280.png`](signup-1280.png), [`signup-360.png`](signup-360.png), [`card-360.png`](card-360.png) |
+| A + B после объединения | [merged-check.md](merged-check.md) |
 | Review B через subagent | [review-b.md](review-b.md): вызов Explore agent (только чтение), его отчёт, сверка основным агентом, воспроизведение в браузере, решение пользователя «да исправь», commit `c344a03` и его независимая проверка; _TODO: обоснование решения своими словами_ |
 
 ## Найдено и исправлено по ходу
