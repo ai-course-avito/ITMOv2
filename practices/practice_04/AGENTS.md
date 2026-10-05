@@ -23,6 +23,7 @@ Project tooling lives only in `docs/`, `scripts/` and `.claude/`.
 - A `PostToolUse` hook (`.claude/settings.json`) runs it after every Edit/Write in this folder.
   On FAIL it blocks with the failing checks: fix the cause, never the runner.
 - It does not open a browser: keyboard, layout, contrast and console still need a browser check.
+  Use the Playwright MCP server from `.mcp.json` for that (serve the page first, see "Run locally").
 
 ## Stack rules
 - Vanilla HTML, CSS and JavaScript only.
@@ -32,6 +33,7 @@ Project tooling lives only in `docs/`, `scripts/` and `.claude/`.
 ## Run locally
 - Open `index.html` in a browser, or
 - `python3 -m http.server 8000` and open http://localhost:8000
+  (in a second worktree use another port, e.g. 8001: worktrees do not isolate ports)
 
 ## Content rules
 - All visible text is in Russian. Code, class names and comments are in English.
