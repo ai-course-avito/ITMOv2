@@ -10,8 +10,16 @@ If this file and `docs/requirements.md` disagree, follow `docs/requirements.md` 
 - `styles.css`: the only stylesheet.
 - `script.js`: optional, only if a feature needs JavaScript.
 - `docs/requirements.md`: product requirements. Do not edit unless asked.
+- `scripts/check.sh`, `scripts/check_page.py`: the check runner. Do not edit or weaken unless asked.
 
 Do not create other pages, stylesheets, folders or build files.
+Project tooling lives only in `docs/`, `scripts/` and `.claude/`.
+
+## Check
+- Run `sh scripts/check.sh` from this folder. Exit code 0 = PASS, 1 = FAIL.
+- It checks the page contract from `docs/requirements.md` (sections, exact counts, prices, anchors),
+  stack rules (no `<img>`, no external resources) and `git diff --check`.
+- It does not open a browser: keyboard, layout, contrast and console still need a browser check.
 
 ## Stack rules
 - Vanilla HTML, CSS and JavaScript only.
@@ -43,6 +51,7 @@ Do not create other pages, stylesheets, folders or build files.
 - Text contrast at least WCAG AA.
 
 ## Before finishing a task
+- [ ] `sh scripts/check.sh` prints `RESULT: PASS`.
 - [ ] Everything listed for the current feature in `docs/requirements.md` is present, with exact counts.
 - [ ] Every anchor link and CTA scrolls to an existing section.
 - [ ] Layout works at 360px, 768px and 1280px with no horizontal scroll.
