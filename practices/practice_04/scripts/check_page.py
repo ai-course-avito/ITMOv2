@@ -149,6 +149,9 @@ def check(project_dir):
 
   expect(any(a.attrs.get("href") == "#signup" for a in doc.find_all("a")), "a CTA links to #signup")
 
+  # Feature B contract
+  results.extend(check_signup(doc, cards, project_dir))
+
   # Stack and content rules
   expect(not doc.find_all("img"), "no <img> (illustrations are inline SVG)")
   svgs = doc.find_all("svg")
@@ -172,6 +175,102 @@ def check(project_dir):
   expect(not raw_hex, "no raw hex colors outside :root (style guide rule 2)"
          + (f" (found: {', '.join(raw_hex)})" if raw_hex else ""))
 
+  return results
+
+
+SIGNUP_PROGRAMS = [
+  # (option value, name, monthly price, grades)
+  ("start", "Старт", "4900", "5 6"),
+  ("base", "Основа", "5900", "7 8"),
+  ("intensive", "Интенсив", "6900", "9"),
+]
+
+
+def check_signup(doc, cards, project_dir):
+  """Static contract for Feature B. Behaviour (prices, errors, focus) needs a browser."""
+  results = []
+
+  def expect(ok, label):
+    results.append((bool(ok), label))
+
+  signups = [n for n in doc.walk() if n.attrs.get("id") == "signup"]
+  expect(len(signups) == 1 and signups[0].tag == "section", "exactly one <section id=\"signup\">")
+  if not signups:
+    return results
+  signup = signups[0]
+
+  forms = signup.find_all("form")
+  expect(len(forms) == 1, "#signup has one <form>")
+  if not forms:
+    return results
+  form = forms[0]
+  expect("action" not in form.attrs, "sign-up form has no action (no network request)")
+
+  ids = {n.attrs["id"]: n for n in doc.walk() if "id" in n.attrs}
+  labelled = {n.attrs.get("for") for n in form.find_all("label")}
+
+  def field(name):
+    return [n for n in form.walk() if n.tag in ("input", "select") and n.attrs.get("name") == name]
+
+  def described(node):
+    refs = node.attrs.get("aria-describedby", "").split()
+    return any(ref in ids and "error" in ids[ref].attrs.get("id", "") for ref in refs)
+
+  program = field("program")
+  expect(len(program) == 1 and program[0].tag == "select", "program is a <select>")
+  options = [o for o in (program[0].find_all("option") if program else []) if o.attrs.get("value")]
+  expect([(o.attrs["value"], o.attrs.get("data-price"), o.attrs.get("data-grades")) for o in options]
+         == [(v, p, g) for v, _, p, g in SIGNUP_PROGRAMS],
+         "program options: Старт 4900 (5–6), Основа 5900 (7–8), Интенсив 6900 (9)")
+  expect(all(name in o.text() for o, (_, name, _, _) in zip(options, SIGNUP_PROGRAMS)),
+         "program options are named Старт / Основа / Интенсив")
+  expect(program and "selected" in next((o.attrs for o in program[0].find_all("option")
+                                         if o.attrs.get("value") == ""), {}),
+         "no program is preselected by default")
+
+  grade = field("grade")
+  expect(len(grade) == 1 and grade[0].tag == "select", "grade is a <select>")
+  grades = [o.attrs.get("value") for o in (grade[0].find_all("option") if grade else []) if o.attrs.get("value")]
+  expect(grades == ["5", "6", "7", "8", "9"], "grade options are 5–9")
+
+  duration = field("duration")
+  expect(sorted(n.attrs.get("value") for n in duration) == ["1", "3", "6"]
+         and all(n.attrs.get("type") == "radio" for n in duration),
+         "duration is radios 1 / 3 / 6 months")
+  expect([n.attrs.get("value") for n in duration if "checked" in n.attrs] == ["1"],
+         "duration defaults to 1 month")
+
+  name = field("parent_name")
+  email = field("email")
+  consent = field("consent")
+  expect(len(name) == 1, "parent's name field")
+  expect(len(email) == 1 and email[0].attrs.get("type") == "email", "parent's email is type=\"email\"")
+  expect(len(consent) == 1 and consent[0].attrs.get("type") == "checkbox", "consent checkbox")
+
+  controls = program + grade + name + email + consent
+  expect(controls and all("required" in n.attrs for n in controls + duration[:1]), "all fields are required")
+  expect(all(n.attrs.get("id") in labelled for n in controls + duration), "every field has a <label for>")
+  expect(all(described(n) for n in controls), "every field has an error element via aria-describedby")
+
+  for key in ("monthly", "discount", "total"):
+    node = ids.get(f"signup-{key}")
+    expect(node is not None and node.text() == "—", f"#signup-{key} shows «—» before a program is chosen")
+  hint = ids.get("signup-price-hint")
+  expect(hint is not None and hint.text() == "Выберите программу", "price hint «Выберите программу»")
+
+  expect(any(b.attrs.get("type") == "submit" for b in form.find_all("button")), "form has a submit button")
+
+  picks = [[a for a in card.find_all("a") if a.text() == "Выбрать"] for card in cards]
+  expect(len(cards) == 3 and all(len(p) == 1 for p in picks), "every program card has one «Выбрать» link")
+  expect([p[0].attrs.get("href") for p in picks if p] == ["#signup"] * 3, "«Выбрать» links go to #signup")
+  expect([p[0].attrs.get("data-program") for p in picks if p] == [v for v, *_ in SIGNUP_PROGRAMS],
+         "«Выбрать» links preselect their own program")
+
+  expect(any(s.attrs.get("src") == "script.js" for s in doc.find_all("script")), "index.html loads script.js")
+  js_path = project_dir / "script.js"
+  js = js_path.read_text(encoding="utf-8") if js_path.exists() else ""
+  expect(js and not re.search(r"\bfetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|\.submit\s*\(", js),
+         "script.js sends no network requests")
   return results
 
 

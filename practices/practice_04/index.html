@@ -123,6 +123,7 @@
             </ul>
             <p class="program-card__format">Группа до 8 человек, 2 занятия в неделю</p>
             <p class="program-card__price"><span class="program-card__amount">4900 ₽</span> в месяц</p>
+            <a class="button button--primary program-card__pick" href="#signup" data-program="start" aria-label="Выбрать «Старт»">Выбрать</a>
           </article>
 
           <article class="program-card">
@@ -138,6 +139,7 @@
             </ul>
             <p class="program-card__format">Группа до 10 человек, 2 занятия в неделю</p>
             <p class="program-card__price"><span class="program-card__amount">5900 ₽</span> в месяц</p>
+            <a class="button button--primary program-card__pick" href="#signup" data-program="base" aria-label="Выбрать «Основа»">Выбрать</a>
           </article>
 
           <article class="program-card">
@@ -153,6 +155,7 @@
             </ul>
             <p class="program-card__format">Группа до 10 человек, 3 занятия в неделю</p>
             <p class="program-card__price"><span class="program-card__amount">6900 ₽</span> в месяц</p>
+            <a class="button button--primary program-card__pick" href="#signup" data-program="intensive" aria-label="Выбрать «Интенсив»">Выбрать</a>
           </article>
         </div>
       </div>
@@ -256,11 +259,95 @@
       </div>
     </section>
 
-    <!-- Placeholder target for #signup; the sign-up form is built in Feature B. -->
     <section class="section signup" id="signup" aria-labelledby="signup-title">
       <div class="section__inner">
         <h2 class="section__title" id="signup-title">Запись</h2>
-        <p class="signup__text">Форма записи скоро появится здесь.</p>
+        <p class="signup__text">Заполните форму, и мы подберём группу и время пробного занятия.</p>
+
+        <form class="signup-form" id="signup-form" novalidate>
+          <div class="signup-form__fields">
+            <div class="signup-form__field">
+              <label class="signup-form__label" for="signup-program">Программа</label>
+              <select class="signup-form__control" id="signup-program" name="program" required aria-describedby="signup-program-error">
+                <option value="" selected>Выберите программу</option>
+                <option value="start" data-price="4900" data-grades="5 6" data-accusative="Старт">Старт (5–6 класс)</option>
+                <option value="base" data-price="5900" data-grades="7 8" data-accusative="Основу">Основа (7–8 класс)</option>
+                <option value="intensive" data-price="6900" data-grades="9" data-accusative="Интенсив">Интенсив (9 класс)</option>
+              </select>
+              <div class="signup-form__error" id="signup-program-error"></div>
+            </div>
+
+            <div class="signup-form__field">
+              <label class="signup-form__label" for="signup-grade">Класс ребёнка</label>
+              <select class="signup-form__control" id="signup-grade" name="grade" required aria-describedby="signup-grade-error">
+                <option value="" selected>Выберите класс</option>
+                <option value="5">5 класс</option>
+                <option value="6">6 класс</option>
+                <option value="7">7 класс</option>
+                <option value="8">8 класс</option>
+                <option value="9">9 класс</option>
+              </select>
+              <p class="signup-form__error" id="signup-grade-error"></p>
+            </div>
+
+            <fieldset class="signup-form__field signup-form__duration">
+              <legend class="signup-form__label">Срок обучения</legend>
+              <div class="signup-form__options">
+                <label class="signup-form__option" for="signup-duration-1">
+                  <input type="radio" id="signup-duration-1" name="duration" value="1" required checked>
+                  1 месяц
+                </label>
+                <label class="signup-form__option" for="signup-duration-3">
+                  <input type="radio" id="signup-duration-3" name="duration" value="3">
+                  3 месяца, скидка 5%
+                </label>
+                <label class="signup-form__option" for="signup-duration-6">
+                  <input type="radio" id="signup-duration-6" name="duration" value="6">
+                  6 месяцев, скидка 10%
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="signup-form__field">
+              <label class="signup-form__label" for="signup-name">Имя родителя</label>
+              <input class="signup-form__control" type="text" id="signup-name" name="parent_name" autocomplete="name" required aria-describedby="signup-name-error">
+              <p class="signup-form__error" id="signup-name-error"></p>
+            </div>
+
+            <div class="signup-form__field">
+              <label class="signup-form__label" for="signup-email">Email родителя</label>
+              <input class="signup-form__control" type="email" id="signup-email" name="email" autocomplete="email" required aria-describedby="signup-email-error">
+              <p class="signup-form__error" id="signup-email-error"></p>
+            </div>
+
+            <div class="signup-form__field">
+              <label class="signup-form__option" for="signup-consent">
+                <input type="checkbox" id="signup-consent" name="consent" required aria-describedby="signup-consent-error">
+                Даю согласие на обработку персональных данных
+              </label>
+              <p class="signup-form__error" id="signup-consent-error"></p>
+            </div>
+          </div>
+
+          <div class="signup-price" aria-live="polite">
+            <dl class="signup-price__list">
+              <div class="signup-price__row">
+                <dt>Цена в месяц</dt>
+                <dd class="signup-price__value" id="signup-monthly">—</dd>
+              </div>
+              <div class="signup-price__row">
+                <dt>Скидка</dt>
+                <dd class="signup-price__value" id="signup-discount">—</dd>
+              </div>
+              <div class="signup-price__row signup-price__row--total">
+                <dt>Итого</dt>
+                <dd class="signup-price__value" id="signup-total">—</dd>
+              </div>
+            </dl>
+            <p class="signup-price__hint" id="signup-price-hint">Выберите программу</p>
+            <button class="button button--primary signup-form__submit" type="submit">Отправить заявку</button>
+          </div>
+        </form>
       </div>
     </section>
   </main>
@@ -271,5 +358,7 @@
       <p class="site-footer__note">Учебный проект. Программы и имена тренеров вымышлены.</p>
     </div>
   </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
