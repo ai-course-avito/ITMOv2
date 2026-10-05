@@ -41,6 +41,9 @@ if result.returncode != 0:
   failures = [line for line in result.stdout.splitlines() if line.startswith("FAIL")]
   print(f"scripts/check.sh FAILED after {tool} on {relative}:", file=sys.stderr)
   print("\n".join(failures) or result.stdout[-2000:], file=sys.stderr)
+  if result.stderr.strip():
+    # A crashing runner (e.g. a Python traceback) explains the failure better than empty FAIL lines.
+    print("runner stderr:\n" + result.stderr.strip()[-2000:], file=sys.stderr)
   print("Fix the cause; do not weaken the runner (docs/style-guide.md, rule 4).", file=sys.stderr)
   sys.exit(2)
 
