@@ -8,6 +8,7 @@
   const DISCOUNTS = { 1: 0, 3: 5, 6: 10 };
   const DURATION_LABELS = { 1: '1 месяц', 3: '3 месяца', 6: '6 месяцев' };
   const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  let attempted = false;
 
   const program = form.elements.program;
   const grade = form.elements.grade;
@@ -87,7 +88,8 @@
 
   function choose(value) {
     program.value = value;
-    clearError(program);
+    if (attempted) validate();
+    else clearError(program);
     updatePrice();
   }
 
@@ -161,12 +163,14 @@
 
   form.addEventListener('change', function (event) {
     if (event.target === program || event.target.name === 'duration') updatePrice();
-    // Once an error is shown, re-check that field as the user fixes it.
-    if (event.target.getAttribute('aria-invalid') === 'true') validate();
+    // After the first submit attempt, re-check on every change so errors (including the
+    // grade/program suggestion shown on the program field) never go stale.
+    if (attempted) validate();
   });
 
   form.addEventListener('submit', function (event) {
     event.preventDefault();
+    attempted = true;
     const invalid = validate();
     if (invalid.length) {
       invalid[0].focus();

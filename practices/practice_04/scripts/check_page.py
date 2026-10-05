@@ -224,8 +224,9 @@ def check_signup(doc, cards, project_dir):
          "program options: Старт 4900 (5–6), Основа 5900 (7–8), Интенсив 6900 (9)")
   expect(all(name in o.text() for o, (_, name, _, _) in zip(options, SIGNUP_PROGRAMS)),
          "program options are named Старт / Основа / Интенсив")
-  expect(program and "selected" in next((o.attrs for o in program[0].find_all("option")
-                                         if o.attrs.get("value") == ""), {}),
+  all_options = program[0].find_all("option") if program else []
+  expect(any(o.attrs.get("value") == "" and "selected" in o.attrs for o in all_options)
+         and not any(o.attrs.get("value") and "selected" in o.attrs for o in all_options),
          "no program is preselected by default")
 
   grade = field("grade")
