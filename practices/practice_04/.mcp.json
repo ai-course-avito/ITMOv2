@@ -4,6 +4,11 @@
       "type": "stdio",
       "command": "npx",
       "args": ["@playwright/mcp@0.0.83"]
+    },
+    "olympiad-pricing": {
+      "type": "stdio",
+      "command": "python3",
+      "args": ["mcp/olympiad_pricing/server.py"]
     }
   }
 }

@@ -11,19 +11,23 @@ If this file and `docs/requirements.md` disagree, follow `docs/requirements.md` 
 - `styles.css`: the only stylesheet.
 - `script.js`: optional, only if a feature needs JavaScript.
 - `docs/requirements.md`: product requirements. Do not edit unless asked.
-- `scripts/check.sh`, `scripts/check_page.py`: the check runner. Do not edit or weaken unless asked.
+- `scripts/check.sh`, `scripts/check_page.py`, `scripts/test_mcp_pricing.py`: the check runner.
+  Do not edit or weaken unless asked.
+- `mcp/olympiad_pricing/server.py`: our MCP server (tool `quote`), registered in `.mcp.json`.
 
 Do not create other pages, stylesheets, folders or build files.
-Project tooling lives only in `docs/`, `scripts/` and `.claude/`.
+Project tooling lives only in `docs/`, `scripts/`, `mcp/` and `.claude/`.
 
 ## Check
 - Run `sh scripts/check.sh` from this folder. Exit code 0 = PASS, 1 = FAIL.
 - It checks the page contract from `docs/requirements.md` (sections, exact counts, prices, anchors),
-  stack rules (no `<img>`, no external resources) and `git diff --check`.
+  stack rules (no `<img>`, no external resources), the MCP server self-test and `git diff --check`.
 - A `PostToolUse` hook (`.claude/settings.json`) runs it after every Edit/Write in this folder.
   On FAIL it blocks with the failing checks: fix the cause, never the runner.
 - It does not open a browser: keyboard, layout, contrast and console still need a browser check.
   Use the Playwright MCP server from `.mcp.json` for that (serve the page first, see "Run locally").
+- For prices, ask the `olympiad-pricing` MCP tool `quote` (program, months, optional grade) instead of
+  computing by hand; its `display` strings are exactly what the sign-up calculator must show.
 
 ## Stack rules
 - Vanilla HTML, CSS and JavaScript only.

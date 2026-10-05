@@ -23,6 +23,19 @@ else
   echo "SKIP  not a git work tree"
 fi
 
+if [ -f "$project_dir/mcp/olympiad_pricing/server.py" ]; then
+  echo
+  echo "== olympiad-pricing MCP server"
+  if mcp_output=$(python3 "$script_dir/test_mcp_pricing.py" "$project_dir" 2>&1); then
+    echo "$mcp_output" | tail -1
+    echo "PASS  MCP self-test"
+  else
+    echo "$mcp_output" | grep -E '^FAIL|Error|checks passed'
+    echo "FAIL  MCP self-test"
+    status=1
+  fi
+fi
+
 if [ -f "$project_dir/script.js" ]; then
   echo
   echo "== script.js syntax"
