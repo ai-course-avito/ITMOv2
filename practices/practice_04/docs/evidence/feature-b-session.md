@@ -82,7 +82,7 @@ Fix the cause; do not weaken the runner (docs/style-guide.md, rule 4).
 - [18:22:48] PASS → в контекст агента: `scripts/check.sh PASS after Edit on styles.css (62/62 checks passed)`
 - [18:23:19] PASS → в контекст агента: `scripts/check.sh PASS after Edit on script.js (62/62 checks passed)`
 
-Локальный журнал hook: [`check-hook-feature-b.log`](check-hook-feature-b.log).
+Локальный журнал hook: [`check-hook-feature-b.txt`](check-hook-feature-b.txt).
 
 ## 5. Playwright MCP: проверка B в браузере
 

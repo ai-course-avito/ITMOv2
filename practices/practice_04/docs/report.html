@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Практика 4: две фичи с агентом</title>
+  <style>
+    :root {
+      --paper: #fbfcfe;
+      --grid: #d5e3f3;
+      --grid-soft: #e3ecf8;
+      --ink: #1b2f6e;
+      --margin: #c8283c;
+      --text: #2b2f36;
+      --muted: #4a5160;
+      --marker: #ffe14d;
+      --todo: #fff6c2;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    a { color: var(--ink); }
+    a:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+    code {
+      padding: 0 0.2em;
+      background: var(--grid-soft);
+      border-radius: 0.2rem;
+      font-size: 0.92em;
+    }
+
+    .cover {
+      border-bottom: 2px solid var(--ink);
+      background-color: var(--white);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 1.25rem 1.25rem;
+    }
+
+    .cover__inner,
+    .section {
+      max-width: 60rem;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .cover__title {
+      margin: 0;
+      color: var(--ink);
+      font-size: 2.25rem;
+      line-height: 1.1;
+    }
+
+    .cover__meta { margin: 1rem 0 0; color: var(--muted); }
+
+    .toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 1rem;
+      margin: 1.5rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    h2 {
+      margin: 0 0 1rem;
+      color: var(--ink);
+      font-size: 1.6rem;
+      line-height: 1.2;
+    }
+
+    h3 { margin: 1.5rem 0 0.5rem; color: var(--ink); font-size: 1.15rem; }
+
+    .section + .section { border-top: 2px solid var(--ink); }
+
+    .points {
+      display: inline-block;
+      margin-left: 0.5rem;
+      padding: 0 0.5rem;
+      border-radius: 0.2rem;
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.85rem;
+      vertical-align: middle;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 0.5rem;
+      border: 1px solid var(--grid);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { background: var(--grid-soft); color: var(--ink); }
+
+    .table-wrap { overflow-x: auto; }
+
+    .todo {
+      margin: 1rem 0;
+      padding: 0.75rem 1rem;
+      border: 2px dashed var(--margin);
+      background: var(--todo);
+    }
+
+    .todo strong { color: var(--margin); }
+
+    .cards {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .card {
+      padding: 1rem;
+      border: 2px solid var(--ink);
+      border-radius: 0.375rem;
+      background: var(--white);
+    }
+
+    .card h3 { margin-top: 0; }
+
+    .card__files { color: var(--muted); font-size: 0.9rem; }
+
+    pre {
+      overflow-x: auto;
+      padding: 0.75rem;
+      background: var(--grid-soft);
+      font-size: 0.85rem;
+    }
+
+    @media (min-width: 48rem) {
+      .cover__title { font-size: 3rem; }
+      .cards { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header class="cover">
+    <div class="cover__inner">
+      <h1 class="cover__title">Практика 4: две фичи с агентом</h1>
+      <p class="cover__meta">
+        Проект: <a href="../index.html">Olympiad Start</a> — учебный лендинг кружка олимпиадной математики.<br>
+        Ветка <code>2026_Nokulagin_practice_4</code>, октябрь 2026. Агент: Claude Code (вместо OpenCode из презентации;
+        для каждого механизма OpenCode использован прямой аналог).
+      </p>
+      <nav aria-label="Разделы отчёта">
+        <ul class="toc">
+          <li><a href="#overview">Обзор</a></li>
+          <li><a href="#env">Среда</a></li>
+          <li><a href="#why">Обоснование</a></li>
+          <li><a href="#skill">Skill</a></li>
+          <li><a href="#mcp">Свой MCP</a></li>
+          <li><a href="#features">Фичи A и B</a></li>
+          <li><a href="#decisions">Мои решения</a></li>
+          <li><a href="#reflection">Рефлексия</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section" id="overview">
+      <h2>Обзор</h2>
+      <p>
+        Две фичи одной страницы: <strong>A</strong> — лендинг (3 преимущества, 3 программы с ценами, 3 шага, 3 тренера, FAQ),
+        <strong>B</strong> — форма записи с живым расчётом цены и валидацией. A сделана в основной рабочей копии,
+        B — в отдельном git worktree новой сессией агента, затем review субагентом, исправления и <code>merge --ff-only</code>.
+      </p>
+      <p>
+        Запуск: открыть <a href="../index.html"><code>index.html</code></a> или <code>python3 -m http.server 8000</code>.
+        Проверка: <code>sh scripts/check.sh</code> → <code>RESULT: PASS</code> (62 проверки страницы, 19 проверок MCP).
+      </p>
+      <p>
+        Все подтверждения — выдержки из журналов сессий Claude Code с временем вызова и результатом:
+        <a href="evidence/README.md">docs/evidence/</a>. Статус подключения или наличие файла сами по себе не используются как доказательство.
+      </p>
+    </section>
+
+    <section class="section" id="env">
+      <h2>Настроенная среда <span class="points">5 баллов</span></h2>
+      <div class="cards">
+        <article class="card">
+          <h3>AGENTS.md</h3>
+          <p class="card__files"><a href="../AGENTS.md">AGENTS.md</a>, <a href="style-guide.md">docs/style-guide.md</a></p>
+          <p>Где требования (<code>docs/requirements.md</code>), как проверять (<code>sh scripts/check.sh</code>, Playwright), что нельзя менять (контракт, runner), правила контента и стека.</p>
+          <p><strong>Применение:</strong> новая сессия B загрузила файл автоматически, сама прочитала требования и style guide, на FAIL hook ссылалась на правило 4 style guide.
+            <a href="evidence/feature-b-session.md#2-agentsmd-загружен-в-контекст-сессии">выдержка</a>,
+            <a href="evidence/handoff-check.md">пересказ новой сессией</a>.</p>
+        </article>
+        <article class="card">
+          <h3>Skill <code>ui-check</code></h3>
+          <p class="card__files"><a href="../.claude/skills/ui-check/SKILL.md">.claude/skills/ui-check/SKILL.md</a> (свой), готовый <a href="../.claude/skills/frontend-design/SKILL.md">frontend-design</a></p>
+          <p>Процедура: критерии приёмки → сначала падающая проверка → минимальная реализация → браузерный сценарий → отчёт.</p>
+          <p><strong>Применение:</strong> вызов <code>Skill ui-check</code> первым действием сессии B; проверки B в runner добавлены и упали до реализации.
+            <a href="evidence/feature-b-session.md#3-skill-ui-check-загружен">выдержка</a>, <a href="#skill">подробнее</a>.</p>
+        </article>
+        <article class="card">
+          <h3>MCP: Playwright</h3>
+          <p class="card__files"><a href="../.mcp.json">.mcp.json</a> — <code>@playwright/mcp@0.0.83</code>, закреплённая версия</p>
+          <p>Настоящий браузер: клики, клавиатура, ширины экрана, консоль.</p>
+          <p><strong>Применение:</strong> 21 вызов в сессии B (все 9 вариантов цены, обход Tab, сценарий клавиатурой); нашёл дефект фокуса после «Выбрать».
+            <a href="evidence/feature-b-session.md#5-playwright-mcp-проверка-b-в-браузере">выдержка</a>.</p>
+        </article>
+        <article class="card">
+          <h3>Hook + runner</h3>
+          <p class="card__files"><a href="../.claude/settings.json">.claude/settings.json</a>, <a href="../.claude/hooks/check_after_edit.py">check_after_edit.py</a>, <a href="../scripts/check.sh">scripts/check.sh</a></p>
+          <p><code>PostToolUse</code> на Edit/Write запускает runner. FAIL → exit 2, причина возвращается агенту; PASS → строка в контекст агента.</p>
+          <p><strong>Применение:</strong> в живой сессии B 4 FAIL → 4 PASS, агент каждый раз реагировал на конкретную причину.
+            <a href="evidence/feature-b-session.md#4-hook-результат-проверки-после-каждой-правки-возвращается-агенту">выдержка</a>,
+            <a href="evidence/check-hook-feature-b.txt">журнал hook</a>.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="why">
+      <h2>Зачем эти подключения <span class="points">1 балл</span></h2>
+      <div class="todo"><strong>Черновик агента.</strong> Проверь и при необходимости перепиши своими словами — объяснение оценивается.</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Подключение</th><th>Какой шаг улучшило</th><th>Без него</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Playwright MCP</td>
+              <td>Приёмка UI: поведение формы, фокус, клавиатура, вёрстка на 360/768/1280 px проверяются в настоящем браузере.</td>
+              <td>Агент проверял бы только разметку; дефект фокуса после «Выбрать» и устаревшая подсказка класса остались бы незамеченными.</td>
+            </tr>
+            <tr>
+              <td>Skill <code>ui-check</code></td>
+              <td>Порядок работы: сначала проверка, которая падает без фичи, потом реализация, потом браузер и отчёт.</td>
+              <td>Агент мог бы сразу писать код и объявить успех по зелёному, но слабому тесту.</td>
+            </tr>
+            <tr>
+              <td>Hook + runner</td>
+              <td>Обратная связь после каждой правки, без моего напоминания: контракт страницы, MCP, пробелы, синтаксис.</td>
+              <td>Регрессии A (якоря, количества, цены) находились бы только в конце или не находились.</td>
+            </tr>
+            <tr>
+              <td>Свой MCP <code>quote</code></td>
+              <td>Эталон цены прямо из требований для проверки калькулятора B.</td>
+              <td>Агент сверял бы калькулятор с собственными вычислениями или с тем же кодом, который проверяет.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Context7 из презентации не подключал: в проекте нет библиотек, документацию которых нужно сверять.</p>
+    </section>
+
+    <section class="section" id="skill">
+      <h2>Skill: <code>ui-check</code> <span class="points">2 балла</span></h2>
+      <h3>Устройство</h3>
+      <p>
+        Свой skill (<a href="../.claude/skills/ui-check/SKILL.md">SKILL.md</a>): восемь шагов для любой правки UI этого проекта.
+        Он опирается на ресурсы проекта: контракт <code>docs/requirements.md</code>, runner <code>scripts/check.sh</code>
+        и Playwright MCP. Ключевой шаг 3 — до реализации создать проверку, которая падает, пока поведения нет;
+        шаг 7 — проверить diff на выдуманные факты и уход от требований; шаг 8 — отчитаться, что проверено, а что нет.
+      </p>
+      <div class="todo"><strong>Своими словами (3–4 предложения):</strong> как устроен skill и почему именно такие шаги. <em>TODO</em></div>
+      <h3>Запуск и проверенный результат</h3>
+      <ul>
+        <li><strong>Фича A:</strong> проверка критериев приёмки упала до реализации (<code>FAIL: header+nav | … | hero CTAs</code>) и прошла после (<code>PASS</code>). <a href="evidence/feature-a-and-setup.md">выдержка</a></li>
+        <li><strong>Фича B:</strong> новые проверки runner упали (<code>FAIL #signup has one &lt;form&gt;</code>), затем 62/62 PASS; браузерный шаг skill нашёл и закрыл дефект фокуса. <a href="evidence/feature-b-session.md">выдержка</a></li>
+        <li><strong>Результат проверен независимо</strong> другой сессией в браузере. <a href="evidence/independent-check-b.md">таблица</a></li>
+      </ul>
+    </section>
+
+    <section class="section" id="mcp">
+      <h2>Собственный MCP: <code>olympiad-pricing</code> <span class="points">2 балла</span></h2>
+      <p>
+        <a href="../mcp/olympiad_pricing/server.py">mcp/olympiad_pricing/server.py</a> — stdio MCP-сервер на стандартной библиотеке Python.
+        Tool <code>quote(program, months, grade?)</code> читает цены и скидки из <code>docs/requirements.md</code> и возвращает
+        цену за месяц после скидки, скидку в % и ₽, итог и строки <code>display</code> в формате страницы.
+      </p>
+      <h3>Реальный вызов из Claude Code</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Вход</th><th>Результат</th></tr></thead>
+          <tbody>
+            <tr><td><code>start, 6 мес., 5 класс</code></td><td>Успех: 4410 ₽ в месяц, −10% (−2940 ₽), итого 26 460 ₽ — совпадает со страницей посимвольно</td></tr>
+            <tr><td><code>intensive, 1 мес., 6 класс</code></td><td><code>isError</code>: класс не подходит, правильная программа «Старт»</td></tr>
+            <tr><td><code>start, 2 мес.</code></td><td><code>isError</code>: months must be one of [1, 3, 6]</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        После вызова агент заметил «grades 9–9» в тексте ошибки — исправлено. Самопроверка по протоколу (19 проверок) входит в runner
+        и падает, если требования и сервер расходятся. <a href="evidence/own-mcp.md">подтверждения</a>
+      </p>
+    </section>
+
+    <section class="section" id="features">
+      <h2>Фичи A и B: как шла работа</h2>
+      <ol>
+        <li>A реализована и проверена в браузере, затем runner, style guide и hook — отдельными commits.</li>
+        <li>B: требования уточнены (5 решений владельца), создан worktree <code>practice-04-b</code>, новая сессия реализовала B.</li>
+        <li>Review: Explore-субагент (только чтение) нашёл 2 проблемы; одну я воспроизвёл в браузере — подсказка вела к неверной программе. <a href="evidence/review-b.md">review-b.md</a></li>
+        <li>После решения «исправить» — commit исправлений и независимая проверка.</li>
+        <li><code>git merge --ff-only practice-04-b</code>, проверка объединённого состояния A + B. <a href="evidence/merged-check.md">merged-check.md</a></li>
+        <li>Handoff: <a href="HANDOFF.md">docs/HANDOFF.md</a>, новая сессия корректно пересказала состояние. <a href="evidence/handoff-check.md">handoff-check.md</a></li>
+      </ol>
+    </section>
+
+    <section class="section" id="decisions">
+      <h2>Где потребовалось моё решение</h2>
+      <ul>
+        <li>Пять уточнений B: цена за месяц после скидки, «—» до выбора программы, кнопка исправления класса, select 5–9, фокус на сводку.</li>
+        <li>Исправлять ли находки review («да исправь»).</li>
+        <li>Удаление устаревшей неотслеживаемой копии проекта (агенту автоматически запретили удалять).</li>
+        <li>Приёмка commit B и порядок: сначала B на занятии, потом свой MCP.</li>
+      </ul>
+      <div class="todo"><strong>Своими словами:</strong> почему исправлять находки review и какие выводы сделаны. <em>TODO</em></div>
+    </section>
+
+    <section class="section" id="reflection">
+      <h2>Рефлексия <span class="points">1 балл</span></h2>
+      <div class="todo"><strong>reflection.md — пишется самостоятельно.</strong> <em>TODO</em> Наблюдения из журналов, на которые можно опереться:</div>
+      <ul>
+        <li>Кэш браузера: агент дважды «проверил» исправление на старом <code>script.js</code>, пока не убедился в источнике загрузки.</li>
+        <li>Hook сначала скрывал traceback упавшего runner — агент угадал причину, hook исправлен.</li>
+        <li>Review субагентом нашёл ошибку, которую пропустили и реализующий агент, и отдельная браузерная проверка.</li>
+        <li>Ложная тревога: тест якорей «провалился» из-за плавной прокрутки, а не страницы.</li>
+        <li>Неоднозначное «учше» было истолковано как «доработай».</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

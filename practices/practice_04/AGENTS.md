@@ -17,6 +17,7 @@ If this file and `docs/requirements.md` disagree, follow `docs/requirements.md` 
 
 Do not create other pages, stylesheets, folders or build files.
 Project tooling lives only in `docs/`, `scripts/`, `mcp/` and `.claude/`.
+`docs/report.html` is the homework report, not a page of the site.
 
 ## Check
 - Run `sh scripts/check.sh` from this folder. Exit code 0 = PASS, 1 = FAIL.
