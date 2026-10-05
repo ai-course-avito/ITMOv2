@@ -25,7 +25,7 @@ ERRORS = [
   ({"program": "start", "months": 2}, "months must be one of [1, 3, 6]"),
   ({"program": "start", "months": "6"}, "months must be one of"),
   ({"program": "start", "months": 1, "grade": 4}, "grade must be an integer from 5 to 9"),
-  ({"program": "intensive", "months": 1, "grade": 6}, "the right program is «Старт»"),
+  ({"program": "intensive", "months": 1, "grade": 6}, "(grade 9). For grade 6 the right program is «Старт»"),
   ({"program": "base", "months": 3, "grade": 9}, "the right program is «Интенсив»"),
 ]
 

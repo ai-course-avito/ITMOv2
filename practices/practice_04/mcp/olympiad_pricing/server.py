@@ -64,8 +64,9 @@ def quote(args, contract):
       raise ToolError(f"grade must be an integer from 5 to 9, got {grade!r}.")
     if grade not in program["grades"]:
       right = next(p for p in programs.values() if grade in p["grades"])
-      raise ToolError(f"Grade {grade} does not match «{program['name']}» "
-                      f"(grades {program['grades'][0]}–{program['grades'][-1]}). "
+      low, high = program["grades"][0], program["grades"][-1]
+      fits = f"grade {low}" if low == high else f"grades {low}–{high}"
+      raise ToolError(f"Grade {grade} does not match «{program['name']}» ({fits}). "
                       f"For grade {grade} the right program is «{right['name']}».")
 
   percent = discounts[months]
