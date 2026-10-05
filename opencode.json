@@ -1,6 +1,9 @@
 {
     "$schema": "https://opencode.ai/config.json",
     "default_agent": "build",
+    "instructions": [
+        ".opencode/instructions/system-reminder.md"
+    ],
     "provider": {
         "vsellm": {
             "npm": "@ai-sdk/openai-compatible",
@@ -17,6 +20,33 @@
                     "name": "anthropic/claude-sonnet-4"
                 }
             }
+        },
+        	"ollama": {
+          "npm": "@ai-sdk/openai-compatible",
+          "name": "Ollama Local",
+          "options": {
+            "baseURL": "http://localhost:11434/v1"
+          },
+          "models": {
+            "qwen3.5:4b-q4_K_M": {
+              "name": "Qwen 3.5 4B Local"
+            },
+            "qwen3.5-4b-32k": {
+                "name": "Qwen 3.5 4B — 32K"
+            },
+            "qwen3.5-4b-64k": {
+                "name": "Qwen 3.5 4B — 64K"
+            },
+            "qwen3.5-4b-128k": {
+                "name": "Qwen 3.5 4B — 128K"
+            },
+            "itmo-chat": {
+                "name": "ITMO Chat"
+            },
+            "itmo-agent": {
+                "name": "ITMO Agent"
+            }
+          }
         }
     }
 }
