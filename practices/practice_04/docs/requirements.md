@@ -45,6 +45,17 @@ Add a `#signup` section to `index.html` with a sign-up form and live price calcu
 - JavaScript lives in `script.js`.
 - Feature A must keep working: all sections, counts, anchors and CTAs unchanged.
 
+Clarifications (decided by the product owner):
+- `#signup` already exists as a placeholder from Feature A: replace it, do not add a second `#signup`.
+- Monthly price is shown after the discount. Discount is shown both in % and in ₽ for the whole period.
+  Example: Старт, 6 months → 4410 ₽ / month, discount −10% (−2940 ₽), total 26 460 ₽.
+- Before a program is chosen, price, discount and total show «—» with the hint «Выберите программу».
+  Duration defaults to 1 month.
+- Grade/program mismatch: the error names the right program and has a button that switches
+  to it and recalculates the price, e.g. «Для 7 класса подходит «Основа»» + «Выбрать «Основу»».
+- Grade is a `<select>` with options 5–9.
+- After a valid submit, focus moves to the confirmation summary heading.
+
 Shared requirements:
 - One page only: `index.html`.
 - One stylesheet: `styles.css`.
