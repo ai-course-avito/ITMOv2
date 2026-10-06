@@ -31,8 +31,7 @@
 - Не проверено: реальные скринридеры, браузеры кроме Chromium.
 
 ## Что осталось (решения владельца, не агента)
-- Своими словами: почему исправлять находки review (`docs/evidence/review-b.md` §6), обоснование подключений,
-  разбор skill `ui-check`, `reflection.md`.
+- Перечитать тексты от первого лица (`docs/report.html`, `docs/reflection.md`, `docs/evidence/review-b.md` §6) и при желании переписать.
 - Push ветки и сдача; отчёт для сдачи: `docs/report.html`, доказательства: `docs/evidence/`.
 
 ## Проверка этого handoff
