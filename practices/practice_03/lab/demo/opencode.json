@@ -32,7 +32,30 @@
         "glob": "allow",
         "grep": "allow"
       }
+    },
+    "local-guide-A": {
+      "description": "Read-only assistant (A)",
+      "mode": "primary",
+      "prompt": "{file:./repo-system-a.txt}",
+      "steps": 8,
+      "permission": {
+        "*": "deny",
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow"
+      }
+    },
+    "local-guide-B": {
+      "description": "Read-only assistant (B)",
+      "mode": "primary",
+      "prompt": "{file:./repo-system-b.txt}",
+      "steps": 8,
+      "permission": {
+        "*": "deny",
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow"
+      }
     }
   }
 }
-
