@@ -1,0 +1,40 @@
+{
+  "request": {
+    "model": "qwen3.5:4b",
+    "messages": [
+      {
+        "role": "user",
+        "content": "# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\nКакая CI-система запускает тесты проекта?"
+      }
+    ],
+    "stream": false,
+    "think": false,
+    "options": {
+      "temperature": 0.2,
+      "seed": 42,
+      "num_ctx": 4096,
+      "num_predict": 512
+    }
+  },
+  "response": {
+    "model": "qwen3.5:4b",
+    "created_at": "2026-09-25T07:26:02.60030292Z",
+    "message": {
+      "role": "assistant",
+      "content": "В предоставленном описании задачи **не указана конкретная CI-система** (например, GitHub Actions, GitLab CI, Jenkins и т.д.).\n\nОписание содержит только требования к функционалу (`service.py`, множество, проверка `make test`) и зависимости (стандартная библиотека Python 3.10+), но не упоминает инфраструктуру для автоматизации тестирования.\n\n**Как обычно решается эта задача:**\nЕсли вы работаете в среде с открытым исходным кодом на GitHub/GitLab, то чаще всего используется **GitHub Actions** или **GitLab CI**. Однако, чтобы дать точный ответ, нужно либо:\n1. Посмотреть в репозитории проекта файл `.github/workflows/` (для GitHub) или `.gitlab-ci.yml` (для GitLab).\n2. Или найти документацию проекта, где описан процесс сборки и тестирования.\n\nБез доступа к коду проекта или его документации этот вопрос ответить невозможно."
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 78772250876,
+    "load_duration": 3134111,
+    "prompt_eval_count": 100,
+    "prompt_eval_cached_count": 0,
+    "prompt_eval_duration": 6561788000,
+    "eval_count": 208,
+    "eval_duration": 41243218000
+  },
+  "wall_seconds": 78.78830042800018,
+  "load_seconds": 0.003134111,
+  "total_seconds": 78.772250876,
+  "decode_tokens_per_second": 5.043253414415917
+}

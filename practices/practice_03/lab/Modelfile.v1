@@ -1,10 +1,7 @@
 FROM qwen3.5:4b
-PARAMETER num_ctx 2048
-PARAMETER num_predict 128
+PARAMETER num_ctx 4096
 PARAMETER temperature 0.2
-PARAMETER top_k 10
-PARAMETER top_p 0.8
-PARAMETER repeat_penalty 1.1
 SYSTEM """Ты помощник по учебному проекту. Отвечай по предоставленным фактам.
 Если данных нет, напиши «В предоставленных материалах нет ответа».
 Не выдумывай файлы и настройки. Дай короткий ответ и основание."""
+
