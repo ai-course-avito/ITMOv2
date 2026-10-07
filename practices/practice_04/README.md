@@ -82,6 +82,9 @@ hooks:
       command: "<repo>/hooks/frozen_headers.py"   # fail_closed: true
     - matcher: "terminal"
       command: "<repo>/hooks/git_gate.py"
+  post_tool_call:
+    - matcher: "write_file|patch|multi_edit|edit_file"
+      command: "<repo>/hooks/post_edit_check.py"
   pre_llm_call:
     - command: "<repo>/hooks/project_context.py"
 ```
