@@ -1,0 +1,5 @@
+fastapi
+httpx
+pytest
+uvicorn
+mcp<2

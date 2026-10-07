@@ -1,0 +1,21 @@
+Сводка hook_run.jsonl (claude -p ... --output-format stream-json --verbose --include-hook-events --permission-mode acceptEdits, cwd = ai-review-api)
+Модель: claude-sonnet-5-5 | Claude Code 2.1.292
+
+[строка 5] агент вызвал Edit: '{"status": "ok"}' -> '{"status": "BROKEN"}'
+[строка 7] hook_started   PostToolUse:Edit (event=PostToolUse)
+[строка 8] hook_response  PostToolUse:Edit outcome=success exit_code=0
+    -> FAIL: decision='block'; reason (начало): check.sh: CHECK FAIL после правки tests/test_health.py. Хвост вывода pytest:
+       ... E       AssertionError: assert {'status': 'ok'} == {'status': 'BROKEN'}
+       ... 1 failed, 4 passed, 1 warning in 0.79s | CHECK FAIL
+[строка 28] агент вызвал Edit: '{"status": "BROKEN"}' -> '{"status": "ok"}'
+[строка 30] hook_started   PostToolUse:Edit (event=PostToolUse)
+[строка 31] hook_response  PostToolUse:Edit outcome=success exit_code=0
+    -> PASS: check.sh: CHECK PASS
+
+Итоговый ответ агента (он увидел и FAIL, и PASS):
+Автоматическая проверка после правки работает.
+
+- **После поломки:** hook вернул CHECK FAIL. `test_health_returns_ok` упал на `tests/test_health.py:10`: `/health` отдаёт `{'status': 'ok'}`, а тест ждал `{'status': 'BROKEN'}`. Итог pytest: 1 failed, 4 passed.
+- **После возврата `{"status": "ok"}`:** hook вернул CHECK PASS.
+
+Других файлов я не менял и не создавал.

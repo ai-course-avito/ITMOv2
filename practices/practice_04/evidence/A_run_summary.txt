@@ -1,0 +1,166 @@
+Сводка этап A (источник: evidence/A_run.jsonl)
+Модель: claude-sonnet-5-5 | Claude Code 2.1.292 | permissionMode: acceptEdits
+MCP серверы в init: context7=connected, diff-inspector=connected, claude.ai Claude Docs=connected, claude.ai Google Drive=needs-auth
+MCP tools в init: mcp__claude_ai_Claude_Docs__batch, mcp__claude_ai_Claude_Docs__create, mcp__claude_ai_Claude_Docs__delete, mcp__claude_ai_Claude_Docs__export, mcp__claude_ai_Claude_Docs__guide, mcp__claude_ai_Claude_Docs__query, mcp__claude_ai_Claude_Docs__read, mcp__claude_ai_Claude_Docs__update, mcp__context7__query-docs, mcp__context7__resolve-library-id, mcp__diff-inspector__inspect_diff
+
+=== Хронология (номер строки в jsonl) ===
+[5] AGENT TEXT: Содержимое AGENTS.md у меня уже в контексте, поэтому перечитывать его не буду. Загружаю skill.
+[6] CALL Skill: tdd-feature
+[7] RESULT Skill is_error=False: Launching skill: tdd-feature
+[9] CALL ToolSearch: {"query": "select:mcp__diff-inspector__inspect_diff,mcp__context7__query-docs,mcp__context7__resolve-library-id", "max_results": 5}
+[10] RESULT ToolSearch is_error=False: 
+[12] CALL Read: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\.claude\skills\tdd-feature\writing-good-tests.md
+[13] CALL Read: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\docs\requirements.md
+[14] RESULT Read is_error=False: 1 # Контракт API: ai-review-api 2 3 Сервис принимает diff и возвращает ревью от LLM. В проекте LLM заменен детерминированной заглушкой (`app/llm.py`), сеть не используется. 4 5 ## Эндпоинты 6 7 ###...
+[15] RESULT Read is_error=False: 1 # Как писать хорошие тесты в этом проекте 2 3 Коротко, чтобы агент мог быстро подгрузить это перед написанием теста. 4 5 ## Что тестируем 6 7 - Наблюдаемое поведение API из `docs/requirements.md`...
+[16] CALL Read: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\tests\test_example.py
+[17] RESULT Read is_error=False: 1 """Пример теста в духе проекта. 2 3 Правила стиля: 4 - клиент приложения создаем через TestClient; 5 - LLM подменяем через app.dependency_overrides, сеть и реальный клиент не нужны; 6 - фейк дете...
+[18] CALL Read: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\docs\style-guide.md
+[19] RESULT Read is_error=False: 1 # Style guide: ai-review-api 2 3 Пять правил. Агент читает их перед правкой кода и тестов. 4 5 1. **Имена.** Функции и переменные в `snake_case`, константы в `UPPER_CASE` (например `MAX_DIFF_BYTE...
+[20] CALL Glob: {"pattern": "app/**/*.py", "path": "C:\\Users\\zawh\\ITMO\\Avito\\ITMOv2\\practices\\practice_04\\ai-review-api"}
+[21] RESULT Glob is_error=False: app\__init__.py app\llm.py app\main.py
+[22] CALL Read: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\app\main.py
+[23] RESULT Read is_error=False: 1 from fastapi import Depends, FastAPI 2 from pydantic import BaseModel 3 4 from app.llm import LLMClient, get_llm_client 5 6 app = FastAPI(title="ai-review-api") 7 8 9 class ReviewRequest(BaseMode...
+[24] CALL Read: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\app\llm.py
+[25] RESULT Read is_error=False: 1 """Заглушка LLM-клиента: детерминированная, без сети.""" 2 3 4 class LLMClient: 5 def review(self, diff: str) -> dict: 6 files = sum(1 for line in diff.splitlines() if line.startswith("diff --git...
+[26] CALL mcp__diff-inspector__inspect_diff: {"diff": "diff --git a/x.py b/x.py\n--- a/x.py\n+++ b/x.py\n@@ -1,1 +1,2 @@\n a = 1\n+b = \"привет\"\n", "max_bytes": 100000}
+[27] RESULT mcp__diff-inspector__inspect_diff is_error=False: { "files": [ { "path": "x.py", "status": "modified", "added": 1, "removed": 0, "binary": false } ], "total_files": 1, "total_added": 1, "total_removed": 0, "size_bytes": 90, "max_bytes": 100000, "t...
+[28] CALL mcp__context7__resolve-library-id: {"libraryName": "FastAPI", "query": "return JSONResponse with status code and error body; handle request validation errors"}
+[29] RESULT mcp__context7__resolve-library-id is_error=False: Available Libraries: - Title: FastAPI - Context7-compatible library ID: /websites/fastapi_tiangolo - Description: FastAPI is a modern, high-performance web framework for building APIs with Python, ...
+[33] CALL mcp__context7__query-docs: {"libraryId": "/websites/fastapi_tiangolo", "query": "return JSONResponse with custom status code and error body from path operation"}
+[34] CALL mcp__context7__query-docs: {"libraryId": "/websites/fastapi_tiangolo", "query": "handle invalid request body RequestValidationError exception handler"}
+[35] CALL Bash: printf 'diff --git a/x.py b/x.py\n--- a/x.py\n+++ b/x.py\n@@ -1,1 +1,2 @@\n a = 1\n+b = "привет"\n' | wc -c; ls tests; cat .claude/skills/tdd-feature/scripts...
+[37] RESULT mcp__context7__query-docs is_error=False: ### Return additional status codes with JSONResponse and Annotated Source: https://fastapi.tiangolo.com/advanced/additional-status-codes Use JSONResponse directly to return custom status codes like...
+[38] RESULT mcp__context7__query-docs is_error=False: ### Access and return the RequestValidationError body in FastAPI Source: https://fastapi.tiangolo.com/tutorial/handling-errors Use a custom exception handler for RequestValidationError to access th...
+[39] RESULT Bash is_error=False: 90 __init__.py __pycache__ test_diff_parser.py test_example.py test_health.py test_review_basic.py #!/bin/sh # Fail-first проверка: запускает ОДИН новый тест и решает, упал ли он по правильной прич...
+[48] CALL Bash: cat tests/test_review_basic.py; git status --short
+[49] RESULT Bash is_error=False: import pytest from fastapi.testclient import TestClient from app.llm import LLMClient, get_llm_client from app.main import app @pytest.fixture(autouse=True) def _clean_overrides(): yield app.depend...
+[53] AGENT TEXT: Цикл 1: пустой и пробельный diff.
+[54] CALL Write: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\tests\test_review_validation.py
+[56] HOOK START PostToolUse:Write
+[57] HOOK RESPONSE PostToolUse:Write outcome=success exit=0 -> CHECK FAIL: check.sh: CHECK FAIL после правки tests/test_review_validation.py. Хвост вывода pytest: client = <starlette.testclient.TestClient object at 0x000001F3FF3DAE00> fake_llm = <tests.test_review_validation.FakeLLM object a...
+[58] RESULT Write is_error=False: File created successfully at: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\tests\test_review_validation.py (file state is current in your context — no need to Read it back)
+[59] AGENT TEXT: Хук запустил check.sh и показал ожидаемое красное: 200 вместо 422. Теперь запускаю fail-first, как требует процедура.
+[60] CALL Bash: sh .claude/skills/tdd-feature/scripts/fail_first.sh tests/test_review_validation.py
+[63] RESULT Bash is_error=False: F ================================== FAILURES =================================== ___________ test_review_with_blank_diff_returns_422_and_skips_llm[] ___________ tests\test_review_validation.py:36:...
+[86] CALL Edit: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\app\main.py
+[87] HOOK START PostToolUse:Edit
+[88] HOOK RESPONSE PostToolUse:Edit outcome=success exit=0 -> CHECK PASS: check.sh: CHECK PASS
+[89] RESULT Edit is_error=False: The file C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\app\main.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[95] AGENT TEXT: Цикл 2: размер. Сначала тесты 413: ровно лимит, на байт больше и многобайтовый кейс.
+[96] CALL Edit: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\tests\test_review_validation.py
+[97] HOOK START PostToolUse:Edit
+[98] HOOK RESPONSE PostToolUse:Edit outcome=success exit=0 -> CHECK PASS: check.sh: CHECK PASS
+[99] RESULT Edit is_error=False: The file C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\tests\test_review_validation.py has been updated successfully. (file state is current in your context — no need to Read ...
+[100] CALL Bash: cat >> tests/test_review_validation.py <<'EOF' def test_review_with_diff_of_exactly_max_bytes_returns_200(client, fake_llm): diff = make_diff(MAX_DIFF_BYTES)...
+[102] RESULT Bash is_error=True: Contains brace with quote character (expansion obfuscation)
+[106] AGENT TEXT: Bash отклонил команду, поэтому тесты добавляю через Edit.
+[107] CALL Edit: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\tests\test_review_validation.py
+[109] HOOK START PostToolUse:Edit
+[110] HOOK RESPONSE PostToolUse:Edit outcome=success exit=0 -> CHECK FAIL: check.sh: CHECK FAIL после правки tests/test_review_validation.py. Хвост вывода pytest: fake_llm = <tests.test_review_validation.FakeLLM object at 0x0000022FCFD585A0> def test_review_counts_diff_size_in_bytes_not_char...
+[111] RESULT Edit is_error=False: The file C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\tests\test_review_validation.py has been updated successfully. (file state is current in your context — no need to Read ...
+[115] AGENT TEXT: Три теста падают, как и ожидалось, а тест на ровно лимит проходит сразу. Прогоняю fail-first по каждому.
+[116] CALL Bash: for t in test_review_with_diff_one_byte_over_limit_returns_413_and_skips_llm test_review_with_oversized_diff_returns_diff_too_large_error test_review_counts_...
+[118] RESULT Bash is_error=True: A variable in this command can't be checked before it runs
+[119] CALL Bash: sh .claude/skills/tdd-feature/scripts/fail_first.sh tests/test_review_validation.py::test_review_with_diff_one_byte_over_limit_returns_413_and_skips_llm | ta...
+[122] RESULT Bash is_error=False: ----- FAIL-FIRST OK: тест упал внутри теста. Причина: assert 200 == 413 Проверь глазами: причина должна быть 'нет нужного поведения' (например 404 вместо 422), а не опечатка в тесте. ----- FAIL-FIR...
+[142] CALL Edit: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\app\main.py
+[143] CALL Edit: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\app\main.py
+[144] HOOK START PostToolUse:Edit
+[145] HOOK RESPONSE PostToolUse:Edit outcome=success exit=0 -> CHECK FAIL: check.sh: CHECK FAIL после правки app/main.py. Хвост вывода pytest: body = ReviewRequest(diff='diff --git a/x b/x\nяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяяя...яяяяяяяяяяяяяяяяяяяяя...
+[146] RESULT Edit is_error=False: The file C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\app\main.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[147] HOOK START PostToolUse:Edit
+[148] HOOK RESPONSE PostToolUse:Edit outcome=success exit=0 -> CHECK PASS: check.sh: CHECK PASS
+[149] RESULT Edit is_error=False: The file C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\app\main.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[170] CALL Edit: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\app\main.py
+[171] HOOK START PostToolUse:Edit
+[172] HOOK RESPONSE PostToolUse:Edit outcome=success exit=0 -> CHECK FAIL: check.sh: CHECK FAIL после правки app/main.py. Хвост вывода pytest: ___________ test_review_with_diff_of_exactly_max_bytes_returns_200 ____________ client = <starlette.testclient.TestClient object at 0x000001785446FAC...
+[173] RESULT Edit is_error=False: The file C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\app\main.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[174] AGENT TEXT: Мутация ловится: тест на границу работает. Возвращаю `>`.
+[175] CALL Edit: C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\app\main.py
+[176] CALL Bash: sh scripts/check.sh 2>&1 | tail -5; git status --short; git diff app/
+[177] HOOK START PostToolUse:Edit
+[178] HOOK RESPONSE PostToolUse:Edit outcome=success exit=0 -> CHECK PASS: check.sh: CHECK PASS
+[179] RESULT Edit is_error=False: The file C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\app\main.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[180] RESULT Bash is_error=False: from starlette.testclient import TestClient as TestClient # noqa -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html 50 passed, 1 warning in 0.87s CHECK PASS M app/main.py M req...
+[181] AGENT TEXT: Фича A готова: `scripts/check.sh` печатает `CHECK PASS`, 50 тестов зелёные. Коммит не делал. **AGENTS.md своими словами** - **Контракт:** `docs/requirements.md`, включая раздел «Планируемые фичи». Его без поручения менять нельзя. - **Пример теста:** `tests/...
+[182] FINAL subtype=success is_error=False turns=30 duration_ms=156584 cost_usd=0.379695
+
+=== Проверка по пунктам ===
+(а) Read AGENTS.md (в тексте AGENTS.md агент сказал, что он уже в контексте, см. хронологию строки 5):
+    в логе не найдено
+(б) Skill tdd-feature и reference:
+    Skill: строка 6: Skill tdd-feature
+    reference: строка 12: Read C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\.claude\skills\tdd-feature\writing-good-tests.md
+    (также) строка 13: Read C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\docs\requirements.md
+    (также) строка 18: Read C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\docs\style-guide.md
+(в) MCP tools:
+    строка 26: mcp__diff-inspector__inspect_diff -> is_error=False; { "files": [ { "path": "x.py", "status": "modified", "added": 1, "removed": 0, "binary": false } ], "total_files": 1, "total_added": 1, "total_removed": 0, "size_bytes": 90, "max_bytes": 100000, "t...
+    строка 28: mcp__context7__resolve-library-id -> is_error=False; Available Libraries: - Title: FastAPI - Context7-compatible library ID: /websites/fastapi_tiangolo - Description: FastAPI is a modern, high-performance web framework for building APIs with Python, ...
+    строка 33: mcp__context7__query-docs -> is_error=False; ### Return additional status codes with JSONResponse and Annotated Source: https://fastapi.tiangolo.com/advanced/additional-status-codes Use JSONResponse directly to return custom status codes like...
+    строка 34: mcp__context7__query-docs -> is_error=False; ### Access and return the RequestValidationError body in FastAPI Source: https://fastapi.tiangolo.com/tutorial/handling-errors Use a custom exception handler for RequestValidationError to access th...
+    серверы, к которым были вызовы: ['context7', 'diff-inspector']
+    inspect_diff вызван: да; context7 вызван: да
+(г) Hook PostToolUse:
+    строка 57: PostToolUse:Write outcome=success exit=0 -> CHECK FAIL
+    строка 88: PostToolUse:Edit outcome=success exit=0 -> CHECK PASS
+    строка 98: PostToolUse:Edit outcome=success exit=0 -> CHECK PASS
+    строка 110: PostToolUse:Edit outcome=success exit=0 -> CHECK FAIL
+    строка 145: PostToolUse:Edit outcome=success exit=0 -> CHECK FAIL
+    строка 148: PostToolUse:Edit outcome=success exit=0 -> CHECK PASS
+    строка 172: PostToolUse:Edit outcome=success exit=0 -> CHECK FAIL
+    строка 178: PostToolUse:Edit outcome=success exit=0 -> CHECK PASS
+    последовательность вердиктов: ['CHECK FAIL', 'CHECK PASS', 'CHECK PASS', 'CHECK FAIL', 'CHECK FAIL', 'CHECK PASS', 'CHECK FAIL', 'CHECK PASS']
+    CHECK FAIL встречался: да; CHECK PASS после него: да
+    ручных запусков check.sh через Bash агентом: 1
+      строка 176: sh scripts/check.sh 2>&1 | tail -5; git status --short; git diff app/ -> from starlette.testclient import TestClient as TestClient # noqa -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html 50 passed, 1 warning...
+(д) fail_first.sh:
+    строка 35: упоминание (не запуск скрипта на тесте): printf 'diff --git a/x.py b/x.py\n--- a/x.py\n+++ b/x.py\n@@ -1,1 +1,2 @@\n a = 1\n+b = "привет"\n' | wc -c; ls tests; cat .claude/skills/tdd-featu...
+      is_error=False; (это не запуск скрипта на тесте, слова FAIL-FIRST в выводе взяты из его исходника или команда отклонена)
+    строка 60: ЗАПУСК fail_first.sh: sh .claude/skills/tdd-feature/scripts/fail_first.sh tests/test_review_validation.py
+      is_error=False; вердикты в выводе: ['FAIL-FIRST OK']
+      > FAIL-FIRST OK: тест упал внутри теста. Причина: assert 200 == 422 Проверь глазами: причина должна быть 'нет нужного поведения' (напри
+    строка 100: упоминание (не запуск скрипта на тесте): cat >> tests/test_review_validation.py <<'EOF' def test_review_with_diff_of_exactly_max_bytes_returns_200(client, fake_llm): diff = make_diff(MAX_D...
+      is_error=True; (это не запуск скрипта на тесте, слова FAIL-FIRST в выводе взяты из его исходника или команда отклонена)
+    строка 116: упоминание (не запуск скрипта на тесте): for t in test_review_with_diff_one_byte_over_limit_returns_413_and_skips_llm test_review_with_oversized_diff_returns_diff_too_large_error test_revi...
+      is_error=True; (это не запуск скрипта на тесте, слова FAIL-FIRST в выводе взяты из его исходника или команда отклонена)
+    строка 119: ЗАПУСК fail_first.sh: sh .claude/skills/tdd-feature/scripts/fail_first.sh tests/test_review_validation.py::test_review_with_diff_one_byte_over_limit_returns_413_and_skip...
+      is_error=False; вердикты в выводе: ['FAIL-FIRST OK', 'FAIL-FIRST OK', 'FAIL-FIRST OK', 'FAIL-FIRST BAD']
+      > FAIL-FIRST OK: тест упал внутри теста. Причина: assert 200 == 413 Проверь глазами: причина должна быть 'нет нужного поведения' (напри
+      > FAIL-FIRST OK: тест упал внутри теста. Причина: KeyError: 'error' Проверь глазами: причина должна быть 'нет нужного поведения' (напри
+      > FAIL-FIRST OK: тест упал внутри теста. Причина: assert 200 == 413 Проверь глазами: причина должна быть 'нет нужного поведения' (напри
+      > FAIL-FIRST BAD: тест прошел сразу. Либо фича уже есть, либо тест ничего не проверяет.
+
+=== Итоговый ответ агента ===
+Фича A готова: `scripts/check.sh` печатает `CHECK PASS`, 50 тестов зелёные. Коммит не делал.
+
+**AGENTS.md своими словами**
+- **Контракт:** `docs/requirements.md`, включая раздел «Планируемые фичи». Его без поручения менять нельзя.
+- **Пример теста:** `tests/test_example.py`. Там TestClient, фейк-LLM с `calls` и `dependency_overrides[get_llm_client]`.
+- **Проверка:** `sh scripts/check.sh`, в конце печатает `CHECK PASS` или `CHECK FAIL`. `scripts/check.sh` тоже без поручения не менять.
+
+**Процедура tdd-feature и инструменты**
+- **diff-inspector:** на маленьком diff с кириллицей вернул `size_bytes: 90`. Это совпало с `wc -c`, то есть размер считается в байтах UTF-8.
+- **context7:** по документации FastAPI ошибку с нужным кодом и телом возвращают через `JSONResponse(status_code=..., content=...)`. Невалидное тело FastAPI само превращает в `RequestValidationError` и отвечает 422. Отдельный обработчик не нужен, хватило `field_validator` в модели.
+
+**Что сделано**
+- **Пустой diff:** пустая строка или одни пробелы дают 422, LLM не вызывается.
+- **Слишком большой diff:** больше `MAX_DIFF_BYTES = 100000` байт (UTF-8) дают 413 с телом `{"error": "diff_too_large", "detail": ..., "max_bytes": 100000}`, LLM не вызывается. Формат ошибки соответствует style guide.
+- **Тесты:** в `tests/test_review_validation.py` шесть сценариев, один из них параметризован тремя входами:
+  - пустой и пробельный diff дают 422 без вызова LLM;
+  - ровно 100000 байт дают 200;
+  - 100001 байт даёт 413 без вызова LLM;
+  - тело ошибки содержит `diff_too_large` и `max_bytes`;
+  - размер считается в байтах: тестовый diff из кириллицы длиннее лимита в байтах, но короче в символах.
+
+**Fail-first**
+- Тесты на пустой diff и на 413 дали `FAIL-FIRST OK` с причинами `200 == 422`, `200 == 413` и `KeyError: 'error'`. Это значит, что нужного поведения не было.
+- Тест «ровно лимит» сразу зелёный, скрипт выдал `FAIL-FIRST BAD`. Он страхует от слишком строгой проверки, и до реализации упасть ему не на чем. Чтобы убедиться, что он что-то проверяет, я временно заменил `>` на `>=` в `app/main.py`: тест упал с 413 вместо 200. Потом вернул `>`.
+
+**Файлы**
+- **Изменён:** `app/main.py` (константа, валидатор, ответ 413).
+- **Новый:** `tests/test_review_validation.py`.
+- `docs/requirements.md` и `scripts/check.sh` не менял.
+- `requirements.txt` и остальные неотслеживаемые файлы в статусе были изменены до меня, я их не трогал.
+
+Пара красных `CHECK FAIL` от хука после правок была промежуточной. Один раз константу ещё не успел добавить, другой раз это была сама мутация.

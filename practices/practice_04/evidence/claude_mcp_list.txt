@@ -1,0 +1,18 @@
+$ cd practices/practice_04/ai-review-api && claude mcp list
+Wed, Oct  7, 2026 20:12:06
+Checking MCP server health…
+
+claude.ai Claude Docs: https://api.anthropic.com/v1/pages/mcp - ✔ Connected
+claude.ai Google Drive: https://drivemcp.googleapis.com/mcp/v1 - ✔ Connected
+context7: https://mcp.context7.com/mcp (HTTP) - ⏸ Pending approval (run `claude` to approve)
+diff-inspector: python mcp_server/server.py - ⏸ Pending approval (run `claude` to approve)
+exit=0
+
+--- проверка доступности context7 по сети ---
+context7 POST /mcp initialize: HTTP 200
+
+--- пояснение ---
+claude mcp list показывает "Pending approval" для обоих серверов из .mcp.json: проектные серверы Claude Code
+просит подтвердить один раз в интерактивном `claude`. Сеть до context7 доступна (HTTP 200 выше).
+Чтобы не ждать одобрения, реальный вызов сделан с явным --mcp-config .mcp.json: в init оба сервера
+status=connected, см. claude_code_tool_call.jsonl (пустой diff -> is_error=true, нормальный -> JSON).
