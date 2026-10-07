@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# Pre-commit hook for practice_04 project
+# Runs checks only if staged files include practices/practice_04/project/*
+
+# List staged files
+STAGED=$(git diff --cached --name-only)
+
+# If no staged files from the target path, allow commit
+echo "$STAGED" | grep -q '^practices/practice_04/project/' || exit 0
+
+# Run project check
+(
+  cd practices/practice_04/project || {
+    echo "[pre-commit] practice_04: не удалось перейти в practices/practice_04/project" >&2
+    exit 1
+  }
+  sh scripts/check.sh
+)
+status=$?
+
+if [ "$status" -ne 0 ]; then
+  echo "[pre-commit] practice_04: проверка упала, коммит отменён" >&2
+  exit "$status"
+fi
+
+echo "[pre-commit] practice_04: проверка пройдена"
+exit 0
