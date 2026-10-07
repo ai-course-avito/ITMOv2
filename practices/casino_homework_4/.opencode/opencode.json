@@ -1,0 +1,18 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "skills": {
+    "paths": [".opencode/skills"]
+  },
+  "plugin": [
+    "./plugins/run-tests.js"
+  ],
+  "mcp": {
+    "luckyspin": {
+      "type": "local",
+      "command": ["node", ".opencode/mcp/luckyspin-mcp.js"],
+      "enabled": true,
+      "environment": {}
+    }
+  }
+}

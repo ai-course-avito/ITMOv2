@@ -28,11 +28,19 @@
       "steps": 8,
       "permission": {
         "*": "deny",
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow"
+        "read": {
+          "*": "allow",
+          "**/QUESTIONS.ETALON.md": "deny"
+        },
+        "glob": {
+          "*": "allow",
+          "**/QUESTIONS.ETALON.md": "deny"
+        },
+        "grep": {
+          "*": "allow",
+          "**/QUESTIONS.ETALON.md": "deny"
+        }
       }
     }
   }
 }
-
