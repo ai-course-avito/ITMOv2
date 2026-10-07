@@ -1,0 +1,23 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "read": {
+      "*": "allow",
+      "lab/**/QUESTIONS.ETALON.md": "deny",
+      "**/QUESTIONS.ETALON.md": "deny",
+      "**/*.ETALON.md": "deny"
+    },
+    "glob": {
+      "*": "allow",
+      "lab/**/QUESTIONS.ETALON.md": "deny",
+      "**/QUESTIONS.ETALON.md": "deny",
+      "**/*.ETALON.md": "deny"
+    },
+    "grep": {
+      "*": "allow",
+      "lab/**/QUESTIONS.ETALON.md": "deny",
+      "**/QUESTIONS.ETALON.md": "deny",
+      "**/*.ETALON.md": "deny"
+    }
+  }
+}
