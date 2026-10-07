@@ -1,5 +1,17 @@
 {
   "plugin": [
     ".opencode/plugins/check-after-edit.js"
-  ]
+  ],
+  "mcp": {
+    "servers": {
+      "graph-stats": {
+        "type": "local",
+        "command": [
+          "/home/xxp/Projects/homework/II/ITMOv2/practices/practice_04/project/.venv/bin/python",
+          "mcp_server/graph_stats_server.py"
+        ],
+        "enabled": true
+      }
+    }
+  }
 }
