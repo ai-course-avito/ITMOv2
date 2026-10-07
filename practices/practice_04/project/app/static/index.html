@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Граф задач по тегам</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    :root {
+      --red: #c00;
+      --blue: #1565c0;
+      --purple: #6a0dad;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #fff; /* Белый фон */
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+    }
+    .menu {
+      grid-column: 1 / 2;
+      grid-row: 1 / 3;
+      padding: 16px;
+      color: #fff;
+      background: var(--red); /* Красный - меню */
+      overflow: auto;
+    }
+    .menu h1 { font-size: 18px; margin: 0 0 12px; }
+    .menu label { display:block; font-weight:600; margin: 10px 0 4px; }
+    .menu input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .menu button {
+      background: #fff;
+      color: var(--red);
+      border: none;
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .tasks-list { margin-top: 16px; }
+    .task-item { display:flex; align-items:center; justify-content:space-between; background: rgba(255,255,255,0.15); padding: 8px; border-radius: 6px; margin-bottom: 8px; }
+    .task-item .meta { font-size: 12px; opacity: 0.9; }
+    .task-item button { background:#fff; color: var(--red); padding: 4px 8px; }
+
+    .main {
+      grid-column: 2 / 3;
+      grid-row: 1 / 3;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      min-width: 0;
+    }
+    .banner {
+      display: none;
+      background: var(--blue); /* Синий - служебная инфо */
+      color: #fff;
+      padding: 10px 12px;
+      font-weight: 600;
+    }
+    .controls {
+      background: rgba(21, 101, 192, 0.08);
+      border-top: 3px solid var(--blue);
+      border-bottom: 3px solid var(--blue);
+      color: #003a85;
+      padding: 10px 12px;
+    }
+    .control-row { display:flex; gap:16px; align-items:center; flex-wrap: wrap; }
+    .control { display:flex; align-items:center; gap:8px; }
+    .control input[type="range"] { width: 220px; }
+
+    .canvas {
+      position: relative;
+      min-height: 0;
+    }
+    svg { width: 100%; height: calc(100vh - 140px); display: block; background: #fff; }
+    /* Фиолетовый - рёбра и базовые элементы канваса */
+    .link { stroke: var(--purple); stroke-opacity: 0.6; }
+    .node circle { stroke: #fff; stroke-width: 1.2px; }
+    .node text { font-size: 11px; pointer-events: none; user-select: none; }
+    .faded { opacity: 0.15; }
+    .highlight { opacity: 1; filter: saturate(1.3); }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="menu">
+      <h1>Задачи по тегам</h1>
+      <div>
+        <label for="title">Заголовок</label>
+        <input id="title" type="text" placeholder="например, Купить молоко" />
+        <label for="tags">Теги (через запятую)</label>
+        <input id="tags" type="text" placeholder="например, errands,shopping" />
+        <button id="add-btn">Добавить</button>
+      </div>
+
+      <div class="tasks-list" id="tasks-list"></div>
+    </aside>
+
+    <main class="main">
+      <div class="banner" id="banner"></div>
+
+      <section class="controls">
+        <div class="control-row">
+          <div class="control">
+            <label for="charge">Отталкивание</label>
+            <input id="charge" type="range" min="-400" max="-20" step="5" value="-120" />
+            <span id="charge-val">-120</span>
+          </div>
+          <div class="control">
+            <label for="distance">Длина связи</label>
+            <input id="distance" type="range" min="20" max="300" step="5" value="100" />
+            <span id="distance-val">100</span>
+          </div>
+          <div class="control">
+            <label for="collide">Радиус коллизии</label>
+            <input id="collide" type="range" min="5" max="60" step="1" value="18" />
+            <span id="collide-val">18</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="canvas">
+        <svg id="svg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid meet"></svg>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const CACHE_KEY = 'tasks-cache';
+    const banner = document.getElementById('banner');
+    const tasksListEl = document.getElementById('tasks-list');
+    const svg = d3.select('#svg');
+
+    // Slider elements
+    const chargeSlider = document.getElementById('charge');
+    const distanceSlider = document.getElementById('distance');
+    const collideSlider = document.getElementById('collide');
+    const chargeVal = document.getElementById('charge-val');
+    const distanceVal = document.getElementById('distance-val');
+    const collideVal = document.getElementById('collide-val');
+
+    let simulation = null;
+    let currentData = [];
+
+    function showBanner(msg) {
+      banner.textContent = msg || 'не удалось связаться с сервером, показан последний известный список';
+      banner.style.display = 'block';
+    }
+    function hideBanner() {
+      banner.style.display = 'none';
+      banner.textContent = '';
+    }
+
+    function saveCache(tasks) {
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(tasks)); } catch {}
+    }
+    function loadCache() {
+      try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return [];
+        return JSON.parse(raw);
+      } catch { return []; }
+    }
+
+    function fetchWithTimeout(url, options = {}, timeoutMs = 3000) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeoutMs);
+      const opts = { ...options, signal: controller.signal };
+      return fetch(url, opts).finally(() => clearTimeout(id));
+    }
+
+    async function refreshTasks() {
+      try {
+        const resp = await fetchWithTimeout('/tasks', {}, 3000);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const tasks = await resp.json();
+        currentData = tasks;
+        saveCache(tasks);
+        hideBanner();
+        render(tasks);
+      } catch (e) {
+        const cached = loadCache();
+        if (cached.length) {
+          showBanner('не удалось связаться с сервером, показан последний известный список');
+          currentData = cached;
+          render(cached);
+        } else {
+          showBanner('не удалось связаться с сервером, данных нет');
+          currentData = [];
+          render([]);
+        }
+      }
+    }
+
+    async function addTask(title, tagsCsv) {
+      const tags = tagsCsv.split(',').map(s => s.trim()).filter(Boolean);
+      const payload = { title: title.trim(), tags };
+      try {
+        const resp = await fetchWithTimeout('/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }, 3000);
+        if (resp.status === 201) {
+          hideBanner();
+          await refreshTasks();
+        } else if (resp.status === 422) {
+          const msg = 'Ошибка валидации (422): проверьте заголовок и теги';
+          showBanner(msg);
+        } else {
+          showBanner('Ошибка сервера: ' + resp.status);
+        }
+      } catch (e) {
+        showBanner('не удалось связаться с сервером, показан последний известный список');
+        // Keep UI responsive; do not clear data
+      }
+    }
+
+    async function deleteTask(id) {
+      try {
+        const resp = await fetchWithTimeout(`/tasks/${id}`, { method: 'DELETE' }, 3000);
+        if (resp.status === 204) {
+          hideBanner();
+          await refreshTasks();
+        } else {
+          showBanner('Ошибка удаления: ' + resp.status);
+        }
+      } catch (e) {
+        showBanner('не удалось связаться с сервером, показан последний известный список');
+      }
+    }
+
+    // Build graph data: nodes and links (edges when tasks share a tag)
+    function buildGraph(tasks) {
+      const nodes = tasks.map(t => ({ id: t.id, title: t.title, tags: t.tags }));
+      const tagMap = new Map(); // tag -> array of ids
+      for (const t of tasks) {
+        for (const tag of t.tags) {
+          if (!tagMap.has(tag)) tagMap.set(tag, []);
+          tagMap.get(tag).push(t.id);
+        }
+      }
+      const linkSet = new Set();
+      const links = [];
+      for (const ids of tagMap.values()) {
+        for (let i = 0; i < ids.length; i++) {
+          for (let j = i + 1; j < ids.length; j++) {
+            const a = ids[i], b = ids[j];
+            const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+            if (!linkSet.has(key)) {
+              linkSet.add(key);
+              links.push({ source: a, target: b });
+            }
+          }
+        }
+      }
+      // Build adjacency map
+      const adj = new Map(nodes.map(n => [n.id, new Set()]));
+      for (const { source, target } of links) {
+        adj.get(typeof source === 'object' ? source.id : source).add(typeof target === 'object' ? target.id : target);
+        adj.get(typeof target === 'object' ? target.id : target).add(typeof source === 'object' ? source.id : source);
+      }
+      // Connected components (clusters)
+      const clusterOf = new Map();
+      let clusterIdx = 0;
+      for (const n of nodes) {
+        if (clusterOf.has(n.id)) continue;
+        const queue = [n.id];
+        clusterOf.set(n.id, clusterIdx);
+        while (queue.length) {
+          const v = queue.shift();
+          for (const w of adj.get(v) || []) {
+            if (!clusterOf.has(w)) { clusterOf.set(w, clusterIdx); queue.push(w); }
+          }
+        }
+        clusterIdx++;
+      }
+      // Assign color per cluster
+      const clusterColors = new Map();
+      for (let i = 0; i < clusterIdx; i++) {
+        const hue = Math.floor(Math.random() * 360);
+        clusterColors.set(i, `hsl(${hue}, 60%, 55%)`);
+      }
+      for (const n of nodes) {
+        n.cluster = clusterOf.get(n.id) ?? 0;
+        n.color = clusterColors.get(n.cluster);
+      }
+      return { nodes, links, adj };
+    }
+
+    function renderList(tasks) {
+      tasksListEl.innerHTML = '';
+      if (!tasks.length) {
+        const empty = document.createElement('div');
+        empty.className = 'task-item';
+        empty.textContent = 'Список пуст';
+        tasksListEl.appendChild(empty);
+        return;
+      }
+      for (const t of tasks) {
+        const item = document.createElement('div');
+        item.className = 'task-item';
+        const left = document.createElement('div');
+        left.innerHTML = `<div>${escapeHtml(t.title)}</div><div class="meta">#${t.id} — ${t.tags.map(escapeHtml).join(', ')}</div>`;
+        const del = document.createElement('button');
+        del.textContent = 'Удалить';
+        del.addEventListener('click', () => deleteTask(t.id));
+        item.appendChild(left);
+        item.appendChild(del);
+        tasksListEl.appendChild(item);
+      }
+    }
+
+    function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+
+    function renderGraph(tasks) {
+      const { nodes, links, adj } = buildGraph(tasks);
+
+      svg.selectAll('*').remove();
+      const g = svg.append('g');
+
+      // Links
+      const link = g.selectAll('.link')
+        .data(links)
+        .enter()
+        .append('line')
+        .attr('class', 'link')
+        .attr('stroke-width', 1.8);
+
+      // Nodes
+      const node = g.selectAll('.node')
+        .data(nodes, d => d.id)
+        .enter()
+        .append('g')
+        .attr('class', 'node')
+        .call(d3.drag()
+          .on('start', (event, d) => {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x; d.fy = d.y;
+          })
+          .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y; })
+          .on('end', (event, d) => {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null; d.fy = null;
+          })
+        );
+
+      node.append('circle')
+        .attr('r', 10)
+        .attr('fill', d => d.color)
+        .attr('stroke', '#fff');
+
+      node.append('text')
+        .attr('x', 12)
+        .attr('y', 4)
+        .text(d => d.title)
+        .attr('fill', '#333');
+
+      // Highlight on click
+      node.on('click', (event, d) => {
+        const selected = d.id;
+        const neighbors = new Set([selected]);
+        for (const nb of adj.get(selected) || []) neighbors.add(nb);
+        link.classed('highlight', l => neighbors.has(idOf(l.source)) && neighbors.has(idOf(l.target)))
+            .classed('faded', l => !(neighbors.has(idOf(l.source)) && neighbors.has(idOf(l.target))));
+        node.classed('highlight', n => neighbors.has(n.id))
+            .classed('faded', n => !neighbors.has(n.id));
+      });
+
+      svg.on('click', (event) => {
+        if (event.target.tagName === 'svg') {
+          // Clear highlight when clicking empty space
+          link.classed('highlight', false).classed('faded', false);
+          node.classed('highlight', false).classed('faded', false);
+        }
+      });
+
+      // Simulation
+      const w = 1200, h = 700;
+      const chargeStrength = +chargeSlider.value;
+      const linkDistance = +distanceSlider.value;
+      const collideRadius = +collideSlider.value;
+
+      simulation = d3.forceSimulation(nodes)
+        .force('charge', d3.forceManyBody().strength(chargeStrength))
+        .force('link', d3.forceLink(links).id(d => d.id).distance(linkDistance))
+        .force('collide', d3.forceCollide(collideRadius))
+        .force('center', d3.forceCenter(w / 2, h / 2));
+
+      simulation.on('tick', () => {
+        link
+          .attr('x1', d => d.source.x)
+          .attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x)
+          .attr('y2', d => d.target.y);
+        node
+          .attr('transform', d => `translate(${d.x},${d.y})`);
+      });
+
+      // Slider live updates
+      function updateForces() {
+        if (!simulation) return;
+        const c = +chargeSlider.value;
+        const dist = +distanceSlider.value;
+        const col = +collideSlider.value;
+        chargeVal.textContent = c;
+        distanceVal.textContent = dist;
+        collideVal.textContent = col;
+        simulation.force('charge').strength(c);
+        simulation.force('link').distance(dist);
+        simulation.force('collide').radius(col);
+        simulation.alpha(0.3).restart();
+      }
+      chargeSlider.oninput = updateForces;
+      distanceSlider.oninput = updateForces;
+      collideSlider.oninput = updateForces;
+      // Initialize text values
+      chargeVal.textContent = chargeSlider.value;
+      distanceVal.textContent = distanceSlider.value;
+      collideVal.textContent = collideSlider.value;
+    }
+
+    function idOf(n) { return typeof n === 'object' ? n.id : n; }
+
+    function render(tasks) {
+      renderList(tasks);
+      renderGraph(tasks);
+    }
+
+    // Add button behavior
+    document.getElementById('add-btn').addEventListener('click', async () => {
+      const title = document.getElementById('title').value;
+      const tags = document.getElementById('tags').value;
+      await addTask(title, tags);
+      document.getElementById('title').value = '';
+      document.getElementById('tags').value = '';
+    });
+
+    // Initial load
+    refreshTasks();
+  </script>
+</body>
+</html>

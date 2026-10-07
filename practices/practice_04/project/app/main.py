@@ -5,6 +5,7 @@ import re
 from typing import List
 
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 try:  # Prefer Pydantic v2-style validators when available
@@ -100,3 +101,13 @@ def delete_task(task_id: int):
             del _tasks[idx]
             return
     raise HTTPException(status_code=404, detail="Task not found")
+
+
+# =====================
+# Static files (mounted last to avoid intercepting API routes like /tasks)
+# =====================
+app.mount(
+    "/",
+    StaticFiles(directory="app/static", html=True),
+    name="static",
+)
