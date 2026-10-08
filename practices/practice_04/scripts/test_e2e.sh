@@ -16,14 +16,24 @@ cd "${PROJECT_DIR}"
 # Ensure BASE_URL matches the test server port used below
 export BASE_URL="http://localhost:8000"
 
+# Pick Python interpreter
+if command -v python >/dev/null 2>&1; then
+  PY=python
+elif command -v python3 >/dev/null 2>&1; then
+  PY=python3
+else
+  echo "[tests] ERROR: Neither 'python' nor 'python3' found in PATH" >&2
+  exit 127
+fi
+
 echo "[tests] Running Feature A (MathJax) against $BASE_URL/fourier/"
-python "${WITH_SERVER}" \
-  --server "python -m http.server 8000" --port 8000 -- \
+"$PY" "${WITH_SERVER}" \
+  --server "$PY -m http.server 8000" --port 8000 -- \
   node tests/js/feature_a_mathjax_test.js
 
 echo "[tests] Running Feature B (Fourier partial sums) against $BASE_URL/fourier/"
-python "${WITH_SERVER}" \
-  --server "python -m http.server 8000" --port 8000 -- \
+"$PY" "${WITH_SERVER}" \
+  --server "$PY -m http.server 8000" --port 8000 -- \
   node tests/js/feature_b_fourier_partial_sums_test.js
 
 echo "[tests] Running local file check for Fourier page (no server)"
