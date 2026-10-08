@@ -1,0 +1,35 @@
+spec:
+  inputs:
+    registry:
+      type: string
+      default: $CI_REGISTRY_IMAGE
+      description: "Registry URL"
+    api_image_tag:
+      type: string
+      description: "Тег целевого образа api"
+      default: latest
+    deploy_mode:
+      type: string
+      default: base
+      options:
+        - base
+        - reload
+        - force_recreate
+
+---
+
+include:
+  - local: .gitlab/ci/build-job.yml
+  - local: .gitlab/ci/promote-job.yml
+  - local: .gitlab/ci/dev-deploy-job.yml
+    inputs:
+      registry: $[[ inputs.registry ]]
+      api_image_tag: $[[ inputs.api_image_tag ]]
+      deploy_mode: $[[ inputs.deploy_mode ]]
+  - local: .gitlab/ci/prod-deploy-job.yml
+
+stages:
+  - build
+  - promote
+  - dev-deploy
+  - prod-deploy

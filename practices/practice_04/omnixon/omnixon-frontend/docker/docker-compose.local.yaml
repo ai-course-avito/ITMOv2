@@ -1,0 +1,64 @@
+# Omnixon + this panel for manual testing, configured by ../omnixon-backend/.env.
+#
+#   docker compose -f docker/docker-compose.local.yaml up -d --build
+#   docker compose -f docker/docker-compose.local.yaml down        # keeps the data; add -v to wipe it
+#
+# Panel: http://localhost:8080   API: http://localhost:${UPSTREAM_PORT:-8083}
+# The database is not published (5432 is usually taken); the project has its own name and volume.
+name: omnixon_local
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    env_file: ${OMNIXON_REPO:-../../omnixon-backend}/.env
+    environment:
+      PGDATA: /data/postgres
+    volumes:
+      - postgres-data:/data/postgres
+      - ${OMNIXON_REPO:-../../omnixon-backend}/docker/init-db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    restart: unless-stopped
+
+  # .env sends OpenRouter traffic through socks5://socks5-proxy:1080
+  socks5-proxy:
+    image: serjs/go-socks5-proxy
+    environment:
+      REQUIRE_AUTH: "false"
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ${OMNIXON_REPO:-../../omnixon-backend}
+      dockerfile: docker/Dockerfile.api
+    env_file: ${OMNIXON_REPO:-../../omnixon-backend}/.env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+    ports:
+      - "${UPSTREAM_PORT:-8083}:80"
+    depends_on:
+      db:
+        condition: service_healthy
+      socks5-proxy:
+        condition: service_started
+    restart: unless-stopped
+
+  panel:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.panel
+    environment:
+      OMNIXON_URL: http://api:80
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
