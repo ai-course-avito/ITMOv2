@@ -7,7 +7,6 @@ from core import (
     DEFAULT_TOOLS,
     validate_tools,
 )
-from core.config import _parse_default_model
 from database import models as database_models
 from database.models import Token, token_hash
 
@@ -132,11 +131,3 @@ def test_agent_config_is_decoded_from_json_text_and_serialized_as_stored():
 
 def test_default_limits_are_sane():
     assert DEFAULT_MESSAGE_LIMIT >= 0 and DEFAULT_MEMO_LIMIT >= 1
-
-
-def test_default_model_accepts_json_or_plain_name():
-    assert _parse_default_model('{"model": "a/b", "provider": {"order": ["x"]}}') == {
-        "model": "a/b",
-        "provider": {"order": ["x"]},
-    }
-    assert _parse_default_model("  a/b ") == {"model": "a/b"}

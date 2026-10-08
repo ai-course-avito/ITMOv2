@@ -44,8 +44,9 @@ class Named(BaseModel):
         return "" if v is None else v
 
 
-# Where a model is called when it says nothing else
-DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
+from domain.agents import AgentSettings  # noqa: E402
+from domain.roles import Role  # noqa: E402
+from domain.models import DEFAULT_BASE_URL  # noqa: E402
 
 
 def fingerprint(secret: Optional[str]) -> Optional[str]:
@@ -217,6 +218,19 @@ class Agent(Named):
     def serialize_config(self, config: AgentConfig) -> Dict[str, Any]:
         return config.model_dump(exclude_none=True)  # only what is stored
 
+    def settings(self, defaults) -> AgentSettings:
+        """What this agent works with: its config where it says, else `defaults` (a `config.AgentDefaults`)."""
+        c = self.config
+        pick = lambda value, default: default if value is None else value  # noqa: E731
+        return AgentSettings(
+            tools=tuple(c.tools),
+            message_limit=pick(c.message_limit, defaults.message_limit),
+            memo_limit=pick(c.memo_limit, defaults.memo_limit),
+            rag_limit=pick(c.rag_limit, defaults.rag_limit),
+            auto_memory=pick(c.auto_memory, defaults.auto_memory),
+            parallel_tool_calls=pick(c.parallel_tool_calls, defaults.parallel_tool_calls),
+        )
+
     @property
     def tools(self) -> List[str]:
         return self.config.tools
@@ -278,6 +292,16 @@ class Token(BaseModel):
     @property
     def rank(self) -> int:
         return RANK[self.role]
+
+    @property
+    def as_role(self) -> Role:
+        return Role(self.role)
+
+    def may_manage(self, other: "Token") -> bool:
+        """Make, rename or delete: only tokens up to the role this one hands out, on agents it may use."""
+        if other.rank > self.as_role.grants:
+            return False
+        return self.as_role.at_least(Role.ADMIN) or other.agent_id == self.agent_id
 
 
 class NewToken(Token):

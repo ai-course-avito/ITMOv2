@@ -17,6 +17,7 @@ dependencies = [
     "httpx[socks]==0.28.1", # socks: OPENROUTER_PROXY=socks5://...
     "prometheus-client==0.22.1",
     "redis==8.1.0",
+    "pydantic-settings==2.15.0",
 ]
 
 [dependency-groups]

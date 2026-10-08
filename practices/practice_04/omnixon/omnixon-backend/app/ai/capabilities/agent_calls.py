@@ -17,7 +17,6 @@ How an agent is run is not known here: `answer` is given (by `runner`) so that t
 
 from __future__ import annotations
 
-import hashlib
 import json
 from dataclasses import dataclass
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence
@@ -29,22 +28,12 @@ from pydantic_ai.toolsets import FunctionToolset
 
 from access import may_act_as
 from core import AGENT_CALL_DEPTH, error_response
-from database import CallChain, PostgresDB
+from database import PostgresDB
+from domain.chain import CallChain, USER_ID_MAX, caller_user_id  # noqa: F401
 from ..deps import Dependencies
-
-USER_ID_MAX = 64  # users.external_id
 
 # Runs the agent of a database handle on a request and returns what it said.
 Answer = Callable[[PostgresDB, str], Awaitable[str]]
-
-
-def caller_user_id(caller_agent_id: int, human: str) -> str:
-    """The user a called agent talks to: one per (calling agent, person). A person's id that does not fit is replaced by a short fingerprint
-    of it, which is still one per person."""
-    user_id = f"agent_{caller_agent_id}:{human}"
-    if len(user_id) <= USER_ID_MAX:
-        return user_id
-    return f"agent_{caller_agent_id}:{hashlib.sha256(human.encode()).hexdigest()[:16]}"
 
 
 async def connected_agents(db: PostgresDB) -> List[Dict[str, Any]]:
@@ -67,13 +56,8 @@ def chain_of(db: PostgresDB) -> CallChain:
 
 
 def refusal(chain: CallChain, agent_id: int) -> Optional[str]:
-    """Why the chain may not go on to `agent_id` (a loop, or too deep), in the tool's words; None if it may."""
-    if agent_id in chain.agents:
-        path = " -> ".join(str(a) for a in chain.agents)
-        return f"Refused: agent {agent_id} is already in this chain of calls ({path}); an agent is not called twice."
-    if len(chain.agents) - 1 >= AGENT_CALL_DEPTH:
-        return f"Refused: this request is already {AGENT_CALL_DEPTH} agents deep, the most that one request may go."
-    return None
+    """Why the chain may not go on to `agent_id`, in the tool's words; None if it may."""
+    return chain.refusal(agent_id, AGENT_CALL_DEPTH)
 
 
 async def ask(db: PostgresDB, agent_id: int, request: str, answer: Answer) -> str:

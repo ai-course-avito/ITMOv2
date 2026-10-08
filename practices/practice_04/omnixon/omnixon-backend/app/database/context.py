@@ -8,21 +8,10 @@ import asyncpg
 from pydantic import BaseModel
 
 from .foundation import PostgresPool
+from domain.chain import CallChain
 from .models import Agent, Chat, Token, User
 
 T = TypeVar("T", bound=BaseModel)
-
-
-@dataclass(frozen=True)
-class CallChain:
-    """The agents a request went through when agents called each other (the tool `ask_agent`), and the person it started with. Each called
-    agent talks to the user `agent_<caller>:<person>`, so that name does not grow with depth. A chain is only ever extended (a new one is made)."""
-
-    agents: Tuple[int, ...]  # the first is the agent the request came to, the last the one that is running
-    human: str  # the external id of the person, a user of the first agent
-
-    def then(self, agent_id: int) -> "CallChain":
-        return CallChain(self.agents + (agent_id,), self.human)
 
 
 class Context(BaseModel):

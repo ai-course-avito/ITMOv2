@@ -1,88 +1,32 @@
-import json
-import os
+"""The old module-level constants, now read from `config.Settings` (kept until every user takes its settings from the container)."""
 
-APP_NAME = os.getenv("APP_NAME")
-OPENROUTER_TOKEN = os.getenv("OPENROUTER_TOKEN")
-OPENROUTER_PROXY = os.getenv("OPENROUTER_PROXY")
-INITIAL_API_KEY = os.getenv("INITIAL_API_KEY")
-LOG_LEVEL = os.getenv("LOG_LEVEL", "info").lower()
-# A request that takes longer than this is cancelled (504)
-REQUEST_TIMEOUT_SECONDS = float(os.getenv("REQUEST_TIMEOUT_SECONDS", "600"))
-# Failures of the model provider (5xx, 429, timeouts) are retried this many more times,
-# waiting UPSTREAM_RETRY_DELAY seconds, then twice as long, ...
-UPSTREAM_RETRIES = int(os.getenv("UPSTREAM_RETRIES", "2"))
-UPSTREAM_RETRY_DELAY = float(os.getenv("UPSTREAM_RETRY_DELAY", "1"))
-# An MCP server that could not be connected to is left alone for MCP_DOWN_SECONDS (ai/mcp_health.py)
-MCP_DOWN_SECONDS = float(os.getenv("MCP_DOWN_SECONDS", "30"))
-# A call of an MCP tool that does not get through (connection, timeout, HTTP or protocol error) is tried this
-# many times in all, waiting MCP_TOOL_RETRY_DELAY seconds, then twice as long, ...; then the model gets the
-# error as the tool's result and the answer goes on (ai/mcp_calls.py)
-MCP_TOOL_ATTEMPTS = max(1, int(os.getenv("MCP_TOOL_ATTEMPTS", "3")))
-MCP_TOOL_RETRY_DELAY = float(os.getenv("MCP_TOOL_RETRY_DELAY", "1"))
-# pydantic-ai's retries of an MCP tool whose arguments the model wrote badly (not valid JSON, an unknown
-# tool); its default 1 failed whole answers. A server's own `max_retries` wins.
-MCP_TOOL_RETRIES = int(os.getenv("MCP_TOOL_RETRIES", "3"))
-# Messages older than this many days are no longer used and are deleted (0: keep forever)
-MESSAGE_TTL_DAYS = float(os.getenv("MESSAGE_TTL_DAYS", "7"))
-# How often expired messages are deleted
-MESSAGE_CLEANUP_INTERVAL_SECONDS = float(
-    os.getenv("MESSAGE_CLEANUP_INTERVAL_SECONDS", "3600")
-)
-# Usage rows (what a token spent on the models) older than this many days are folded into one row per
-# token, month and model, which then stays (0: never fold)
-USAGE_TTL_DAYS = float(os.getenv("USAGE_TTL_DAYS", "30"))
-USAGE_COMPACT_INTERVAL_SECONDS = float(
-    os.getenv("USAGE_COMPACT_INTERVAL_SECONDS", "3600")
-)
-# A labelled metric series (e.g. one route and status) that nothing has touched for this
-# many days is dropped from /metrics (0: keep forever)
-METRICS_TTL_DAYS = float(os.getenv("METRICS_TTL_DAYS", "7"))
-# Defaults for agents whose `config` does not set them
-DEFAULT_MESSAGE_LIMIT = int(os.getenv("DEFAULT_MESSAGE_LIMIT", "10"))
-DEFAULT_MEMO_LIMIT = int(os.getenv("DEFAULT_MEMO_LIMIT", "20"))
-# Redis, for the replicas of the api to reach each other's streams (Stop). Unset: one process, nothing shared.
-REDIS_URL = os.getenv("REDIS_URL", "").strip()
-# How many agents deep one request may go when agents call each other (ask_agent): agent -> 1 -> 2 -> 3
-AGENT_CALL_DEPTH = int(os.getenv("AGENT_CALL_DEPTH", "3"))
-DEFAULT_RAG_LIMIT = int(
-    os.getenv("DEFAULT_RAG_LIMIT", "8")
-)  # knowledge entries one `retrieve` call returns
-# Tool calls the model makes in the same turn run at the same time (agent config: parallel_tool_calls)
-DEFAULT_PARALLEL_TOOL_CALLS = os.getenv("DEFAULT_PARALLEL_TOOL_CALLS", "true").strip().lower() not in (
-    "0",
-    "false",
-    "no",
-    "off",
-    "",
-)
-DEFAULT_AUTO_MEMORY = os.getenv("DEFAULT_AUTO_MEMORY", "true").strip().lower() not in (
-    "0",
-    "false",
-    "no",
-    "off",
-    "",
-)
+from config import Settings
 
+settings = Settings.from_env()
 
-def _parse_default_model(raw: str) -> dict:
-    """DEFAULT_MODEL is an OpenRouter request body as JSON, or a bare model name."""
-    raw = raw.strip()
-    if raw.startswith("{"):
-        return json.loads(raw)
-    return {"model": raw}
-
-
-DEFAULT_MODEL = _parse_default_model(
-    os.getenv(
-        "DEFAULT_MODEL",
-        '{"model": "z-ai/glm-5.3-20260816", "provider": {"order": ["decart"], "quantizations": ["fp4"]}}',
-    )
-)
-
-DATABASE_CONFIG = {
-    "host": os.getenv("POSTGRES_HOST"),
-    "port": int(os.getenv("POSTGRES_PORT")),
-    "user": os.getenv("POSTGRES_USER"),
-    "password": os.getenv("POSTGRES_PASSWORD"),
-    "database": os.getenv("POSTGRES_DB"),
-}
+APP_NAME = settings.app_name
+OPENROUTER_TOKEN = settings.openrouter_token
+OPENROUTER_PROXY = settings.openrouter_proxy
+INITIAL_API_KEY = settings.initial_api_key
+LOG_LEVEL = settings.log_level.lower()
+REQUEST_TIMEOUT_SECONDS = settings.request_timeout_seconds
+UPSTREAM_RETRIES = settings.upstream_retries
+UPSTREAM_RETRY_DELAY = settings.upstream_retry_delay
+MCP_DOWN_SECONDS = settings.mcp_down_seconds
+MCP_TOOL_ATTEMPTS = settings.mcp_tool_attempts
+MCP_TOOL_RETRY_DELAY = settings.mcp_tool_retry_delay
+MCP_TOOL_RETRIES = settings.mcp_tool_retries
+MESSAGE_TTL_DAYS = settings.message_ttl_days
+MESSAGE_CLEANUP_INTERVAL_SECONDS = settings.message_cleanup_interval_seconds
+USAGE_TTL_DAYS = settings.usage_ttl_days
+USAGE_COMPACT_INTERVAL_SECONDS = settings.usage_compact_interval_seconds
+METRICS_TTL_DAYS = settings.metrics_ttl_days
+DEFAULT_MESSAGE_LIMIT = settings.default_message_limit
+DEFAULT_MEMO_LIMIT = settings.default_memo_limit
+REDIS_URL = settings.redis_url
+AGENT_CALL_DEPTH = settings.agent_call_depth
+DEFAULT_RAG_LIMIT = settings.default_rag_limit
+DEFAULT_PARALLEL_TOOL_CALLS = settings.default_parallel_tool_calls
+DEFAULT_AUTO_MEMORY = settings.default_auto_memory
+DEFAULT_MODEL = settings.default_model_body
+DATABASE_CONFIG = settings.database

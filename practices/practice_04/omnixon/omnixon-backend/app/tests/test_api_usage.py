@@ -171,10 +171,11 @@ async def test_acting_as_another_agent_is_paid_by_the_token_of_the_admin(client)
     async with role_clients(client) as x:
         owner = (await client.get("/api/v1/tokens/self")).json()
         # earlier tests leave background work on the owner token (auto_memory runs after the answer): wait until the count stops moving
-        before = None
-        for _ in range(20):
+        before, steady = None, 0
+        for _ in range(60):
             now = spent((await client.get("/api/v1/admin/usage")).json(), owner["id"]).requests
-            if now == before:
+            steady = steady + 1 if now == before else 0
+            if steady >= 6:  # three seconds without a change
                 break
             before = now
             await asyncio.sleep(0.5)

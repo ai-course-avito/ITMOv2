@@ -16,7 +16,9 @@ import math
 import uuid
 from datetime import datetime
 import asyncpg
-from core import DATABASE_CONFIG
+from config import Settings
+
+DATABASE_CONFIG = Settings.from_env().database
 from database import Memory
 
 
