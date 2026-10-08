@@ -5,7 +5,7 @@ from domain.agents import AgentSettings, AgentSnapshot
 from domain.chain import CallChain, caller_user_id
 from domain.models import ModelConnection
 from api.schemas.agents import AgentConfigInput
-from database import AgentConfig
+from domain.entities import AgentConfig
 from shared import agent_row
 
 DEFAULTS = AgentDefaults(message_limit=10, memo_limit=20, rag_limit=8, auto_memory=True, parallel_tool_calls=True)

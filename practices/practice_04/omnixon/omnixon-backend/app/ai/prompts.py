@@ -6,7 +6,7 @@ from typing import List, Sequence
 
 from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, TextPart, UserPromptPart
 
-from core.tools import TOOL_MEMORY
+from domain.tools import TOOL_MEMORY
 from domain.access import Conversation
 from repositories.people import MessageRepository
 from services.memories import MemoryService

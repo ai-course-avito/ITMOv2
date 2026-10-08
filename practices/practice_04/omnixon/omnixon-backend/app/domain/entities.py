@@ -4,14 +4,7 @@ import secrets
 
 from datetime import datetime
 from typing import Optional, Any, Dict, List
-from core import (
-    DEFAULT_AUTO_MEMORY,
-    DEFAULT_PARALLEL_TOOL_CALLS,
-    DEFAULT_MEMO_LIMIT,
-    DEFAULT_RAG_LIMIT,
-    DEFAULT_MESSAGE_LIMIT,
-    DEFAULT_TOOLS,
-)
+from .tools import DEFAULT_TOOLS
 from pydantic import (
     BaseModel,
     Field,
@@ -233,31 +226,6 @@ class Agent(Named):
     @property
     def tools(self) -> List[str]:
         return self.config.tools
-
-    @property
-    def message_limit(self) -> int:
-        limit = self.config.message_limit
-        return DEFAULT_MESSAGE_LIMIT if limit is None else limit
-
-    @property
-    def auto_memory(self) -> bool:
-        setting = self.config.auto_memory
-        return DEFAULT_AUTO_MEMORY if setting is None else setting
-
-    @property
-    def parallel_tool_calls(self) -> bool:
-        setting = self.config.parallel_tool_calls
-        return DEFAULT_PARALLEL_TOOL_CALLS if setting is None else setting
-
-    @property
-    def memo_limit(self) -> int:
-        limit = self.config.memo_limit
-        return DEFAULT_MEMO_LIMIT if limit is None else limit
-
-    @property
-    def rag_limit(self) -> int:
-        limit = self.config.rag_limit
-        return DEFAULT_RAG_LIMIT if limit is None else limit
 
 
 # Roles, from the least to the most: what a token may do (see access.py for the rules)

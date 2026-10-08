@@ -1,24 +1,17 @@
-"""unit access tests"""
+"""unit tests of names, tokens and users as the database keeps them (and the migrations that made them so)"""
 
 import json
-import uuid
-from types import SimpleNamespace
+
 import asyncpg
 import pytest
-from core import DATABASE_CONFIG
-from database import Agent
-from database.models import Token, token_hash
-from database.foundation import (
-    MIGRATIONS_DIR,
-    apply_migrations,
-    list_migrations,
-)
 
-from shared import (
-    NOW,
-    scratch_database,
-    scratch_pool,
-)
+from domain.entities import Agent, token_hash
+from infrastructure.postgres import MIGRATIONS_DIR, apply_migrations, list_migrations
+from repositories.agents import AgentRepository
+from repositories.models import McpServerRepository, ModelRepository
+from repositories.people import TokenRepository, UserRepository
+from shared import NOW
+from world import world
 
 
 def _row(**kw):
@@ -26,7 +19,7 @@ def _row(**kw):
 
 
 def test_fallback_names_of_rows_without_a_name():
-    from database.models import MCPServer, Model
+    from domain.entities import MCPServer, Model
 
     assert MCPServer(**_row(id=5, config={"url": "http://x"})).name == "MCP 5"
     assert Model(**_row(id=3, request_json={"model": "a/b"})).name == "a/b"
@@ -37,7 +30,7 @@ def test_fallback_names_of_rows_without_a_name():
 
 
 def test_a_given_name_always_wins_over_the_fallback():
-    from database.models import MCPServer, Model
+    from domain.entities import MCPServer, Model
 
     agent = Agent(**_row(id=2, name="Support", prompt="You are a pirate.", model_id=0))
     assert agent.name == "Support"
@@ -65,78 +58,35 @@ def test_the_name_goes_out_in_the_api_answer():
 
 @pytest.mark.asyncio
 async def test_rows_made_before_names_exist_are_served_with_fallbacks():
-    """Rows of a database that only knew migrations up to 9 get no name; after the
-    migration they are shown with the fallbacks and can be named."""
-    from database import Context, PostgresDB, PostgresPool
+    """Rows of a database that only knew migrations up to 9 get no name; after the migration they are shown with the fallbacks and can be named."""
+    async with world() as w:
+        db, models, servers, agents = w.get(ModelRepository).db, w.get(ModelRepository), w.get(McpServerRepository), w.get(AgentRepository)
+        # what an old row looks like: no name at all
+        model_id = (await db.fetch_one("INSERT INTO models (request_json) VALUES ($1) RETURNING id", ({"model": "old/model"},)))["id"]
+        mcp_id = (await db.fetch_one("INSERT INTO mcp_servers (config) VALUES ($1) RETURNING id", ({"url": "http://old"},)))["id"]
+        agent_id = (await db.fetch_one("INSERT INTO agents (prompt, model_id) VALUES ($1, $2) RETURNING id", ("Old prompt\nmore", model_id)))["id"]
+        bare_agent_id = (await db.fetch_one("INSERT INTO agents (prompt, model_id) VALUES ('', $1) RETURNING id", (model_id,)))["id"]
+        assert (await models.get(model_id)).name == "old/model"
+        assert (await servers.get(mcp_id)).name == f"MCP {mcp_id}"
+        assert (await agents.get(agent_id)).name == "Old prompt"
+        assert (await agents.get(bare_agent_id)).name == f"Agent {bare_agent_id}"
+        assert {a.id: a.name for a in await agents.list()}[agent_id] == "Old prompt"
+        assert [m.name for m in await servers.list()] == [f"MCP {mcp_id}"]
 
-    name = f"names_test_{uuid.uuid4().hex[:8]}"
-    admin = await scratch_pool(name)
-    try:
-        async with PostgresPool({**DATABASE_CONFIG, "database": name}) as pool:
-            async with PostgresDB(
-                pool, Context(agent=None, token=None, user=None)
-            ) as db:
-                # what an old row looks like: no name at all
-                model_id = (
-                    await db.fetch_one(
-                        "INSERT INTO models (request_json) VALUES ($1) RETURNING id",
-                        ({"model": "old/model"},),
-                    )
-                )["id"]
-                mcp_id = (
-                    await db.fetch_one(
-                        "INSERT INTO mcp_servers (config) VALUES ($1) RETURNING id",
-                        ({"url": "http://old"},),
-                    )
-                )["id"]
-                agent_id = (
-                    await db.fetch_one(
-                        "INSERT INTO agents (prompt, model_id) VALUES ($1, $2) RETURNING id",
-                        ("Old prompt\nmore", model_id),
-                    )
-                )["id"]
-                bare_agent_id = (
-                    await db.fetch_one(
-                        "INSERT INTO agents (prompt, model_id) VALUES ('', $1) RETURNING id",
-                        (model_id,),
-                    )
-                )["id"]
-                assert (await db.get_model(model_id)).name == "old/model"
-                assert (await db.get_mcp_server(mcp_id)).name == f"MCP {mcp_id}"
-                assert (await db.get_agent(agent_id)).name == "Old prompt"
-                assert (
-                    await db.get_agent(bare_agent_id)
-                ).name == f"Agent {bare_agent_id}"
-                assert {a.id: a.name for a in await db.get_all_agents()}[
-                    agent_id
-                ] == "Old prompt"
-                assert [m.name for m in await db.get_all_mcp_servers()] == [
-                    f"MCP {mcp_id}"
-                ]
+        # naming them
+        assert (await models.update(model_id, name="Old")).name == "Old"
+        assert (await servers.update(mcp_id, name="Maths")).name == "Maths"
+        renamed = await agents.update(agent_id, name="Support")
+        assert renamed.name == "Support" and renamed.prompt == "Old prompt\nmore"
+        # a change without a name keeps it; the content of a rename is untouched
+        assert (await agents.update(agent_id, prompt="New")).name == "Support"
+        assert (await models.get(model_id)).request_json == {"model": "old/model"}
+        assert (await models.update(model_id, {"model": "x/y"})).name == "Old"
 
-                # naming them
-                assert (await db.update_model(model_id, name="Old")).name == "Old"
-                assert (
-                    await db.update_mcp_server(mcp_id, name="Maths")
-                ).name == "Maths"
-                renamed = await db.update_agent(agent_id, name="Support")
-                assert (
-                    renamed.name == "Support" and renamed.prompt == "Old prompt\nmore"
-                )
-                # a change without a name keeps it; the content of a rename is untouched
-                assert (await db.update_agent(agent_id, prompt="New")).name == "Support"
-                assert (await db.get_model(model_id)).request_json == {
-                    "model": "old/model"
-                }
-                assert (await db.update_model(model_id, {"model": "x/y"})).name == "Old"
-
-                # a rollback makes copies without names: they show the fallbacks
-                mcp2 = await db.create_mcp_server({"url": "http://c"})
-                assert mcp2.name == f"MCP {mcp2.id}"
-                assert (await db.create_model({"model": "p/q"})).name == "p/q"
-    finally:
-        await admin.execute(f'DROP DATABASE "{name}" WITH (FORCE)')
-        await admin.close()
+        # a rollback makes copies without names: they show the fallbacks
+        mcp2 = await servers.insert({"url": "http://c"})
+        assert mcp2.name == f"MCP {mcp2.id}"
+        assert (await models.insert({"model": "p/q"})).name == "p/q"
 
 
 def test_migration_10_adds_a_nullable_name_to_the_four_entities():
@@ -150,242 +100,66 @@ def test_migration_10_adds_a_nullable_name_to_the_four_entities():
         assert f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS name TEXT" in sql
     assert "NOT NULL" not in sql  # old rows have none
 
-
-def fake_db(role: str, agent_id: int = 1, token_id: int = 10):
-    """Enough of a database object for the checks of access.py: a context with a token."""
-    token = Token(
-        id=token_id,
-        name="t",
-        agent_id=agent_id,
-        role=role,
-        token_sha256="x",
-        timestamp=NOW,
-    )
-    return SimpleNamespace(
-        context=SimpleNamespace(token=token, agent=SimpleNamespace(id=agent_id))
-    )
-
-
-def a_token(role: str, agent_id: int = 1, token_id: int = 99) -> Token:
-    return Token(
-        id=token_id,
-        name="other",
-        agent_id=agent_id,
-        role=role,
-        token_sha256="y",
-        timestamp=NOW,
-    )
-
-
-def test_roles_are_ranked_regular_user_admin_owner():
-    from database import RANK, ROLES
-
-    assert ROLES == ("regular", "user", "admin", "owner")
-    assert [RANK[r] for r in ROLES] == [1, 2, 3, 4]
-
-
-@pytest.mark.parametrize(
-    "caller, grants",
-    [
-        ("regular", set()),
-        ("user", {"regular", "user"}),
-        ("admin", {"regular", "user"}),  # an admin cannot hand out admin
-        ("owner", {"regular", "user", "admin", "owner"}),
-    ],
-)
-def test_who_may_hand_out_which_role(caller, grants):
-    from access import may_grant
-    from database import ROLES
-
-    db = fake_db(caller)
-    assert {role for role in ROLES if may_grant(db, role)} == grants
-
-
-def test_a_token_is_managed_only_up_to_what_the_caller_may_hand_out_and_on_agents_it_may_use():
-    from access import can_manage_token
-
-    # a user: regular and user tokens of its own agent only
-    user = fake_db("user", agent_id=1)
-    assert can_manage_token(user, a_token("regular", agent_id=1))
-    assert can_manage_token(user, a_token("user", agent_id=1))
-    assert not can_manage_token(user, a_token("admin", agent_id=1))
-    assert not can_manage_token(user, a_token("regular", agent_id=2))  # another agent
-
-    # an admin: any agent, but nothing from admin up
-    admin = fake_db("admin", agent_id=1)
-    assert can_manage_token(admin, a_token("user", agent_id=2))
-    assert not can_manage_token(admin, a_token("admin", agent_id=2))
-    assert not can_manage_token(admin, a_token("owner", agent_id=1))
-
-    # an owner: everything
-    owner = fake_db("owner", agent_id=1)
-    assert all(
-        can_manage_token(owner, a_token(r, agent_id=5))
-        for r in ("regular", "user", "admin", "owner")
-    )
-
-    # a regular token manages nothing, not even its own kind
-    assert not can_manage_token(fake_db("regular"), a_token("regular", agent_id=1))
-
-
-def test_agents_outside_the_own_one_are_for_admins_only():
-    from access import default_agent_id, ensure_agent_access
-    from fastapi import HTTPException
-
-    for role in ("regular", "user"):
-        db = fake_db(role, agent_id=1)
-        ensure_agent_access(db, 1)
-        with pytest.raises(HTTPException) as e:
-            ensure_agent_access(db, 2)
-        assert e.value.status_code == 403
-        assert default_agent_id(db, None) == 1
-        with pytest.raises(HTTPException):
-            default_agent_id(db, 2)
-    for role in ("admin", "owner"):
-        db = fake_db(role, agent_id=1)
-        ensure_agent_access(db, 2)
-        assert default_agent_id(db, 2) == 2
-
-
-@pytest.mark.asyncio
-async def test_require_lets_through_the_role_and_above():
-    from access import require
-    from fastapi import HTTPException
-
-    for needed, passes in {
-        "user": {"user", "admin", "owner"},
-        "admin": {"admin", "owner"},
-        "owner": {"owner"},
-    }.items():
-        for role in ("regular", "user", "admin", "owner"):
-            request = SimpleNamespace(state=SimpleNamespace(db=fake_db(role)))
-            if role in passes:
-                assert await require(needed)(request) is None
-            else:
-                with pytest.raises(HTTPException) as e:
-                    await require(needed)(request)
-                assert e.value.status_code == 403
-
-
 @pytest.mark.asyncio
 async def test_a_token_is_stored_as_a_hash_and_its_secret_is_known_only_when_it_is_made():
-    async with scratch_database("tokens_test") as (pool, db):
-        made = await db.create_token("bot", db.context.agent.id, "user")
-        assert (
-            made.token
-            and len(made.token) == 64
-            and made.role == "user"
-            and made.name == "bot"
-        )
+    async with world() as w:
+        tokens, agent = w.get(TokenRepository), await w.agent("a")
+        made = await tokens.insert("bot", agent.id, "user")
+        assert made.token and len(made.token) == 64 and made.role == "user" and made.name == "bot"
 
         # the database holds the hash, nowhere the secret
-        row = await db.fetch_one("SELECT * FROM tokens WHERE id=$1", (made.id,))
+        row = await tokens.db.fetch_one("SELECT * FROM tokens WHERE id=$1", (made.id,))
         assert row["token_sha256"] == token_hash(made.token)
         assert made.token not in json.dumps({k: str(v) for k, v in row.items()})
-        columns = {
-            r["column_name"]
-            for r in await pool.pool.fetch(
-                "SELECT column_name FROM information_schema.columns WHERE table_name='tokens'"
-            )
-        }
-        assert columns == {
-            "id",
-            "name",
-            "agent_id",
-            "role",
-            "token_sha256",
-            "timestamp",
-        }
+        columns = {r["column_name"] for r in await tokens.db.fetch_all("SELECT column_name FROM information_schema.columns WHERE table_name='tokens'")}
+        assert columns == {"id", "name", "agent_id", "role", "token_sha256", "timestamp"}
 
         # found by the secret; a wrong secret finds nothing; reading it back gives no secret
-        found = await db.get_token_by_secret(made.token)
-        assert found.id == made.id and found.agent_id == db.context.agent.id
-        assert await db.get_token_by_secret(made.token + "x") is None
-        assert "token" not in found.model_dump()
-        assert "token" not in (await db.get_token(made.id)).model_dump()
+        found = await tokens.by_secret(made.token)
+        assert found.id == made.id and found.agent_id == agent.id
+        assert await tokens.by_secret(made.token + "x") is None
+        assert "token" not in found.model_dump() and "token" not in (await tokens.get(made.id)).model_dump()
 
-        # two tokens never share a secret
-        other = await db.create_token("bot2", db.context.agent.id, "regular")
+        other = await tokens.insert("bot2", agent.id, "regular")  # two tokens never share a secret
         assert other.token != made.token
 
         # rename, delete: a deleted token stops working at once
-        assert (await db.update_token(made.id, name="renamed")).name == "renamed"
-        changed = await db.update_token(
-            made.id, role="user"
-        )  # the role may be changed; what is not given stays
+        assert (await tokens.update(made.id, name="renamed")).name == "renamed"
+        changed = await tokens.update(made.id, role="user")  # the role may be changed; what is not given stays
         assert (changed.name, changed.role) == ("renamed", "user")
-        assert (await db.update_token(made.id, role="regular")).name == "renamed"
-        assert (await db.delete_token(made.id)).id == made.id
-        assert await db.get_token_by_secret(made.token) is None
-        assert await db.delete_token(made.id) is None
+        assert (await tokens.update(made.id, role="regular")).name == "renamed"
+        assert (await tokens.delete(made.id)).id == made.id
+        assert await tokens.by_secret(made.token) is None and await tokens.delete(made.id) is None
 
 
 @pytest.mark.asyncio
 async def test_a_role_must_exist_and_an_agent_with_tokens_cannot_be_deleted():
-    async with scratch_database("tokens_fk_test") as (pool, db):
+    async with world() as w:
+        tokens, agents, agent = w.get(TokenRepository), w.get(AgentRepository), await w.agent("a")
         with pytest.raises(asyncpg.ForeignKeyViolationError):
-            await db.create_token("bad", db.context.agent.id, "superuser")
+            await tokens.insert("bad", agent.id, "superuser")
         with pytest.raises(asyncpg.ForeignKeyViolationError):
-            await db.create_token("bad", 999999, "user")
-
-        made = await db.create_token("bot", db.context.agent.id, "user")
+            await tokens.insert("bad", 999999, "user")
+        made = await tokens.insert("bot", agent.id, "user")
         with pytest.raises(asyncpg.ForeignKeyViolationError):
-            await db.delete_agent(db.context.agent.id)  # still has a token
-        await db.delete_token(made.id)
-        assert (await db.delete_agent(db.context.agent.id)) is not None
-
-
-@pytest.mark.asyncio
-async def test_the_initial_token_is_an_owner_with_an_agent_of_its_own_and_is_made_once():
-    async with scratch_database("initial_test") as (pool, db):
-        first = await db.get_token_by_secret("a-deployment-key")
-        assert first is None
-        made = await db.ensure_initial_token("a-deployment-key")
-        assert made.role == "owner" and made.name == "initial"
-        agent = await db.get_agent(made.agent_id)
-        assert agent.name == "Default agent" and agent.prompt == ""
-        assert (
-            await db.get_latest_version_number(agent.id) == 1
-        )  # recorded like any agent
-
-        again = await db.ensure_initial_token("a-deployment-key")
-        assert (
-            again.id == made.id and again.agent_id == made.agent_id
-        )  # a restart changes nothing
-
-        # someone lowered it by hand: the next start makes it an owner again
-        await db.execute("UPDATE tokens SET role='regular' WHERE id=$1", (made.id,))
-        assert (await db.ensure_initial_token("a-deployment-key")).role == "owner"
+            await agents.delete(agent.id)  # still has a token
+        await tokens.delete(made.id)
+        assert await agents.delete(agent.id) is not None
 
 
 @pytest.mark.asyncio
 async def test_users_belong_to_an_agent_and_are_separate_between_agents():
-    async with scratch_database("users_agent_test") as (pool, db):
-        first = db.context.agent
-        second = await db.create_agent("second", 0, name="b")
-
-        mine = await db.create_user("shared-id")
-        assert mine.agent_id == first.id
-        assert await db.create_user("shared-id") is None  # one per agent
-
-        db.context.agent = second
-        theirs = await db.create_user(
-            "shared-id"
-        )  # the same id in another agent is another user
+    async with world() as w:
+        users, agents = w.get(UserRepository), w.get(AgentRepository)
+        first, second = await w.agent("first"), await w.agent("second")
+        mine = await users.insert(first.id, "shared-id")
+        assert mine.agent_id == first.id and await users.insert(first.id, "shared-id") is None  # one per agent
+        theirs = await users.insert(second.id, "shared-id")  # the same id in another agent is another user
         assert theirs.id != mine.id and theirs.agent_id == second.id
-        assert (await db.get_user("shared-id")).id == theirs.id
-        assert [u.external_id for u in await db.search_users("sha")] == ["shared-id"]
-
-        db.context.agent = first
-        assert (await db.get_user("shared-id")).id == mine.id
-        # deleting an agent takes its users along
-        await db.delete_agent(second.id)
-        assert (
-            await pool.pool.fetchval(
-                "SELECT count(*) FROM users WHERE id=$1", theirs.id
-            )
-            == 0
-        )
+        assert (await users.get(second.id, "shared-id")).id == theirs.id and (await users.get(first.id, "shared-id")).id == mine.id
+        assert [u.external_id for u in await users.search(second.id, "sha")] == ["shared-id"]
+        await agents.delete(second.id)  # deleting an agent takes its users along
+        assert (await users.db.fetch_one("SELECT count(*) AS n FROM users WHERE id=$1", (theirs.id,)))["n"] == 0
 
 
 @pytest.mark.asyncio

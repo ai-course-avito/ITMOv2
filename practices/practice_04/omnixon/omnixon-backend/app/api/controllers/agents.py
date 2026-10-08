@@ -6,7 +6,7 @@ from api.controller import Controller, current_principal, endpoint
 from api.schemas.agents import AgentCreate, AgentUpdate
 from api.schemas.connections import AgentConnectionCreate, AgentConnectionUpdate
 from api.schemas.versions import RollbackRequest, VersionDiff
-from database.models import Agent, AgentConnection, AgentVersion, MCPServer
+from domain.entities import Agent, AgentConnection, AgentVersion, MCPServer
 from domain.access import Principal
 from services.agents import AgentService
 from services.connections import ConnectionService

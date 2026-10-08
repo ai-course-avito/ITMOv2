@@ -4,7 +4,7 @@ from fastapi import Depends, Query
 
 from api.controller import Controller, current_principal, endpoint
 from api.schemas.users import ChatCreate, ChatUpdate, UserCreate, UserUpdate
-from database.models import Chat, Message, RecentUser, User
+from domain.entities import Chat, Message, RecentUser, User
 from domain.access import Principal
 from services.users import ChatService, UserService
 

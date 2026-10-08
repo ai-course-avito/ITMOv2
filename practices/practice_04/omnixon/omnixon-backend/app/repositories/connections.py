@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional, Sequence
 
-from database.models import AgentConnection
+from domain.entities import AgentConnection
 from .base import Repository
 
 

@@ -10,7 +10,7 @@ from repositories.database import map_value
 
 T = TypeVar("T", bound=BaseModel)
 
-MIGRATIONS_DIR = Path(__file__).parent.parent / "database" / "migrations"
+MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 # Arbitrary key of the advisory lock that serialises migrations between replicas.
 MIGRATION_LOCK_ID = 7340216
 

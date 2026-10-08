@@ -10,7 +10,7 @@ import asyncio
 import contextlib
 from types import SimpleNamespace
 from typing import Optional
-from database import Agent
+from domain.entities import Agent
 from pydantic_ai.models.openrouter import OpenRouterModel, OpenRouterProvider
 import math
 import uuid
@@ -19,7 +19,7 @@ import asyncpg
 from config import Settings
 
 DATABASE_CONFIG = Settings.from_env().database
-from database import Memory
+from domain.entities import Memory
 
 
 API_URL = os.getenv("API_URL", "http://api:80/")
@@ -289,127 +289,6 @@ def agent_row(config):
     return Agent(id=1, prompt="p", model_id=0, config=config, timestamp=NOW)
 
 
-class FakeDB:
-    """Just enough of PostgresDB for the prompt and memory tools."""
-
-    def __init__(
-        self,
-        memories=(),
-        total=None,
-        user=True,
-        agent=True,
-        messages=(),
-        memo_limit=5,
-        rag_limit=8,
-        vectors=None,
-        auto_memory=False,
-        parallel_tool_calls=True,
-        tools=("rag", "memory"),
-    ):
-        self.context = SimpleNamespace(
-            user=SimpleNamespace(id=7) if user else None,
-            agent=(
-                SimpleNamespace(
-                    id=3,
-                    prompt="Be helpful.",
-                    message_limit=10,
-                    memo_limit=memo_limit,
-                    rag_limit=rag_limit,
-                    auto_memory=auto_memory,
-                    parallel_tool_calls=parallel_tool_calls,
-                    tools=list(tools),
-                    model_id=0,
-                )
-                if agent
-                else None
-            ),
-        )
-        self.memories = list(memories)
-        self.vectors = dict(vectors or {})  # memory id -> embedding
-        self.total = len(self.memories) if total is None else total
-        self.messages = list(messages)
-        self.calls = []
-        self.next_id = 99
-
-    async def get_agent_connections(self, agent_id=None):
-        return []  # no agents to call: no list_agents / ask_agent
-
-    async def get_similar_rag(self, embedding, limit=10):
-        self.calls.append(("get_similar_rag", limit))
-        return []
-
-    async def get_memories(self, user_id, agent_id, limit=None, query=None):
-        self.calls.append(("get_memories", user_id, agent_id, limit, query))
-        found = [
-            m for m in self.memories if not query or query.lower() in m.content.lower()
-        ]
-        return found[:limit]
-
-    async def search_memories(
-        self, user_id, agent_id, embedding, limit, max_distance=None
-    ):
-        self.calls.append(("search_memories", limit, max_distance))
-        found = []
-        for m in self.memories:
-            vector = self.vectors.get(m.id)
-            if vector is None:
-                continue
-            dot = sum(x * y for x, y in zip(vector, embedding))
-            norm = math.sqrt(sum(x * x for x in vector)) * math.sqrt(
-                sum(y * y for y in embedding)
-            )
-            distance = 1 - dot / norm
-            if max_distance is None or distance <= max_distance:
-                found.append((m, distance))
-        return sorted(found, key=lambda pair: pair[1])[:limit]
-
-    async def count_memories(self, user_id, agent_id):
-        return self.total
-
-    async def create_memory(self, user_id, agent_id, content, embedding=None):
-        self.calls.append(("create_memory", user_id, agent_id, content))
-        created = Memory(
-            id=self.next_id,
-            user_id=user_id,
-            agent_id=agent_id,
-            content=content,
-            timestamp=NOW,
-        )
-        self.next_id += 1
-        self.memories.insert(0, created)  # newest first
-        if embedding is not None:
-            self.vectors[created.id] = embedding
-        return created
-
-    async def delete_memory(self, memory_id, user_id=None, agent_id=None):
-        self.calls.append(("delete_memory", memory_id, user_id, agent_id))
-        return self.memories[0] if self.memories else None
-
-    async def get_all_messages(self):
-        self.calls.append(("get_all_messages",))
-        return self.messages
-
-    async def get_model(self, model_id):
-        return SimpleNamespace(request_json={"model": "a/b"}, connection={})
-
-    async def get_agent_mcp_servers(self, agent_id):
-        return []
-
-    async def create_message(self, content):
-        self.stored = getattr(self, "stored", []) + [content]
-
-    async def create_messages(self, contents):
-        for content in contents:
-            await self.create_message(content)
-
-    @contextlib.asynccontextmanager
-    async def transaction(self):
-        yield
-
-    async def lock(self, key):
-        self.calls.append(("lock", key))
-
-
 def memory(id: int, content: str) -> Memory:
     return Memory(id=id, user_id=7, agent_id=3, content=content, timestamp=NOW)
 
@@ -433,20 +312,27 @@ PNG_B64 = base64.b64encode(b"\x89PNG\r\n\x1a\nnot really a picture").decode()
 
 @contextlib.asynccontextmanager
 async def scratch_database(prefix="tx_test"):
-    """(pool, db): a database object with a token, an agent, a user and its default chat, on a scratch database."""
-    from core import INITIAL_API_KEY
-    from database import Context, PostgresDB, PostgresPool
+    """(pool, db): the pool of a scratch database, and `db.context` with what a test needs to start from: the initial token (an owner, with its
+    agent), an agent, a user of it and the user's default chat."""
+    from types import SimpleNamespace
+
+    from infrastructure.postgres import PostgresPool
+    from repositories.agents import AgentRepository
+    from repositories.database import Database
+    from repositories.people import ChatRepository, TokenRepository, UserRepository
 
     name = f"{prefix}_{uuid.uuid4().hex[:8]}"
     admin = await scratch_pool(name)
     try:
         async with PostgresPool({**DATABASE_CONFIG, "database": name}) as pool:
-            db = PostgresDB(pool, Context(agent=None, token=None, user=None))
-            db.context.token = await db.ensure_initial_token(INITIAL_API_KEY)
-            db.context.agent = await db.create_agent("first", 0, name="a")
-            db.context.user = await db.create_user("tx_user")
-            db.context.chat = await db.ensure_default_chat()
-            yield pool, db
+            database = Database(pool.pool)
+            agents = AgentRepository(database)
+            home = await agents.insert("Default agent", "", 0, {"tools": ["rag", "memory"]})
+            token = await TokenRepository(database).insert("initial", home.id, "owner", INITIAL_API_KEY)
+            agent = await agents.insert("a", "first", 0, {"tools": ["rag", "memory"]})
+            user = await UserRepository(database).insert(agent.id, "tx_user")
+            chat = await ChatRepository(database, 7).ensure_default(user.id)
+            yield pool, SimpleNamespace(context=SimpleNamespace(token=token, agent=agent, user=user, chat=chat))
     finally:
         await admin.execute(f'DROP DATABASE "{name}" WITH (FORCE)')
         await admin.close()

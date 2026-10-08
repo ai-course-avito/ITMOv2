@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from database.models import RAG
+from domain.entities import RAG
 from domain.access import AccessPolicy, Conversation, Principal
 from domain.errors import Invalid, NotFound
 from infrastructure.llm import Embedder

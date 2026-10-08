@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 
 from api.controller import Controller, endpoint, require_role
 from api.errors import install_error_handlers
-from database.models import Agent, Token
+from domain.entities import Agent, Token
 from domain.access import Principal
 from shared import NOW
 from openapi import add_roles

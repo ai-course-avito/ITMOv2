@@ -3,16 +3,15 @@
 import json
 
 import pytest
-from database import Chat
-from database.foundation import (
+from domain.entities import Chat
+from infrastructure.postgres import (
     MIGRATIONS_DIR,
     apply_migrations,
     list_migrations,
 )
 
-from shared import (
-    scratch_database,
-)
+from world import world
+from repositories.people import ChatRepository, MessageRepository, UserRepository
 
 
 def test_a_chat_without_a_title_has_a_name_all_the_same():
@@ -27,114 +26,72 @@ def test_a_chat_without_a_title_has_a_name_all_the_same():
 
 @pytest.mark.asyncio
 async def test_the_default_chat_is_made_once_and_is_the_same_for_ever():
-    async with scratch_database("chat_default_test") as (pool, db):
-        first = await db.ensure_default_chat()
-        again = await db.ensure_default_chat()
-        assert first.id == again.id and first.is_default and first.title == "Default chat"
-        assert [c.id for c in await db.get_chats()] == [first.id]
-        # another user has a default chat of their own
-        other = await db.create_user("someone_else")
-        mine, db.context.user = db.context.user, other
-        theirs = await db.ensure_default_chat()
-        assert theirs.id != first.id
-        db.context.user = mine
-        assert await db.get_chat(theirs.id) is None  # and a chat of another user is not here
-        # the database itself allows one default chat per user
-        with pytest.raises(Exception):
-            await pool.pool.execute("INSERT INTO chats (user_id, is_default) VALUES ($1, TRUE)", mine.id)
+    async with world() as w:
+        agent = await w.agent("a")
+        user = await w.get(UserRepository).insert(agent.id, "u")
+        chats = w.get(ChatRepository)
+        assert await chats.default(user.id) is None  # not until it is needed
+        first, again = await chats.ensure_default(user.id), await chats.ensure_default(user.id)
+        assert first.id == again.id and first.is_default and first.title == "Default chat" and first.messages == 0
+        other = await chats.insert(user.id, "other")
+        assert not other.is_default and (await chats.default(user.id)).id == first.id
 
 
 @pytest.mark.asyncio
 async def test_chats_are_listed_latest_first_renamed_and_deleted_with_their_messages():
-    async with scratch_database("chat_crud_test") as (pool, db):
-        a = await db.create_chat("First")
-        b = await db.create_chat()
-        assert (a.title, b.title) == ("First", f"Chat {b.id}") and not a.is_default
-        default = db.context.chat  # the scratch user has one already, with nothing in it
-        assert [c.id for c in await db.get_chats()] == [b.id, a.id, default.id]
-
-        db.context.chat = a
-        await db.create_messages([{"type": "user", "content": "hi"}, {"type": "assistant", "content": "hello"}])
-        assert [c.id for c in await db.get_chats()] == [a.id, b.id, default.id]  # a wrote last
-        assert (await db.get_chat(a.id)).messages == 2 and (await db.get_chat(b.id)).messages == 0
-
-        assert (await db.rename_chat(a.id, "Renamed")).title == "Renamed"
-        assert await db.rename_chat(999999, "x") is None
-        deleted = await db.delete_chat(a.id)
-        assert deleted.id == a.id and await db.get_chat(a.id) is None
-        assert await pool.pool.fetchval("SELECT count(*) FROM messages") == 0  # the messages went with it
-        assert await db.delete_chat(a.id) is None
+    async with world() as w:
+        agent = await w.agent("a")
+        user = await w.get(UserRepository).insert(agent.id, "u")
+        chats, messages = w.get(ChatRepository), w.get(MessageRepository)
+        a, b = await chats.insert(user.id, "a"), await chats.insert(user.id, "b")
+        await messages.append(user.id, a.id, agent.id, {"type": "user", "content": "x"})
+        await chats.touch(a.id, None)
+        assert [c.title for c in await chats.list(user.id)] == ["a", "b"]  # the one with the latest message first
+        assert (await chats.rename(user.id, b.id, "bee")).title == "bee" and await chats.rename(user.id, 99999, "x") is None
+        await chats.delete(user.id, a.id)
+        assert await chats.get(user.id, a.id) is None and await messages.window_of(a.id, 5) == []  # its messages go with it
+        assert (await chats.get(user.id, b.id)).id == b.id
 
 
 @pytest.mark.asyncio
 async def test_a_chat_is_named_after_its_first_message_unless_it_has_a_name_or_is_the_default():
-    async with scratch_database("chat_title_test") as (pool, db):
-        fresh = await db.create_chat()
-        db.context.chat = fresh
-        await db.create_messages([{"type": "user", "content": "\n  How much is the team plan?  \nsecond line"}, {"type": "assistant", "content": "$20"}])
-        assert (await db.get_chat(fresh.id)).title == "How much is the team plan?"
-        await db.create_messages([{"type": "user", "content": "And yearly?"}, {"type": "assistant", "content": "$200"}])
-        assert (await db.get_chat(fresh.id)).title == "How much is the team plan?"  # named once
-
-        named = await db.create_chat("Mine")
-        db.context.chat = named
-        await db.create_messages([{"type": "user", "content": "something else"}])
-        assert (await db.get_chat(named.id)).title == "Mine"
-
-        db.context.chat = await db.ensure_default_chat()
-        await db.create_messages([{"type": "user", "content": "from a bot"}])
-        assert (await db.get_chat(db.context.chat.id)).title == "Default chat"
-
-        long = await db.create_chat()
-        db.context.chat = long
-        await db.create_messages([{"type": "user", "content": "x" * 300}])
-        assert len((await db.get_chat(long.id)).title) <= 60
+    async with world() as w:
+        agent = await w.agent("a")
+        user = await w.get(UserRepository).insert(agent.id, "u")
+        chats = w.get(ChatRepository)
+        untitled, named, default = await chats.insert(user.id), await chats.insert(user.id, "Prices"), await chats.ensure_default(user.id)
+        for chat in (untitled, named, default):
+            await chats.touch(chat.id, "How much is the red one?")
+            await chats.touch(chat.id, "and the blue one?")  # only the first counts
+        assert (await chats.get(user.id, untitled.id)).title == "How much is the red one?"
+        assert (await chats.get(user.id, named.id)).title == "Prices" and (await chats.get(user.id, default.id)).title == "Default chat"
 
 
 @pytest.mark.asyncio
-async def test_each_chat_is_its_own_thread_of_messages():
-    async with scratch_database("chat_threads_test") as (pool, db):
-        a, b = await db.create_chat("A"), await db.create_chat("B")
-        for chat, word in ((a, "apples"), (b, "bananas"), (a, "avocados")):
-            db.context.chat = chat
-            await db.create_messages([{"type": "user", "content": word}])
-
-        db.context.chat = a
-        assert [m.content["content"] for m in await db.get_all_messages()] == ["apples", "avocados"]
-        db.context.chat = b
-        assert [m.content["content"] for m in await db.get_all_messages()] == ["bananas"]
-        assert all(m.chat_id == b.id for m in await db.get_all_messages())
-
-        # clearing one chat leaves the other alone (and the chat itself stays)
-        await db.clear_messages()
-        assert await db.get_all_messages() == []
-        db.context.chat = a
-        assert len(await db.get_all_messages()) == 2
-        assert await db.get_chat(b.id) is not None
+async def test_messages_that_expired_are_not_counted_in_a_chat():
+    for ttl, counted in ((7, 1), (0, 2)):
+        async with world() as w:
+            agent = await w.agent("a")
+            user = await w.get(UserRepository).insert(agent.id, "u")
+            chats = ChatRepository(w.get(ChatRepository).db, ttl)
+            chat = await chats.ensure_default(user.id)
+            for days in (10, 1):
+                await chats.db.execute(
+                    "INSERT INTO messages (user_id, chat_id, content, timestamp) VALUES ($1, $2, $3, now() - make_interval(days => $4))",
+                    (user.id, chat.id, {"type": "user", "content": f"{days}"}, days),
+                )
+            assert (await chats.get(user.id, chat.id)).messages == counted
 
 
 @pytest.mark.asyncio
-async def test_messages_that_expired_are_not_counted_in_a_chat(monkeypatch):
-    from database.mixins import chat as chat_mixin
-
-    async with scratch_database("chat_count_test") as (pool, db):
-        chat = db.context.chat
-        for days in (10, 1):
-            await pool.pool.execute(
-                "INSERT INTO messages (user_id, chat_id, content, timestamp) VALUES ($1, $2, $3, now() - make_interval(days => $4))",
-                db.context.user.id, chat.id, json.dumps({"type": "user", "content": f"{days}"}), days,
-            )
-        assert (await db.get_chat(chat.id)).messages == 1
-        monkeypatch.setattr(chat_mixin, "MESSAGE_TTL_DAYS", 0)
-        assert (await db.get_chat(chat.id)).messages == 2
-
-
-@pytest.mark.asyncio
-async def test_deleting_a_user_deletes_their_chats(scratch_db=None):
-    async with scratch_database("chat_cascade_test") as (pool, db):
-        await db.create_chat("one")
-        await db.delete_user()
-        assert await pool.pool.fetchval("SELECT count(*) FROM chats") == 0
+async def test_deleting_a_user_deletes_their_chats():
+    async with world() as w:
+        agent = await w.agent("a")
+        users, chats = w.get(UserRepository), w.get(ChatRepository)
+        user = await users.insert(agent.id, "u")
+        await chats.insert(user.id, "one")
+        await users.delete(user.id)
+        assert (await chats.db.fetch_one("SELECT count(*) AS n FROM chats WHERE user_id = $1", (user.id,)))["n"] == 0
 
 
 @pytest.mark.asyncio

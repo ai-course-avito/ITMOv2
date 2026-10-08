@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from ai.attachments import Attachment
 from ai.trace import TraceStep
-from database.models import User
+from domain.entities import User
 
 
 class MessageRequest(BaseModel):

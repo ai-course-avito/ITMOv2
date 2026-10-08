@@ -18,7 +18,7 @@ from typing import AsyncIterator, List
 from pydantic_ai import Agent
 from pydantic_ai.messages import PartDeltaEvent, PartStartEvent, TextPart, TextPartDelta
 
-from database.models import Model
+from domain.entities import Model
 from domain.access import Conversation
 from services.knowledge import KnowledgeService
 from services.memories import MemoryService

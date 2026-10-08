@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-from database.models import MCPServer
+from domain.entities import MCPServer
 from domain.access import AccessPolicy, Principal
 from domain.errors import NotFound
 from repositories.agents import AgentRepository

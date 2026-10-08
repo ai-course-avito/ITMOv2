@@ -3,7 +3,7 @@ from __future__ import annotations
 import secrets
 from typing import List, Optional
 
-from database.models import Chat, Message, NewToken, RecentUser, Token, User, prompt_title, token_hash
+from domain.entities import Chat, Message, NewToken, RecentUser, Token, User, prompt_title, token_hash
 from .base import Repository
 from .database import Database
 

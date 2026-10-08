@@ -6,7 +6,7 @@ import httpx2
 import pytest
 
 from config import Settings
-from database import models as database_models
+from domain import entities as database_models
 from domain.models import DEFAULT_BASE_URL
 from infrastructure.llm import ModelGateway
 from infrastructure.postgres import MIGRATIONS_DIR, apply_migrations, list_migrations

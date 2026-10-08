@@ -10,8 +10,8 @@ from typing import Callable, List, Optional, Protocol, Sequence
 from pydantic_ai import Agent
 from pydantic_ai.capabilities import AbstractCapability
 
-from core.tools import TOOL_MEMORY, TOOL_RAG
-from database.models import Model
+from domain.tools import TOOL_MEMORY, TOOL_RAG
+from domain.entities import Model
 from domain.access import Conversation
 from infrastructure.llm import ModelGateway
 from infrastructure.mcp_health import McpHealth

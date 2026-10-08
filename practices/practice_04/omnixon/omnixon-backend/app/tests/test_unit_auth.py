@@ -2,7 +2,7 @@
 
 import pytest
 
-from database.models import Agent, AgentConnection, Token
+from domain.entities import Agent, AgentConnection, Token
 from domain.access import AccessPolicy
 from domain.chain import CallChain
 from services.auth import AuthError, AuthService
@@ -14,7 +14,7 @@ class Tokens:
         self.tokens = {t.token_sha256: t for t in tokens}
 
     async def by_secret(self, secret):
-        from database.models import token_hash
+        from domain.entities import token_hash
 
         return self.tokens.get(token_hash(secret))
 
@@ -33,7 +33,7 @@ class Connections:
 
 
 def service(role="user", agent_id=1):
-    from database.models import token_hash
+    from domain.entities import token_hash
 
     token = Token(id=3, name="t", agent_id=agent_id, role=role, token_sha256=token_hash("secret"), timestamp=NOW)
     return AuthService(Tokens(token), Agents(), Connections(), AccessPolicy())

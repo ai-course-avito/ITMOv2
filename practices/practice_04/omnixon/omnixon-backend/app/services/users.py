@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Optional
 
 from config import AgentDefaults
-from database.models import Chat, Message, RecentUser, User
+from domain.entities import Chat, Message, RecentUser, User
 from domain.access import Principal
 from domain.errors import Conflict, NotFound
 from repositories.people import ChatRepository, MessageRepository, UserRepository

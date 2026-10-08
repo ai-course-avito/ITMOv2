@@ -3,9 +3,11 @@
 import pytest
 from fastapi import Depends, FastAPI
 
-from access import require
-from database import RANK
+from api.controller import require_role as require
+from domain.roles import Role
 from openapi import NO_TOKEN, add_roles, required_role
+
+RANK = {role.value: role.rank for role in Role}
 
 
 @pytest.fixture(scope="module")

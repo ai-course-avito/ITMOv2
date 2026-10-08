@@ -4,7 +4,6 @@ import pytest
 from ai.attachments import Attachment, contents_of, describe
 
 from shared import (
-    FakeDB,
     NOW,
     PNG_B64,
 )

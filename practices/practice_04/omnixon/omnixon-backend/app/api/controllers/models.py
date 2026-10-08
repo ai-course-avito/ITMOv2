@@ -4,7 +4,7 @@ from fastapi import Body, Depends
 
 from api.controller import Controller, current_principal, endpoint
 from api.schemas.models import ModelCreate, ModelUpdate
-from database.models import Model
+from domain.entities import Model
 from domain.access import Principal
 from services.models import ModelService
 

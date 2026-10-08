@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Any, Dict, List, Optional, Tuple
 
-from database.models import RAG, Memory
+from domain.entities import RAG, Memory
 from .base import Repository
 
 # Everything but the embedding, which is not part of a Memory

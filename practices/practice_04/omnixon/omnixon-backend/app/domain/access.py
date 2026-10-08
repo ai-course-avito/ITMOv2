@@ -21,7 +21,7 @@ from .errors import Forbidden
 from .roles import Role
 
 if TYPE_CHECKING:  # the entities live with the row models until they are moved here
-    from database.models import Agent, Chat, Token, User
+    from domain.entities import Agent, Chat, Token, User
 
 
 @dataclass(frozen=True)

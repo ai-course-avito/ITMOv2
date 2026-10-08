@@ -5,7 +5,7 @@ from typing import List
 import asyncpg
 
 from config import AgentDefaults
-from database.models import Agent, MCPServer
+from domain.entities import Agent, MCPServer
 from domain.access import AccessPolicy, Principal
 from domain.errors import Conflict, NotFound
 from repositories.agents import AgentRepository

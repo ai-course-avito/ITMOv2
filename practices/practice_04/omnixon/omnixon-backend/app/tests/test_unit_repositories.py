@@ -4,7 +4,7 @@ import asyncpg
 import pytest
 import pytest_asyncio
 
-from database.models import RAG
+from domain.entities import RAG
 from domain.agents import AgentSnapshot
 from repositories.agents import AgentRepository
 from repositories.connections import ConnectionRepository

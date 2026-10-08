@@ -4,7 +4,7 @@ import pytest
 
 from domain.roles import Role
 from shared import NOW
-from database.models import Token
+from domain.entities import Token
 
 HANDS_OUT = {"regular": set(), "user": {"regular", "user"}, "admin": {"regular", "user"}, "owner": {"regular", "user", "admin", "owner"}}
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, Sequence
 
-from database.models import AgentVersion
+from domain.entities import AgentVersion
 from repositories.unit_of_work import UnitOfWork
 from repositories.versions import VersionRepository
 

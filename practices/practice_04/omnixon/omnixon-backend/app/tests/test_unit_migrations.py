@@ -6,12 +6,14 @@ import uuid
 from pathlib import Path
 import asyncpg
 import pytest
-from core import DATABASE_CONFIG
-from database.foundation import (
+from config import Settings
+from infrastructure.postgres import (
     MIGRATIONS_DIR,
     apply_migrations,
     list_migrations,
 )
+
+DATABASE_CONFIG = Settings.from_env().database
 
 
 def write_migrations(directory: Path, files: dict):
@@ -247,31 +249,21 @@ async def test_migration_4_moves_tools_and_chat_limit_into_config(scratch_db, tm
 
 
 @pytest.mark.asyncio
-async def test_concurrent_queries_on_one_database_context_do_not_collide(monkeypatch):
-    """Tools of an agent run concurrently on the request's single connection."""
-    from database import Context, PostgresDB, PostgresPool
+async def test_concurrent_queries_on_one_database_object_do_not_collide():
+    """Tools of an agent run concurrently: each query takes a connection of its own."""
+    from repositories.database import Database
+    from repositories.models import ModelRepository
+    from world import world
 
-    name = f"concurrency_test_{uuid.uuid4().hex[:8]}"
-    admin = await asyncpg.connect(**DATABASE_CONFIG)
-    await admin.execute(f'CREATE DATABASE "{name}"')
-    scratch = await asyncpg.connect(**{**DATABASE_CONFIG, "database": name})
-    await scratch.execute("CREATE EXTENSION IF NOT EXISTS vector")
-    await scratch.close()
-    try:
-        config = {**DATABASE_CONFIG, "database": name}
-        async with PostgresPool(config) as pool:
-            context = Context(agent=None, token=None, user=None)
-            async with PostgresDB(pool, context) as db:
-                results = await asyncio.gather(
-                    *(db.get_all_models() for _ in range(40)),
-                    *(db.get_model(0) for _ in range(40)),
-                    *(db.create_model({"model": f"a/{i}"}, f"m{i}") for i in range(20)),
-                )
-                assert len(results) == 100  # no "another operation is in progress"
-                assert len(await db.get_all_models()) == 21  # model 0 + the 20 created
-    finally:
-        await admin.execute(f'DROP DATABASE "{name}" WITH (FORCE)')
-        await admin.close()
+    async with world() as w:
+        models = w.get(ModelRepository)
+        results = await asyncio.gather(
+            *(models.list() for _ in range(40)),
+            *(models.get(0) for _ in range(40)),
+            *(models.insert({"model": f"a/{i}"}, f"m{i}") for i in range(20)),
+        )
+        assert len(results) == 100  # no "another operation is in progress"
+        assert len(await models.list()) == 21  # model 0 + the 20 created
 
 
 @pytest.mark.asyncio

@@ -72,7 +72,7 @@ def test_a_job_with_a_ttl_of_zero_is_not_started():
 @pytest.mark.asyncio
 async def test_expired_messages_are_deleted_in_batches():
     async with scratch_database("jobs_messages") as (pool, db):
-        chat = await db.ensure_default_chat()
+        chat = db.context.chat
         for age in (10, 10, 10, 1):
             await pool.pool.execute(
                 "INSERT INTO messages (user_id, chat_id, content, timestamp) VALUES ($1, $2, '{}', now() - make_interval(days => $3))",

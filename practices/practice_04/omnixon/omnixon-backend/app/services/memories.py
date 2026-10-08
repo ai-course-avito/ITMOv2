@@ -7,7 +7,7 @@ from typing import List, Optional, Sequence, Tuple
 import logfire
 
 from domain.memory import MAX_MEMORY_CHARS
-from database.models import Memory
+from domain.entities import Memory
 from domain.access import AccessPolicy, Conversation, Principal
 from domain.errors import NotFound
 from infrastructure.llm import Embedder

@@ -6,7 +6,7 @@ from api.controller import Controller, current_principal, endpoint
 from api.schemas.knowledge import RAGCreate, RAGUpdate
 from api.schemas.memories import MemoryCreate, MemoryUpdate
 from api.schemas.usage import DailyUsage, MonthlyUsage
-from database.models import RAG, Memory
+from domain.entities import RAG, Memory
 from domain.access import Principal
 from services.knowledge import KnowledgeService
 from services.memories import MemoryService

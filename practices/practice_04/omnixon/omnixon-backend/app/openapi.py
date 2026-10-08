@@ -18,7 +18,7 @@ from fastapi import FastAPI
 from fastapi.dependencies.models import Dependant
 from fastapi.routing import APIRoute
 
-from database import RANK
+from domain.entities import RANK
 from middlewares.postgres import PUBLIC_PATHS
 
 SCHEME = "BearerToken"

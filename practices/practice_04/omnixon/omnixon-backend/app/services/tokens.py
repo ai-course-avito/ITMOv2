@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from database.models import NewToken, Token
+from domain.entities import NewToken, Token
 from domain.access import AccessPolicy, Principal
 from domain.errors import Conflict, NotFound
 from domain.roles import Role

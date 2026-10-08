@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import List, Optional
 
-from database.models import AgentVersion
+from domain.entities import AgentVersion
 from domain.agents import AgentSnapshot
 from domain.models import DEFAULT_BASE_URL, ModelConnection
 from .base import Repository

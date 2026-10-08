@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from core import validate_tools
+from domain.tools import validate_tools
 from .common import Name
 
 

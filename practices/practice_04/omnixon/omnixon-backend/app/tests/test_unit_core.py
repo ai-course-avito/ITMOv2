@@ -1,13 +1,11 @@
 """unit core tests"""
 
 import pytest
-from core import (
-    DEFAULT_MEMO_LIMIT,
-    DEFAULT_MESSAGE_LIMIT,
-    DEFAULT_TOOLS,
-    validate_tools,
-)
-from database.models import Token, token_hash
+from config import AgentDefaults
+from domain.entities import Token, token_hash
+from domain.tools import DEFAULT_TOOLS, validate_tools
+
+DEFAULTS = AgentDefaults()
 
 from shared import (
     NOW,
@@ -100,20 +98,20 @@ def test_validate_tools():
 
 
 def test_agent_config_defaults_and_limits():
-    agent = agent_row({})  # nothing stored
-    assert agent.tools == DEFAULT_TOOLS
-    assert agent.message_limit == DEFAULT_MESSAGE_LIMIT
-    assert agent.memo_limit == DEFAULT_MEMO_LIMIT
+    agent = agent_row({}).settings(DEFAULTS)  # nothing stored
+    assert agent.tools == tuple(DEFAULT_TOOLS)
+    assert agent.message_limit == DEFAULTS.message_limit
+    assert agent.memo_limit == DEFAULTS.memo_limit
 
-    agent = agent_row({"tools": ["rag"], "message_limit": 3, "memo_limit": 4})
-    assert (agent.tools, agent.message_limit, agent.memo_limit) == (["rag"], 3, 4)
-    assert agent_row({"message_limit": 0}).message_limit == 0  # 0 is a real value
+    agent = agent_row({"tools": ["rag"], "message_limit": 3, "memo_limit": 4}).settings(DEFAULTS)
+    assert (agent.tools, agent.message_limit, agent.memo_limit) == (("rag",), 3, 4)
+    assert agent_row({"message_limit": 0}).settings(DEFAULTS).message_limit == 0  # 0 is a real value
 
 
 def test_agent_config_is_decoded_from_json_text_and_serialized_as_stored():
     # asyncpg hands jsonb over as text
     agent = agent_row('{"tools": ["memory"], "memo_limit": 2}')
-    assert agent.tools == ["memory"] and agent.memo_limit == 2
+    assert agent.tools == ["memory"] and agent.settings(DEFAULTS).memo_limit == 2
     assert agent.model_dump()["config"] == {"tools": ["memory"], "memo_limit": 2}
 
     assert agent_row(None).model_dump()["config"] == {"tools": DEFAULT_TOOLS}
@@ -121,4 +119,4 @@ def test_agent_config_is_decoded_from_json_text_and_serialized_as_stored():
 
 
 def test_default_limits_are_sane():
-    assert DEFAULT_MESSAGE_LIMIT >= 0 and DEFAULT_MEMO_LIMIT >= 1
+    assert DEFAULTS.message_limit >= 0 and DEFAULTS.memo_limit >= 1

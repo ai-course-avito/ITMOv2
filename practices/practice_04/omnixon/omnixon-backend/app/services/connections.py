@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 import asyncpg
 
-from database.models import AgentConnection
+from domain.entities import AgentConnection
 from domain.access import Principal
 from domain.errors import Conflict, NotFound
 from repositories.agents import AgentRepository

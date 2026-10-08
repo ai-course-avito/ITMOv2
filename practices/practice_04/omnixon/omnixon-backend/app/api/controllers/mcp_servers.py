@@ -4,7 +4,7 @@ from fastapi import Body, Depends
 
 from api.controller import Controller, current_principal, endpoint
 from api.schemas.mcp_servers import MCPServerCreate, MCPServerUpdate
-from database.models import MCPServer
+from domain.entities import MCPServer
 from domain.access import Principal
 from services.mcp_servers import McpServerService
 

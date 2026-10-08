@@ -4,7 +4,7 @@ from fastapi import Body, Depends, Query
 
 from api.controller import Controller, current_principal, endpoint
 from api.schemas.tokens import TokenCreate, TokenUpdate
-from database.models import Agent, NewToken, Token
+from domain.entities import Agent, NewToken, Token
 from domain.access import Principal
 from services.tokens import TokenService
 

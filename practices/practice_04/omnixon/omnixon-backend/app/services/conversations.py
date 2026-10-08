@@ -19,7 +19,7 @@ from ai.runner import AgentRunner
 from ai.trace import TraceStep
 from config import AgentDefaults
 from core import error_response, metrics
-from database.models import Chat, Model, User
+from domain.entities import Chat, Model, User
 from domain.access import AccessPolicy, Conversation, Principal
 from domain.chain import CallChain, caller_user_id
 from domain.errors import Failed, NotFound

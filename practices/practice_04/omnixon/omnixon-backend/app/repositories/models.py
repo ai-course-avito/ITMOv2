@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from database.models import DEFAULT_BASE_URL, MCPServer, Model
+from domain.entities import DEFAULT_BASE_URL, MCPServer, Model
 from .base import Repository
 
 

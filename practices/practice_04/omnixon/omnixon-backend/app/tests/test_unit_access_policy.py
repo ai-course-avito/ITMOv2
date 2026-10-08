@@ -2,7 +2,7 @@
 
 import pytest
 
-from database.models import Agent, Token
+from domain.entities import Agent, Token
 from domain.access import AccessPolicy, Principal
 from domain.chain import CallChain
 from domain.errors import Forbidden

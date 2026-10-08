@@ -2,7 +2,7 @@ from typing import Annotated, Optional
 
 from pydantic import BaseModel, Field, StringConstraints
 
-from database.models import NAME_MAX
+from domain.entities import NAME_MAX
 
 Title = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=NAME_MAX)]
 

@@ -10,8 +10,8 @@ import logfire
 from pydantic_ai import Agent
 
 from core import metrics
-from core.tools import TOOL_MEMORY
-from database.models import Memory, Model
+from domain.tools import TOOL_MEMORY
+from domain.entities import Memory, Model
 from domain.access import Conversation
 from domain.memory import MAX_MEMORY_CHARS
 from infrastructure.jobs import TaskSupervisor

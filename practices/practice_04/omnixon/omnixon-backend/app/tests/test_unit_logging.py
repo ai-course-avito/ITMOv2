@@ -173,7 +173,7 @@ def test_secrets_of_the_deployment_are_masked_wherever_they_appear(monkeypatch):
 
 def test_models_are_logged_without_their_secret_but_the_api_returns_it_when_a_token_is_made():
     from core.masking import MASK, mask_value
-    from database import NewToken
+    from domain.entities import NewToken
 
     made = NewToken(
         id=1, name="t", agent_id=2, role="admin", token=UNIT_TOKEN, timestamp=NOW
@@ -203,7 +203,7 @@ def test_arguments_are_masked_by_parameter_name_and_objects_are_not_dumped():
 MASKING_SCRIPT = """
 import asyncio, logfire
 from core import setup_logging, async_logfire_decorator
-from database import NewToken
+from domain.entities import NewToken
 from datetime import datetime
 
 setup_logging()

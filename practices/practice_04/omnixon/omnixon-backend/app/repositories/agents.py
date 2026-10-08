@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from database.models import Agent
+from domain.entities import Agent
 from .base import Repository
 
 
