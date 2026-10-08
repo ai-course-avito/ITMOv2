@@ -7,17 +7,21 @@ set -euo pipefail
 # - Also runs a local file:// check for the Fourier page
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_DIR="$(cd "${SCRIPT_DIR}" && pwd)"
+# Project dir is the parent of scripts/
+PROJECT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 WITH_SERVER="${PROJECT_DIR}/.opencode/skills/webapp-testing/scripts/with_server.py"
 
 cd "${PROJECT_DIR}"
 
-echo "[tests] Running Feature A (MathJax) against http://localhost:8000/fourier/"
+# Ensure BASE_URL matches the test server port used below
+export BASE_URL="http://localhost:8000"
+
+echo "[tests] Running Feature A (MathJax) against $BASE_URL/fourier/"
 python "${WITH_SERVER}" \
   --server "python -m http.server 8000" --port 8000 -- \
   node tests/js/feature_a_mathjax_test.js
 
-echo "[tests] Running Feature B (Fourier partial sums) against http://localhost:8000/fourier/"
+echo "[tests] Running Feature B (Fourier partial sums) against $BASE_URL/fourier/"
 python "${WITH_SERVER}" \
   --server "python -m http.server 8000" --port 8000 -- \
   node tests/js/feature_b_fourier_partial_sums_test.js
