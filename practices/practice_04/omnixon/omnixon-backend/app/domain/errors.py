@@ -25,3 +25,9 @@ class Forbidden(DomainError):
 
 class Invalid(DomainError):
     status = 422
+
+
+class Failed(DomainError):
+    """The service could not do it though the request was fine."""
+
+    status = 500

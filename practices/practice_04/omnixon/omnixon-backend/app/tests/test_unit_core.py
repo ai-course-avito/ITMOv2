@@ -7,7 +7,6 @@ from core import (
     DEFAULT_TOOLS,
     validate_tools,
 )
-from database import models as database_models
 from database.models import Token, token_hash
 
 from shared import (
@@ -16,22 +15,14 @@ from shared import (
 )
 
 
-def test_only_the_token_of_initial_api_key_is_initial(monkeypatch):
-    monkeypatch.setattr(database_models, "INITIAL_API_KEY", "the-initial-key")
+def test_only_the_token_of_the_initial_key_is_initial():
+    """The repository that read the token tells it the hash of the deployment's initial key (the model reads no environment)."""
     row = dict(id=1, name="t", agent_id=1, role="owner", timestamp=NOW)
-    assert Token(token_sha256=token_hash("the-initial-key"), **row).is_initial is True
-    assert Token(token_sha256=token_hash("another-key"), **row).is_initial is False
-    assert (
-        Token(token_sha256=token_hash("the-initial-key"), **row).model_dump()[
-            "is_initial"
-        ]
-        is True
-    )
-
+    initial = token_hash("the-initial-key")
+    assert Token(token_sha256=initial, initial_sha256=initial, **row).is_initial is True
+    assert Token(token_sha256=token_hash("another-key"), initial_sha256=initial, **row).is_initial is False
+    assert Token(token_sha256=initial, initial_sha256=initial, **row).model_dump()["is_initial"] is True
     # without a key nobody is initial (an empty token must not match an empty key)
-    monkeypatch.setattr(database_models, "INITIAL_API_KEY", None)
-    assert Token(token_sha256=token_hash(""), **row).is_initial is False
-    monkeypatch.setattr(database_models, "INITIAL_API_KEY", "")
     assert Token(token_sha256=token_hash(""), **row).is_initial is False
 
 

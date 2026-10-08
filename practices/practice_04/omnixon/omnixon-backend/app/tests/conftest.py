@@ -8,8 +8,9 @@ import asyncio
 from pydantic_ai import Agent
 import uuid
 import asyncpg
-from ai import memory as memory_module
-from core import DATABASE_CONFIG
+from config import Settings
+
+DATABASE_CONFIG = Settings.from_env().database
 
 from shared import (
     API_URL,
@@ -147,14 +148,3 @@ async def scratch_db():
         await connection.close()
         await admin.execute(f'DROP DATABASE "{name}" WITH (FORCE)')
         await admin.close()
-
-
-@pytest.fixture(autouse=True)
-def no_embedding_service(monkeypatch):
-    """The unit tests never call the embedding service (embeddings are None unless a
-    test provides some, see embeddings())."""
-
-    async def nothing(text):
-        return None
-
-    monkeypatch.setattr(memory_module, "embed", nothing)

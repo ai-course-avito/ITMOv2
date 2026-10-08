@@ -1,7 +1,6 @@
 """unit attachments tests"""
 
 import pytest
-from ai import utils as ai_utils
 from ai.attachments import Attachment, contents_of, describe
 
 from shared import (
@@ -74,52 +73,3 @@ def test_the_history_keeps_a_note_of_a_file_not_the_file_or_its_url():
             {"kind": "document", "media_type": "application/pdf"},
         ]
     ) == ("[attached image: cat.png] [attached document: application/pdf]")
-
-
-@pytest.mark.asyncio
-async def test_old_messages_with_files_tell_the_model_that_a_file_was_there():
-    from database import Message
-
-    messages = [
-        Message(
-            id=1,
-            user_id=7,
-            timestamp=NOW,
-            content={
-                "type": "user",
-                "content": "What is this?",
-                "attachments": [
-                    {"kind": "image", "media_type": "image/png", "name": "cat.png"}
-                ],
-            },
-        ),
-        Message(
-            id=2,
-            user_id=7,
-            timestamp=NOW,
-            content={"type": "assistant", "content": "A cat."},
-        ),
-        Message(
-            id=3,
-            user_id=7,
-            timestamp=NOW,
-            content={"type": "user", "content": "Thanks"},
-        ),
-    ]
-    history = await ai_utils.get_conversation_history(FakeDB(messages=messages))
-    assert history[0].parts[0].content == "What is this?\n[attached image: cat.png]"
-    assert (
-        history[2].parts[0].content == "Thanks"
-    )  # a message without files is unchanged
-
-
-def test_the_prompt_is_the_text_with_the_files_after_it():
-    from ai.runner import user_message as _user_message, user_prompt as _user_prompt
-
-    assert _user_prompt("hi", []) == "hi" and _user_message([]) == {}
-    files = [Attachment(data=PNG_B64, media_type="image/png", name="a.png")]
-    prompt = _user_prompt("what is this?", files)
-    assert prompt[0] == "what is this?" and len(prompt) == 2
-    assert _user_message(files) == {
-        "attachments": [{"media_type": "image/png", "kind": "image", "name": "a.png"}]
-    }

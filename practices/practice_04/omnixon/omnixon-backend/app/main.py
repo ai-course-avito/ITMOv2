@@ -1,4 +1,3 @@
-import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -7,60 +6,66 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from ai import interrupt
-from ai.interrupt_bus import InterruptBus
-from ai.mcp_health import health
-from ai.memory import run_backfill
+from ai.interrupts import InterruptRegistry
+from api.controllers.conversations import ClientDisconnected
 from api.errors import install_error_handlers
 from config import Settings
-from container import Container
+from container import Container, controllers, wire_data_layer, wire_services
 from core import metrics, setup_logging
-from database import Context, PostgresDB, PostgresPool
-from database.retention import run_retention
-from database.usage_compaction import run_usage_compaction
+from infrastructure.jobs import EmbeddingBackfillJob, MessageRetentionJob, TaskSupervisor, UsageCompactionJob
+from infrastructure.llm import ModelGateway
+from infrastructure.postgres import PostgresPool
 from middlewares import setup_middleware
 from openapi import add_roles
-from routers import setup_routers
-from routers.request import ClientDisconnected
+from repositories.database import Database
+from services.memories import MemoryService
+from services.tokens import TokenService
 
 
 async def start(app: FastAPI, container: Container) -> None:
-    """Start what the service runs on (the pool, the initial token, the background jobs, the bus between replicas) and register how
-    to stop each in the container."""
+    """Start what the service runs on (the pool, the initial token, the background jobs, the bus between replicas) and register how to stop
+    each in the container. What was started first is stopped last."""
     settings = container.settings
     pool = PostgresPool(settings.database)
     await pool.__aenter__()
     container.on_close(lambda: pool.__aexit__(None, None, None))
     app.state.db_pool = pool
+    container.get(Database).bind(pool.pool)
     metrics.POOL.pool = pool.pool
+    container.on_close(container.get(ModelGateway).aclose)
+
     if settings.initial_api_key:  # the owner: the token of the deployment
-        await PostgresDB(pool, Context(agent=None, token=None, user=None)).ensure_initial_token(settings.initial_api_key)
-    background = [
-        asyncio.create_task(run_retention(pool.pool)),
-        asyncio.create_task(run_usage_compaction(pool.pool)),
-        asyncio.create_task(run_backfill(PostgresDB(pool, Context(agent=None, token=None, user=None)))),
-    ]
+        await container.get(TokenService).ensure_initial(settings.initial_api_key)
 
-    async def stop_background() -> None:
-        for task in background:
-            task.cancel()
-        await asyncio.gather(*background, return_exceptions=True)
-
+    registry = container.get(InterruptRegistry)
+    container.on_close(registry.aclose)  # ends the streams that are left and closes the bus
     if settings.redis_url:  # several replicas: they stop each other's streams
-        interrupt.bus = InterruptBus.from_url(settings.redis_url)
-        background.append(asyncio.create_task(interrupt.bus.serve(interrupt.stop_for_replica)))
+        import asyncio
 
-        async def close_bus() -> None:
-            await interrupt.bus.close()
-            interrupt.bus = None
+        serving = asyncio.ensure_future(registry.serve())
 
-        container.on_close(close_bus)
-    container.on_close(stop_background)  # runs first on the way out: the tasks stop, then the bus and the pool
-    health.client_of = lambda: interrupt.bus.client if interrupt.bus else None
+        async def stop_serving() -> None:
+            serving.cancel()
+            await asyncio.gather(serving, return_exceptions=True)
+
+        container.on_close(stop_serving)
+
+    supervisor = container.get(TaskSupervisor)
+    container.on_close(supervisor.aclose)
+    jobs = [
+        MessageRetentionJob(pool.pool, settings.message_ttl_days, settings.message_cleanup_interval_seconds),
+        UsageCompactionJob(pool.pool, settings.usage_ttl_days, settings.usage_compact_interval_seconds),
+        EmbeddingBackfillJob(pool.pool, container.get(MemoryService)),
+    ]
+    for job in jobs:
+        job.start()
+        container.on_close(job.aclose)
 
 
 def create_app(settings: Settings) -> FastAPI:
     container = Container(settings)
+    wire_data_layer(container)
+    wire_services(container)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -74,7 +79,8 @@ def create_app(settings: Settings) -> FastAPI:
     app = FastAPI(lifespan=lifespan)
     app.state.container = container
     setup_middleware(app)
-    setup_routers(app)
+    for controller in controllers(container):
+        app.include_router(controller.router)
     add_roles(app)
 
     @app.exception_handler(StarletteHTTPException)

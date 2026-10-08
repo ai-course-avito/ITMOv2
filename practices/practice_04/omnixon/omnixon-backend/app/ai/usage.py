@@ -1,5 +1,7 @@
 """Writing down what a call to the model cost: how long, how many tokens, how much money. Never the texts."""
 
+from __future__ import annotations
+
 import asyncio
 import time
 from dataclasses import dataclass
@@ -9,8 +11,9 @@ import logfire
 from pydantic_ai.messages import ModelMessage, ModelResponse
 
 from core import error_response
-from . import interrupt
-from database import PostgresDB
+from domain.access import Principal
+from repositories.data import UsageRepository
+from .interrupts import InterruptRegistry
 
 
 @dataclass
@@ -21,8 +24,7 @@ class Spent:
 
 
 def spent_of(messages: Iterable[ModelMessage]) -> Spent:
-    """The tokens and the money of the model's answers in `messages` (OpenRouter reports the cost when
-    usage accounting is on, see generate_model)."""
+    """The tokens and the money of the model's answers in `messages` (OpenRouter reports the cost when usage accounting is on)."""
     spent = Spent()
     for message in messages:
         if not isinstance(message, ModelResponse):
@@ -35,45 +37,46 @@ def spent_of(messages: Iterable[ModelMessage]) -> Spent:
     return spent
 
 
-class track_usage:
-    """`async with track_usage(db, "request", "a/model") as usage: ...; usage.add(result.new_messages())`
+class UsageMeter:
+    """Writes one row per call to the model, on the token that made the request (also when an admin acts as another agent)."""
 
-    Writes one row when the block ends: ok, or what went wrong (the HTTP status the failure maps to, or
-    `cancelled`). A failure to write is logged and never fails the request."""
+    def __init__(self, usage: UsageRepository):
+        self.usage = usage
 
-    def __init__(self, db: PostgresDB, kind: str, model: str):
-        self.db = db
-        self.kind = kind
-        self.model = model
+    def track(self, principal: Principal, kind: str, model: str) -> "Tracking":
+        """`async with meter.track(principal, "request", "a/model") as usage: ...; usage.add(result.new_messages())`"""
+        return Tracking(self.usage, principal, kind, model)
+
+
+class Tracking:
+    """Writes the row when the block ends: ok, or what went wrong (the HTTP status the failure maps to, `cancelled`, `interrupted`). A failure
+    to write is logged and never fails the request."""
+
+    def __init__(self, usage: UsageRepository, principal: Principal, kind: str, model: str):
+        self.usage, self.principal, self.kind, self.model = usage, principal, kind, model
         self.spent = Spent()
         self.started = 0.0
 
     def add(self, messages: Iterable[ModelMessage]) -> None:
         self.spent = spent_of(messages)
 
-    async def __aenter__(self) -> "track_usage":
+    async def __aenter__(self) -> "Tracking":
         self.started = time.monotonic()
         return self
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
-        if getattr(self.db.context, "token", None) is None:
-            return
         if exc is None:
             status = "ok"
-        elif (
-            isinstance(exc, (asyncio.CancelledError, GeneratorExit))
-            or type(exc).__name__ == "ClientDisconnected"
-        ):
-            stream = interrupt.current.get()
-            status = (
-                "interrupted"
-                if stream is not None and stream.interrupted
-                else "cancelled"
-            )
+        elif isinstance(exc, (asyncio.CancelledError, GeneratorExit)) or type(exc).__name__ == "ClientDisconnected":
+            stream = InterruptRegistry.current()
+            status = "interrupted" if stream is not None and stream.interrupted else "cancelled"
         else:
             status = str(error_response(exc)[0])
         try:
-            await self.db.record_usage(
+            await self.usage.record(
+                token_id=self.principal.token.id,
+                token_name=self.principal.token.name,
+                agent_id=self.principal.agent.id,
                 kind=self.kind,
                 model=self.model,
                 status=status,
@@ -83,8 +86,4 @@ class track_usage:
                 cost=self.spent.cost,
             )
         except Exception as write_error:  # the answer matters more than its bookkeeping
-            logfire.warning(
-                "Could not record usage: {error}",
-                error=str(write_error),
-                _exc_info=write_error,
-            )
+            logfire.warning("Could not record usage: {error}", error=str(write_error), _exc_info=write_error)

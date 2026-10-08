@@ -25,10 +25,10 @@ from pydantic_ai.mcp import MCPToolset
 from pydantic_ai.toolsets import AbstractToolset, CombinedToolset
 from pydantic_ai.toolsets.wrapper import WrapperToolset
 
-from core import MCP_TOOL_ATTEMPTS, MCP_TOOL_RETRY_DELAY, MCP_TOOL_RETRIES, metrics
-from ..deps import Dependencies
+from core import metrics
+from ..deps import RunDeps
 from ..failures import describe_failure, server_label
-from ..mcp_health import health, key_of
+from infrastructure.mcp_health import McpHealth, key_of
 
 # Keys of an MCP server's config besides `url` and `transport`. Callbacks and clients cannot come from JSON.
 MCP_OPTIONS = frozenset(
@@ -47,11 +47,11 @@ MCP_OPTIONS = frozenset(
 )
 
 
-def toolset_from_config(config: Dict[str, Any]) -> MCPToolset:
+def toolset_from_config(config: Dict[str, Any], default_retries: int = 3) -> MCPToolset:
     """The pydantic-ai toolset of an MCP server config (`url`, `transport`: streamable_http or sse, and MCP_OPTIONS)."""
     url, headers = config["url"], config.get("headers")
     client: Any = SSETransport(url, headers=headers) if config.get("transport") == "sse" else url
-    options: Dict[str, Any] = {"tool_error_behavior": "failed", "max_retries": config.get("max_retries", MCP_TOOL_RETRIES)}
+    options: Dict[str, Any] = {"tool_error_behavior": "failed", "max_retries": config.get("max_retries", default_retries)}
     for key, target in (("timeout", "init_timeout"), ("read_timeout", "read_timeout"), ("log_level", "log_level"), ("id", "id")):
         if key in config:
             options[target] = config[key]
@@ -78,21 +78,23 @@ class ServerStatus:
 
 
 @dataclass
-class GuardedServer(WrapperToolset[Dependencies]):
+class GuardedServer(WrapperToolset[RunDeps]):
     """One MCP server behind the rules above."""
 
     status: ServerStatus = field(default=None)  # type: ignore[assignment]
-    attempts: int = MCP_TOOL_ATTEMPTS
+    health: McpHealth = field(default=None)  # type: ignore[assignment]
+    attempts: int = 3
+    retry_delay: float = 1.0
 
     async def _left_alone(self) -> bool:
-        why = await health.why_down(self.status.key)
+        why = await self.health.why_down(self.status.key)
         self.status.down_because = why
         return why is not None
 
     async def _fail_server(self, exc: BaseException) -> None:
         why = describe_failure(exc)
         self.status.down_because = why
-        await health.mark_down(self.status.key, why)
+        await self.health.mark_down(self.status.key, why)
         metrics.MCP_SERVERS_DROPPED.inc()
         logfire.warning("MCP server unreachable, continuing without it: {server}: {why}", server=self.status.label, why=why)
 
@@ -144,7 +146,7 @@ class GuardedServer(WrapperToolset[Dependencies]):
                     why=describe_failure(exc),
                 )
                 if attempt < self.attempts:
-                    await asyncio.sleep(MCP_TOOL_RETRY_DELAY * attempt)
+                    await asyncio.sleep(self.retry_delay * attempt)
         metrics.MCP_TOOL_ERRORS.labels("failed").inc()
         raise ToolFailed(
             f"The MCP tool `{name}` of {self.status.label} could not be called: {self.attempts} attempts failed. "
@@ -153,17 +155,23 @@ class GuardedServer(WrapperToolset[Dependencies]):
 
 
 @dataclass(kw_only=True)  # AbstractCapability is a dataclass whose first field is `id`: positional arguments would land there
-class McpServers(AbstractCapability[Dependencies]):
+class McpServers(AbstractCapability[RunDeps]):
     """The MCP servers of an agent. `servers`: (name, config) of each."""
 
     servers: Sequence[tuple[str, Dict[str, Any]]] = ()
+    health: McpHealth = None  # type: ignore[assignment]
+    attempts: int = 3
+    retry_delay: float = 1.0
+    tool_retries: int = 3
     id: Optional[str] = "mcp-servers"
     guards: List[GuardedServer] = field(default_factory=list, init=False)
 
     def __post_init__(self) -> None:
         for name, config in self.servers:
             status = ServerStatus(name, config["url"], key_of(config))
-            self.guards.append(GuardedServer(toolset_from_config(config), status))
+            self.guards.append(
+                GuardedServer(toolset_from_config(config, self.tool_retries), status, self.health, self.attempts, self.retry_delay)
+            )
 
-    def get_toolset(self) -> Optional[AbstractToolset[Dependencies]]:
+    def get_toolset(self) -> Optional[AbstractToolset[RunDeps]]:
         return CombinedToolset(self.guards) if self.guards else None

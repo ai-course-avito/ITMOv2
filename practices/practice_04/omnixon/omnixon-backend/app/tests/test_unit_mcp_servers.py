@@ -11,25 +11,19 @@ from pydantic_ai.messages import ModelRequest, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.toolsets import FunctionToolset
 
-from ai import mcp_health
 from ai.capabilities import McpServers, ToolFailures
-from ai.capabilities import mcp as mcp_module
 from ai.capabilities.mcp import GuardedServer, ServerStatus, toolset_from_config
-from ai.deps import Dependencies
+from ai.deps import RunDeps
 from ai.failures import describe_failure, server_label
-from ai.mcp_health import McpHealth, health, key_of
+from infrastructure.mcp_health import McpHealth, RedisHealthStore, key_of
 
 URL = "https://user:pw@mcp.example:8443/mcp?token=secret"
 CONFIG = {"url": URL}
 
 
-@pytest.fixture(autouse=True)
-def clean(monkeypatch):
-    monkeypatch.setattr(mcp_module, "MCP_TOOL_RETRY_DELAY", 0)
-    health._local.clear()
-    yield
-    health._local.clear()
-    health.client_of = lambda: None
+@pytest.fixture
+def health():
+    return McpHealth(down_seconds=30)
 
 
 class Fake:
@@ -61,9 +55,9 @@ class Fake:
         return None
 
 
-def guard(fake, attempts=3, config=CONFIG):
+def guard(fake, health, attempts=3, config=CONFIG):
     status = ServerStatus("omnixon", config["url"], key_of(config))
-    return GuardedServer(fake, status, attempts)
+    return GuardedServer(fake, status, health, attempts, retry_delay=0)
 
 
 def protocol_error(code, message):
@@ -71,37 +65,37 @@ def protocol_error(code, message):
 
 
 @pytest.mark.asyncio
-async def test_a_tool_that_answers_works_as_before():
+async def test_a_tool_that_answers_works_as_before(health):
     fake = Fake({"id": 4})
-    assert await guard(fake).call_tool("get_agent", {"agent_id": 4}, None, None) == {"id": 4}
+    assert await guard(fake, health).call_tool("get_agent", {"agent_id": 4}, None, None) == {"id": 4}
     assert fake.calls == [("get_agent", {"agent_id": 4})]
 
 
 @pytest.mark.asyncio
-async def test_an_error_the_tool_answered_is_the_tools_result_at_once_not_a_failure_to_get_through():
+async def test_an_error_the_tool_answered_is_the_tools_result_at_once_not_a_failure_to_get_through(health):
     for answered in (ToolFailed("The service refused get_agent: HTTP 404"), ModelRetry("fix the arguments")):
         fake = Fake(answered)
         with pytest.raises(type(answered)):
-            await guard(fake).call_tool("get_agent", {"agent_id": 9}, None, None)
+            await guard(fake, health).call_tool("get_agent", {"agent_id": 9}, None, None)
         assert len(fake.calls) == 1  # the same arguments would fail the same way
 
 
 @pytest.mark.asyncio
-async def test_a_call_that_did_not_get_through_is_tried_again():
+async def test_a_call_that_did_not_get_through_is_tried_again(health):
     fake = Fake(protocol_error(-32000, "Connection closed"), httpx.ConnectError("refused"), {"ok": True})
-    assert await guard(fake).call_tool("get_agents", {}, None, None) == {"ok": True}
+    assert await guard(fake, health).call_tool("get_agents", {}, None, None) == {"ok": True}
     assert len(fake.calls) == 3
 
 
 @pytest.mark.asyncio
-async def test_after_all_attempts_the_model_gets_what_went_wrong_and_the_answer_goes_on():
+async def test_after_all_attempts_the_model_gets_what_went_wrong_and_the_answer_goes_on(health):
     request = httpx.Request("POST", "https://mcp.example:8443/mcp")
     server_error = httpx.HTTPStatusError(
         "boom", request=request, response=httpx.Response(500, text="Internal Server Error", request=request)
     )
     fake = Fake(httpx.ReadTimeout("timed out"), protocol_error(408, "Timed out. Waited 2.0 seconds."), ExceptionGroup("tg", [server_error]))
     with pytest.raises(ToolFailed) as failed:
-        await guard(fake).call_tool("create_agent", {"name": "x"}, None, None)
+        await guard(fake, health).call_tool("create_agent", {"name": "x"}, None, None)
     message = str(failed.value)
     assert message.startswith("The MCP tool `create_agent` of omnixon (https://mcp.example:8443/mcp) could not be called: 3 attempts failed.")
     assert "Last error: HTTP 500 from the server: Internal Server Error." in message
@@ -109,9 +103,9 @@ async def test_after_all_attempts_the_model_gets_what_went_wrong_and_the_answer_
 
 
 @pytest.mark.asyncio
-async def test_a_server_that_cannot_be_connected_to_gives_no_tools_and_says_why_to_the_model():
+async def test_a_server_that_cannot_be_connected_to_gives_no_tools_and_says_why_to_the_model(health):
     fake = Fake(enter=ExceptionGroup("connect", [httpx.ConnectError("All connection attempts failed")]))
-    server = guard(fake)
+    server = guard(fake, health)
     await server.__aenter__()
     assert await server.get_tools(None) == {}
     note = await server.get_instructions(None)
@@ -121,22 +115,22 @@ async def test_a_server_that_cannot_be_connected_to_gives_no_tools_and_says_why_
 
     # the next request does not even try it
     other = Fake()
-    again = guard(other)
+    again = guard(other, health)
     await again.__aenter__()
     assert other.entered == 0 and await again.get_tools(None) == {}
 
 
 @pytest.mark.asyncio
-async def test_a_server_that_is_up_is_entered_and_asked_for_its_tools():
+async def test_a_server_that_is_up_is_entered_and_asked_for_its_tools(health):
     fake = Fake()
-    server = guard(fake)
+    server = guard(fake, health)
     await server.__aenter__()
     assert fake.entered == 1 and set(await server.get_tools(None)) == {"t"}
     assert server.status.down_because is None
 
 
 @pytest.mark.asyncio
-async def test_an_agent_with_a_dead_mcp_server_still_answers_and_knows_it_is_missing():
+async def test_an_agent_with_a_dead_mcp_server_still_answers_and_knows_it_is_missing(health):
     seen = []
 
     from pydantic_ai.models.function import FunctionModel
@@ -148,10 +142,10 @@ async def test_an_agent_with_a_dead_mcp_server_still_answers_and_knows_it_is_mis
 
     agent = Agent(
         FunctionModel(respond),
-        deps_type=Dependencies,
-        capabilities=[ToolFailures(), McpServers(servers=[("omnixon", {"url": "http://127.0.0.1:1/mcp"})])],
+        deps_type=RunDeps,
+        capabilities=[ToolFailures(), McpServers(servers=[("omnixon", {"url": "http://127.0.0.1:1/mcp"})], health=health, retry_delay=0)],
     )
-    result = await agent.run("hi", deps=Dependencies(db=None))
+    result = await agent.run("hi", deps=RunDeps(None, None, None))
     assert result.output == "I could not reach the server."
     instructions, tools = seen[0]
     assert "omnixon (http://127.0.0.1:1/mcp) cannot be reached" in instructions and tools == []
@@ -174,9 +168,8 @@ def test_a_server_is_its_config_so_other_headers_are_another_server():
 
 
 @pytest.mark.asyncio
-async def test_a_dead_server_comes_back_after_a_while(monkeypatch):
-    local = McpHealth()
-    monkeypatch.setattr(mcp_health, "MCP_DOWN_SECONDS", 0.05)
+async def test_a_dead_server_comes_back_after_a_while():
+    local = McpHealth(down_seconds=0.05)
     await local.mark_down("x", "refused")
     assert await local.why_down("x") == "refused"
     import asyncio
@@ -188,9 +181,8 @@ async def test_a_dead_server_comes_back_after_a_while(monkeypatch):
 @pytest.mark.asyncio
 async def test_replicas_share_which_servers_are_down_through_redis():
     server = fakeredis.FakeServer()
-    a, b = McpHealth(), McpHealth()
-    a.client_of = lambda: fakeredis.FakeAsyncRedis(server=server, decode_responses=True)
-    b.client_of = lambda: fakeredis.FakeAsyncRedis(server=server, decode_responses=True)
+    a = McpHealth(30, shared=RedisHealthStore(fakeredis.FakeAsyncRedis(server=server, decode_responses=True)))
+    b = McpHealth(30, shared=RedisHealthStore(fakeredis.FakeAsyncRedis(server=server, decode_responses=True)))
     await a.mark_down("srv", "ConnectError: refused")
     assert await b.why_down("srv") == "ConnectError: refused"  # a replica that never tried it knows
     assert await b.why_down("other") is None
@@ -200,14 +192,14 @@ async def test_replicas_share_which_servers_are_down_through_redis():
 async def test_redis_that_is_down_does_not_break_the_requests():
     import redis.asyncio as redis
 
-    broken = McpHealth()
-    broken.client_of = lambda: redis.Redis.from_url("redis://127.0.0.1:1/0", socket_connect_timeout=0.2, decode_responses=True)
+    client = redis.Redis.from_url("redis://127.0.0.1:1/0", socket_connect_timeout=0.2, decode_responses=True)
+    broken = McpHealth(30, shared=RedisHealthStore(client))
     await broken.mark_down("srv", "refused")  # logged, and remembered in the process
     assert await broken.why_down("srv") == "refused"
 
 
 def _failing_tool(error):
-    tools = FunctionToolset[Dependencies]()
+    tools = FunctionToolset[RunDeps]()
 
     @tools.tool_plain
     def flaky(value: int) -> str:
@@ -252,12 +244,12 @@ def test_the_options_of_a_server_config_reach_the_toolset():
 
 
 @pytest.mark.asyncio
-async def test_a_server_that_fails_when_asked_for_its_tools_is_left_out_not_fatal():
+async def test_a_server_that_fails_when_asked_for_its_tools_is_left_out_not_fatal(health):
     class Broken(Fake):
         async def get_tools(self, ctx):
             raise ExceptionGroup("tools", [httpx.ReadTimeout("slow")])
 
-    server = guard(Broken())
+    server = guard(Broken(), health)
     assert await server.get_tools(None) == {}
     assert "ReadTimeout" in server.status.down_because
     assert await health.why_down(server.status.key)  # and it is left alone from now on
@@ -265,7 +257,7 @@ async def test_a_server_that_fails_when_asked_for_its_tools_is_left_out_not_fata
 
 
 @pytest.mark.asyncio
-async def test_a_server_that_was_entered_is_left_again():
+async def test_a_server_that_was_entered_is_left_again(health):
     class Counted(Fake):
         left = 0
 
@@ -273,7 +265,7 @@ async def test_a_server_that_was_entered_is_left_again():
             Counted.left += 1
 
     fake = Counted()
-    server = guard(fake)
+    server = guard(fake, health)
     await server.__aenter__()
     await server.__aexit__(None, None, None)
     assert Counted.left == 1

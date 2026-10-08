@@ -4,6 +4,8 @@ from config import AgentDefaults
 from domain.agents import AgentSettings, AgentSnapshot
 from domain.chain import CallChain, caller_user_id
 from domain.models import ModelConnection
+from api.schemas.agents import AgentConfigInput
+from database import AgentConfig
 from shared import agent_row
 
 DEFAULTS = AgentDefaults(message_limit=10, memo_limit=20, rag_limit=8, auto_memory=True, parallel_tool_calls=True)
@@ -48,3 +50,18 @@ def test_a_chain_refuses_a_loop_and_a_depth_in_words():
     assert chain.refusal(1, depth=3) == "Refused: agent 1 is already in this chain of calls (1 -> 2); an agent is not called twice."
     assert chain.refusal(3, depth=1) == "Refused: this request is already 1 agents deep, the most that one request may go."
     assert chain.refusal(3, depth=3) is None
+
+
+def test_the_setting_is_part_of_the_agent_config_and_defaults_to_on():
+    assert agent_row({}).settings(DEFAULTS).parallel_tool_calls is True
+    assert agent_row({"parallel_tool_calls": False}).settings(DEFAULTS).parallel_tool_calls is False
+    assert AgentConfig().parallel_tool_calls is None  # unset: the default, not stored
+    assert AgentConfigInput(parallel_tool_calls=False).model_dump(exclude_unset=True) == {"parallel_tool_calls": False}
+    assert AgentConfigInput(parallel_tool_calls=None).model_dump(exclude_unset=True) == {"parallel_tool_calls": None}  # null: back to the default
+
+
+def test_every_limit_falls_back_to_the_default_and_a_config_can_set_it():
+    assert agent_row({}).settings(DEFAULTS).rag_limit == 8 and agent_row({"rag_limit": 20}).settings(DEFAULTS).rag_limit == 20
+    assert agent_row({"memo_limit": 3}).settings(DEFAULTS).memo_limit == 3 and agent_row({}).settings(DEFAULTS).memo_limit == 20
+    assert agent_row({"auto_memory": False}).settings(DEFAULTS).auto_memory is False and agent_row({}).settings(DEFAULTS).auto_memory is True
+    assert agent_row({}).model_dump()["config"] == {"tools": ["rag", "memory"]}  # stored as set: nothing else

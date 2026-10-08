@@ -169,3 +169,29 @@ async def test_usage_is_written_and_summed_by_day(database):
     assert rows[0]["requests"] == 2 and rows[0]["errors"] == 1 and rows[0]["input_tokens"] == 6 and rows[0]["cost"] == 1.0
     assert await usage.daily(date.today(), date.today(), own_agent_id=a.id + 1) == []
     assert await usage.monthly(token_id=token.id) == []
+
+
+@pytest.mark.asyncio
+async def test_memory_embeddings_are_stored_searched_and_follow_the_content(database):
+    def axis(k):  # unit vectors along different axes are 1.0 apart (cosine distance)
+        return [1.0 if i == k else 0.0 for i in range(1536)]
+
+    a = await agent(database)
+    user, other = await UserRepository(database).insert(a.id, "memvec_user"), await UserRepository(database).insert(a.id, "memvec_other")
+    memories = MemoryRepository(database)
+    scope = (user.id, a.id)
+    dog = await memories.insert(*scope, "dog", axis(0))
+    await memories.insert(*scope, "cat", axis(1))
+    old = await memories.insert(*scope, "no embedding yet")  # made before embeddings
+    assert "embedding" not in dog.model_dump()
+    assert [(m.content, round(d, 3)) for m, d in await memories.nearest(*scope, axis(0), limit=5)] == [("dog", 0.0), ("cat", 1.0)]
+    assert [m.content for m, _ in await memories.nearest(*scope, axis(0), 5, max_distance=0.5)] == ["dog"]
+    assert await memories.nearest(other.id, a.id, axis(0), 5) == []  # other users are not searched
+    # an edit without a new embedding clears the old one: it must not match the old words
+    await memories.update(dog.id, "a different fact")
+    assert "a different fact" not in [m.content for m, _ in await memories.nearest(*scope, axis(0), 5)]
+    assert [m.id for m in await memories.without_embedding(10)] == [dog.id, old.id]
+    await memories.set_embedding(old.id, axis(2))
+    await memories.update(dog.id, "dog again", axis(0))
+    assert await memories.without_embedding(10) == []
+    assert [m.content for m, _ in await memories.nearest(*scope, axis(0), 1)] == ["dog again"]

@@ -5,8 +5,8 @@ import asyncio
 import httpx2
 import pytest
 
-from ai import transport
-from ai.transport import RetryingTransport, retry_after
+from infrastructure import transport
+from infrastructure.transport import RetryingTransport, retry_after
 
 
 @pytest.fixture

@@ -8,8 +8,7 @@ from starlette.responses import JSONResponse, Response
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from core import metrics
-from access import may_act_as
-from database import PostgresDB, Context
+from services.auth import AuthError, AuthService
 
 # Reachable without a token
 PUBLIC_PATHS = (
@@ -112,40 +111,20 @@ class DatabaseMiddleware:
             )(scope, receive, send)
             return
 
-        context = Context(agent=None, token=None, user=None)
-        async with PostgresDB(request.app.state.db_pool, context) as db:
-            context.token = await db.get_token_by_secret(token)
-            if context.token is None:
+        auth: AuthService = request.app.state.container.get(AuthService)
+        try:
+            principal = await auth.authenticate(token, request.headers.get(ACT_AS_HEADER))
+        except AuthError as refusal:
+            if not refusal.as_json:
                 logfire.warning("Request with an unknown API token")
-                await Response(
-                    status_code=403, content="Authentication failed: wrong token"
-                )(scope, receive, send)
-                return
+            answer = (
+                JSONResponse(status_code=refusal.status, content={"detail": refusal.body})
+                if refusal.as_json
+                else Response(status_code=refusal.status, content=refusal.body)
+            )
+            await answer(scope, receive, send)
+            return
 
-            status["token_id"] = context.token.id
-            agent_id = context.token.agent_id
-            act_as = request.headers.get(ACT_AS_HEADER)
-            if act_as is not None and act_as.strip():
-                # an admin may work as another agent: its users, its knowledge, its answers
-                # (access.may_act_as: the same rule lets an agent work as one it is connected to)
-                try:
-                    agent_id = int(act_as)
-                except ValueError:
-                    agent_id = -1
-                if not await may_act_as(db, agent_id):
-                    await JSONResponse(
-                        status_code=403,
-                        content={
-                            "detail": f"Forbidden: {ACT_AS_HEADER} needs the admin role"
-                        },
-                    )(scope, receive, send)
-                    return
-            context.agent = await db.get_agent(agent_id)
-            if context.agent is None:
-                await JSONResponse(
-                    status_code=404, content={"detail": "Agent not found"}
-                )(scope, receive, send)
-                return
-
-            scope.setdefault("state", {})["db"] = db
-            await self.app(scope, receive, send)
+        status["token_id"] = principal.token.id
+        scope.setdefault("state", {})["principal"] = principal
+        await self.app(scope, receive, send)

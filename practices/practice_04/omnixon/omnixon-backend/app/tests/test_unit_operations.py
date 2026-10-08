@@ -4,43 +4,37 @@ from types import SimpleNamespace
 
 import pytest
 
-from database.foundation import list_migrations
+from infrastructure.postgres import list_migrations
 
 
-class FakeApp:
-    def __init__(self, pool):
-        self.state = SimpleNamespace(db_pool=pool)
+def controller(pool):
+    from api.controllers.health import HealthController
+    from repositories.database import Database
 
-
-class FakeRequest:
-    def __init__(self, pool):
-        self.app = FakeApp(pool)
+    return HealthController(Database(pool))
 
 
 @pytest.mark.asyncio
 async def test_readiness_is_503_without_a_pool_or_a_database():
     import json as _json
-    from routers.health import readyz
 
-    res = await readyz(FakeRequest(None))
+    res = await controller(None).readyz()
     assert res.status_code == 503 and _json.loads(res.body)["status"] == "starting"
 
     class BrokenPool:
-        class pool:  # noqa: N801
-            @staticmethod
-            def acquire():
-                raise ConnectionRefusedError("database is down")
+        @staticmethod
+        def acquire():
+            raise ConnectionRefusedError("database is down")
 
-    res = await readyz(FakeRequest(BrokenPool()))
+    res = await controller(BrokenPool()).readyz()
     body = _json.loads(res.body)
     assert res.status_code == 503 and body["status"] == "database unavailable"
     assert body["detail"] == "ConnectionRefusedError"
 
 
 @pytest.mark.asyncio
-async def test_readiness_reports_a_database_that_is_behind(monkeypatch):
+async def test_readiness_reports_a_database_that_is_behind():
     import json as _json
-    from routers import health
 
     class Connection:
         async def fetchval(self, query):
@@ -54,12 +48,11 @@ async def test_readiness_reports_a_database_that_is_behind(monkeypatch):
             return None
 
     class Pool:
-        class pool:  # noqa: N801
-            @staticmethod
-            def acquire():
-                return Acquire()
+        @staticmethod
+        def acquire():
+            return Acquire()
 
-    res = await health.readyz(FakeRequest(Pool()))
+    res = await controller(Pool()).readyz()
     body = _json.loads(res.body)
     assert res.status_code == 503 and body["status"] == "migrating"
     assert body["migration"] == 2 and body["expected"] == list_migrations()[-1][0]

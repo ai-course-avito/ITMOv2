@@ -1,23 +1,25 @@
 from __future__ import annotations
 
+from typing import AsyncContextManager
+
 from .database import Database
 
 
 class UnitOfWork:
-    """`async with uow:` is one transaction; `await uow.lock(key)` takes an advisory lock held to its end (nested blocks are savepoints)."""
+    """Several statements that stand or fall together:
+
+        async with self.uow.transaction():
+            await self.uow.lock(f"agent-versions:{agent_id}")
+            ...
+
+    A fresh block per use (the object is shared by concurrent requests, so it holds no state); nested blocks are savepoints; a lock is held
+    to the end of the outermost block."""
 
     def __init__(self, database: Database):
         self.database = database
-        self._blocks: list = []
 
-    async def __aenter__(self) -> "UnitOfWork":
-        block = self.database.transaction()
-        await block.__aenter__()
-        self._blocks.append(block)
-        return self
-
-    async def __aexit__(self, *exc) -> bool:
-        return bool(await self._blocks.pop().__aexit__(*exc))
+    def transaction(self) -> AsyncContextManager[None]:
+        return self.database.transaction()
 
     async def lock(self, key: str) -> None:
         await self.database.lock(key)

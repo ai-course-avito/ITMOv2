@@ -16,16 +16,25 @@ The method's name is the operation's name, so renaming a method renames the oper
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, ClassVar, Dict, Optional
+from typing import Any, Callable, ClassVar, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, Request
 
-from access import require
+from domain.access import AccessPolicy
+from domain.roles import Role
+
+_policy = AccessPolicy()
 
 
 def require_role(role: str) -> Callable:
     """A dependency that lets only tokens of `role` or a higher one through; it carries `min_role`, which the OpenAPI schema reports."""
-    return require(role)
+    needed = Role(role)
+
+    async def check(request: Request) -> None:
+        _policy.require(request.state.principal, needed)
+
+    check.min_role = role  # type: ignore[attr-defined]
+    return check
 
 
 def current_principal(request: Request):
@@ -65,6 +74,8 @@ class Controller:
     """Collects the marked methods of the class (base classes first, in the order they are written) into `router`."""
 
     prefix: ClassVar[str] = ""
+    tags: ClassVar[Optional[List[str]]] = None
+    default_role: ClassVar[Optional[str]] = None  # the role every endpoint needs at least (an endpoint's own `min_role` may be higher)
 
     def __init__(self) -> None:
         self.router = APIRouter()
@@ -75,11 +86,13 @@ class Controller:
                 if marked is None or name in seen:
                     continue
                 seen.add(name)
-                dependencies = [Depends(require_role(marked.min_role))] if marked.min_role else []
+                role = marked.min_role or self.default_role
+                dependencies = [Depends(require_role(role))] if role else []
                 self.router.add_api_route(
                     f"{self.prefix}{marked.path}",
                     getattr(self, name),
                     methods=[marked.verb.upper()],
                     dependencies=dependencies,
+                    tags=self.tags,
                     **marked.options,
                 )

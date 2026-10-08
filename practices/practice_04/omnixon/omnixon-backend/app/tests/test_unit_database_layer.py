@@ -70,7 +70,8 @@ async def test_lock_puts_work_in_line_and_needs_a_transaction(database):
     order = []
 
     async def work(label, pause):
-        async with UnitOfWork(database) as uow:
+        uow = UnitOfWork(database)
+        async with uow.transaction():
             await uow.lock("same")
             order.append(f"{label} in")
             await asyncio.sleep(pause)

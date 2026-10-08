@@ -43,7 +43,10 @@ _pinned: contextvars.ContextVar[Optional[_Pin]] = contextvars.ContextVar("pinned
 
 
 class Database:
-    def __init__(self, pool: asyncpg.Pool):
+    def __init__(self, pool: Optional[asyncpg.Pool] = None):
+        self.pool = pool  # the object graph is built before the service starts: the pool is bound at start-up
+
+    def bind(self, pool: asyncpg.Pool) -> None:
         self.pool = pool
 
     def _pin(self) -> Optional[_Pin]:

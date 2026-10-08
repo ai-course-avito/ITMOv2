@@ -5,7 +5,6 @@ import secrets
 from datetime import datetime
 from typing import Optional, Any, Dict, List
 from core import (
-    INITIAL_API_KEY,
     DEFAULT_AUTO_MEMORY,
     DEFAULT_PARALLEL_TOOL_CALLS,
     DEFAULT_MEMO_LIMIT,
@@ -281,13 +280,14 @@ class Token(BaseModel):
     token_sha256: str = Field("", exclude=True)  # never in an answer
     timestamp: datetime
 
+    # the hash of the deployment's initial key, put in by the repository that read the token (the model reads no environment)
+    initial_sha256: str = Field("", exclude=True)
+
     @computed_field
     @property
     def is_initial(self) -> bool:
         """The token of INITIAL_API_KEY: an owner that cannot be deleted or lowered."""
-        return bool(INITIAL_API_KEY) and secrets.compare_digest(
-            self.token_sha256, token_hash(INITIAL_API_KEY)
-        )
+        return bool(self.initial_sha256) and secrets.compare_digest(self.token_sha256, self.initial_sha256)
 
     @property
     def rank(self) -> int:

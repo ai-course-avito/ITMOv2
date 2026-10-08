@@ -17,12 +17,12 @@ from pydantic_ai.capabilities import AbstractCapability
 from pydantic_ai.exceptions import ApprovalRequired, CallDeferred, ModelRetry
 
 from core import metrics
-from ..deps import Dependencies
+from ..deps import RunDeps
 from ..failures import describe_failure
 
 
 @dataclass
-class ToolFailures(AbstractCapability[Dependencies]):
+class ToolFailures(AbstractCapability[RunDeps]):
     id: Optional[str] = "tool-failures"
 
     async def on_tool_execute_error(self, ctx, *, call, tool_def, args, error) -> Any:

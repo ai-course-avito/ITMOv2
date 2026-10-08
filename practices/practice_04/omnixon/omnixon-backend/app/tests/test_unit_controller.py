@@ -1,12 +1,13 @@
 """unit controller tests: a class of endpoints becomes a router that looks like the functions it replaces"""
 
-from types import SimpleNamespace
-
 from fastapi import Depends, FastAPI, Request
 from fastapi.testclient import TestClient
 
 from api.controller import Controller, endpoint, require_role
 from api.errors import install_error_handlers
+from database.models import Agent, Token
+from domain.access import Principal
+from shared import NOW
 from openapi import add_roles
 
 
@@ -23,7 +24,7 @@ class Things(Controller):
 
     @endpoint.post("/things", summary="Make a thing", status_code=201, min_role="admin")
     async def create_thing(self, request: Request, name: str = "x") -> dict:
-        return {"name": name, "role": request.state.db.context.token.rank}
+        return {"name": name, "role": request.state.principal.role.rank}
 
     @endpoint.get("/things/{thing_id}", summary="One thing", min_role="user")
     async def get_thing(self, thing_id: int, who: str = Depends(lambda: "me")) -> dict:
@@ -35,7 +36,8 @@ def app_with(greeting="hi", rank=4):
 
     @app.middleware("http")
     async def fake_auth(request: Request, call_next):
-        request.state.db = SimpleNamespace(context=SimpleNamespace(token=SimpleNamespace(rank=rank)))
+        token = Token(id=1, name="t", agent_id=1, role=("regular", "user", "admin", "owner")[rank - 1], timestamp=NOW)
+        request.state.principal = Principal(token, Agent(id=1, prompt="", model_id=0, timestamp=NOW))
         return await call_next(request)
 
     install_error_handlers(app)
@@ -73,5 +75,5 @@ def test_a_route_below_its_role_answers_403_with_todays_text():
     assert TestClient(app_with(rank=2)).get("/api/v1/things/3").json() == {"id": 3, "who": "me"}
 
 
-def test_require_role_is_the_access_dependency():
+def test_require_role_carries_its_role():
     assert require_role("admin").min_role == "admin"

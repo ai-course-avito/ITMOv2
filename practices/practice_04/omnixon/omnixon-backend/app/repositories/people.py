@@ -18,17 +18,29 @@ def new_secret() -> str:
 
 
 class TokenRepository(Repository):
+    def __init__(self, database: Database, initial_secret: Optional[str] = None):
+        super().__init__(database)
+        self.initial_sha256 = token_hash(initial_secret) if initial_secret else ""
+
+    def _marked(self, token):
+        """A token read from the database knows whether it is the deployment's initial one."""
+        if token is not None:
+            token.initial_sha256 = self.initial_sha256
+        return token
+
     async def by_secret(self, secret: str) -> Optional[Token]:
-        return await self.db.fetch_one("SELECT * FROM tokens WHERE token_sha256=$1", (token_hash(secret),), Token)
+        return self._marked(await self.db.fetch_one("SELECT * FROM tokens WHERE token_sha256=$1", (token_hash(secret),), Token))
 
     async def get(self, token_id: int) -> Optional[Token]:
-        return await self.db.fetch_one("SELECT * FROM tokens WHERE id=$1", (token_id,), Token)
+        return self._marked(await self.db.fetch_one("SELECT * FROM tokens WHERE id=$1", (token_id,), Token))
 
     async def list(self, agent_id: Optional[int] = None) -> List[Token]:
         """The tokens of an agent, or of every agent."""
         if agent_id is None:
-            return await self.db.fetch_all("SELECT * FROM tokens ORDER BY id", (), Token)
-        return await self.db.fetch_all("SELECT * FROM tokens WHERE agent_id=$1 ORDER BY id", (agent_id,), Token)
+            rows = await self.db.fetch_all("SELECT * FROM tokens ORDER BY id", (), Token)
+        else:
+            rows = await self.db.fetch_all("SELECT * FROM tokens WHERE agent_id=$1 ORDER BY id", (agent_id,), Token)
+        return [self._marked(row) for row in rows]
 
     async def insert(self, name: str, agent_id: int, role: str, secret: Optional[str] = None) -> NewToken:
         """Make a token and return it with its secret: the only time the secret is known."""
@@ -40,19 +52,21 @@ class TokenRepository(Repository):
                 Token,
             )
             if row:
-                return NewToken(**row.model_dump(), token_sha256=row.token_sha256, token=secret_value)
+                return self._marked(NewToken(**row.model_dump(), token_sha256=row.token_sha256, token=secret_value))
             if secret:
                 break
         raise RuntimeError("Failed to create a token: could not allocate a unique secret")
 
     async def update(self, token_id: int, name: Optional[str] = None, role: Optional[str] = None) -> Optional[Token]:
         """Rename and/or change the role (what is None stays)."""
-        return await self.db.fetch_one(
-            "UPDATE tokens SET name=COALESCE($1, name), role=COALESCE($2, role) WHERE id=$3 RETURNING *", (name, role, token_id), Token
+        return self._marked(
+            await self.db.fetch_one(
+                "UPDATE tokens SET name=COALESCE($1, name), role=COALESCE($2, role) WHERE id=$3 RETURNING *", (name, role, token_id), Token
+            )
         )
 
     async def delete(self, token_id: int) -> Optional[Token]:
-        return await self.db.fetch_one("DELETE FROM tokens WHERE id=$1 RETURNING *", (token_id,), Token)
+        return self._marked(await self.db.fetch_one("DELETE FROM tokens WHERE id=$1 RETURNING *", (token_id,), Token))
 
 
 class UserRepository(Repository):
