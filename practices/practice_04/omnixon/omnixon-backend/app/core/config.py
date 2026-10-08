@@ -12,9 +12,7 @@ REQUEST_TIMEOUT_SECONDS = float(os.getenv("REQUEST_TIMEOUT_SECONDS", "600"))
 # waiting UPSTREAM_RETRY_DELAY seconds, then twice as long, ...
 UPSTREAM_RETRIES = int(os.getenv("UPSTREAM_RETRIES", "2"))
 UPSTREAM_RETRY_DELAY = float(os.getenv("UPSTREAM_RETRY_DELAY", "1"))
-# An MCP server that does not answer within MCP_PROBE_TIMEOUT seconds is left out of
-# the requests for MCP_DOWN_SECONDS
-MCP_PROBE_TIMEOUT = float(os.getenv("MCP_PROBE_TIMEOUT", "5"))
+# An MCP server that could not be connected to is left alone for MCP_DOWN_SECONDS (ai/mcp_health.py)
 MCP_DOWN_SECONDS = float(os.getenv("MCP_DOWN_SECONDS", "30"))
 # A call of an MCP tool that does not get through (connection, timeout, HTTP or protocol error) is tried this
 # many times in all, waiting MCP_TOOL_RETRY_DELAY seconds, then twice as long, ...; then the model gets the
@@ -49,6 +47,14 @@ AGENT_CALL_DEPTH = int(os.getenv("AGENT_CALL_DEPTH", "3"))
 DEFAULT_RAG_LIMIT = int(
     os.getenv("DEFAULT_RAG_LIMIT", "8")
 )  # knowledge entries one `retrieve` call returns
+# Tool calls the model makes in the same turn run at the same time (agent config: parallel_tool_calls)
+DEFAULT_PARALLEL_TOOL_CALLS = os.getenv("DEFAULT_PARALLEL_TOOL_CALLS", "true").strip().lower() not in (
+    "0",
+    "false",
+    "no",
+    "off",
+    "",
+)
 DEFAULT_AUTO_MEMORY = os.getenv("DEFAULT_AUTO_MEMORY", "true").strip().lower() not in (
     "0",
     "false",

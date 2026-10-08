@@ -19,12 +19,13 @@ from .models import (
     MCPServer,
     Memory,
 )
-from .context import Context
+from .context import CallChain, Context
 
 __all__ = [
     "PostgresDB",
     "PostgresPool",
     "Context",
+    "CallChain",
     "User",
     "RecentUser",
     "Chat",

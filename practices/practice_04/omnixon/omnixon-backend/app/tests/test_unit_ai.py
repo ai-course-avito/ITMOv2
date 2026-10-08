@@ -1,13 +1,16 @@
 """unit ai tests"""
 
-import httpx
+import httpx2
 import pytest
-from pydantic_ai.mcp import MCPServerSSE, MCPServerStreamableHTTP
+from fastmcp.client.transports import SSETransport, StreamableHttpTransport
+from pydantic_ai import Agent
 from pydantic_ai.messages import ModelRequest, ModelResponse
 from pydantic_ai.models.test import TestModel
 from ai import utils as ai_utils
-from ai.agent import generate_agent
+from ai.capabilities import build_capabilities
+from ai.capabilities.mcp import toolset_from_config
 from ai.deps import Dependencies
+from core import MCP_TOOL_RETRIES
 from ai.memory import build_memory_block, format_memories
 
 from shared import (
@@ -68,52 +71,44 @@ def test_model_settings_pass_every_key_of_the_body_on():
 
 
 @pytest.mark.asyncio
-async def test_http_client_only_exists_with_a_proxy(monkeypatch):
+async def test_the_http_client_is_shared_patient_and_goes_through_the_proxy_if_there_is_one(monkeypatch):
     monkeypatch.setattr(ai_utils, "_http_client", None)
     monkeypatch.setattr(ai_utils, "OPENROUTER_PROXY", None)
-    assert ai_utils._get_http_client() is None
-
-    monkeypatch.setattr(ai_utils, "OPENROUTER_PROXY", "socks5://proxy:1080")
-    client = ai_utils._get_http_client()
+    client = ai_utils._get_http_client()  # there is always one: it is what retries a provider that drops a request
     try:
-        assert isinstance(client, httpx.AsyncClient)
-        assert ai_utils._get_http_client() is client  # shared
-        # not httpx's 5s default, which would cut off slow LLM answers
+        assert isinstance(client, httpx2.AsyncClient) and ai_utils._get_http_client() is client  # shared
+        # not the default of 5s, which would cut off slow LLM answers
         assert client.timeout.read == 600 and client.timeout.connect == 5
     finally:
         await client.aclose()
 
+    monkeypatch.setattr(ai_utils, "_http_client", None)
+    monkeypatch.setattr(ai_utils, "OPENROUTER_PROXY", "socks5://proxy:1080")
+    proxied = ai_utils._get_http_client()
+    try:
+        assert proxied is not client
+    finally:
+        await proxied.aclose()
 
-def test_build_mcp_server_transports():
-    server = ai_utils.build_mcp_server({"url": "http://mcp/mcp"})
-    assert isinstance(server, MCPServerStreamableHTTP)
-    assert server.url == "http://mcp/mcp"
 
-    server = ai_utils.build_mcp_server(
-        {"url": "http://mcp/mcp", "transport": "streamable_http"}
-    )
-    assert isinstance(server, MCPServerStreamableHTTP)
+def test_the_config_of_an_mcp_server_becomes_a_toolset_with_its_transport_and_options():
+    toolset = toolset_from_config({"url": "http://mcp/mcp"})
+    assert isinstance(toolset.client.transport, StreamableHttpTransport)
+    assert toolset.client.transport.url == "http://mcp/mcp"
+    assert toolset.tool_error_behavior == "failed"  # a tool that says it failed is a failed result, not an exception
 
-    server = ai_utils.build_mcp_server(
-        {"url": "http://mcp/sse", "transport": "sse", "headers": {"X-Key": "1"}}
-    )
-    assert isinstance(server, MCPServerSSE)
-    assert server.headers == {"X-Key": "1"}
+    toolset = toolset_from_config({"url": "http://mcp/mcp", "transport": "streamable_http"})
+    assert isinstance(toolset.client.transport, StreamableHttpTransport)
+
+    toolset = toolset_from_config({"url": "http://mcp/sse", "transport": "sse", "headers": {"X-Key": "1"}})
+    assert isinstance(toolset.client.transport, SSETransport)
+    assert toolset.client.transport.headers["X-Key"] == "1"
 
 
 def test_an_mcp_tool_that_refuses_may_be_called_again_before_the_answer_fails():
     # pydantic-ai's default of 1 failed a whole answer after one wrong call and its one retry
-    assert (
-        ai_utils.build_mcp_server({"url": "http://mcp/mcp"}).max_retries
-        == ai_utils.MCP_TOOL_RETRIES
-        == 3
-    )
-    assert (
-        ai_utils.build_mcp_server(
-            {"url": "http://mcp/mcp", "max_retries": 0}
-        ).max_retries
-        == 0
-    )
+    assert toolset_from_config({"url": "http://mcp/mcp"}).max_retries == MCP_TOOL_RETRIES == 3
+    assert toolset_from_config({"url": "http://mcp/mcp", "max_retries": 0}).max_retries == 0
 
 
 @pytest.mark.asyncio
@@ -133,16 +128,12 @@ async def test_history_is_skipped_without_use_memo():
     ]
     db = FakeDB(messages=messages)
 
-    history = await ai_utils.get_conversation_history(db, "system text")
-    assert [type(m) for m in history] == [ModelRequest, ModelRequest, ModelResponse]
-    assert history[0].parts[0].content == "system text"
-    assert (
-        history[1].parts[0].content == "hi" and history[2].parts[0].content == "hello"
-    )
+    history = await ai_utils.get_conversation_history(db)
+    assert [type(m) for m in history] == [ModelRequest, ModelResponse]
+    assert history[0].parts[0].content == "hi" and history[1].parts[0].content == "hello"
 
     db.calls.clear()
-    history = await ai_utils.get_conversation_history(db, "system text", use_memo=False)
-    assert len(history) == 1 and history[0].parts[0].content == "system text"
+    assert await ai_utils.get_conversation_history(db, use_memo=False) == []
     assert db.calls == []  # the history was not even read
 
 
@@ -163,12 +154,12 @@ async def test_history_never_starts_with_an_answer():
             msg(4, "assistant", "a2"),
         ]
     )
-    history = await ai_utils.get_conversation_history(db, "system")
-    assert [type(m) for m in history] == [ModelRequest, ModelRequest, ModelResponse]
-    assert [m.parts[0].content for m in history] == ["system", "q2", "a2"]
+    history = await ai_utils.get_conversation_history(db)
+    assert [type(m) for m in history] == [ModelRequest, ModelResponse]
+    assert [m.parts[0].content for m in history] == ["q2", "a2"]
 
     only_answers = FakeDB(messages=[msg(1, "assistant", "a1")])
-    assert len(await ai_utils.get_conversation_history(only_answers, "system")) == 1
+    assert await ai_utils.get_conversation_history(only_answers) == []
 
 
 def test_format_memories_mentions_hidden_ones():
@@ -199,8 +190,12 @@ async def test_memory_block_when_empty_or_unscoped():
 
 
 async def run_tools(tools, db, call_tools="all"):
+    async def nobody(db, request):
+        return ""
+
+    db.context.agent.tools = list(tools)
     model = TestModel(call_tools=call_tools)
-    agent = generate_agent(model, None, tools)
+    agent = Agent(model, deps_type=Dependencies, capabilities=await build_capabilities(db, answer=nobody))
     await agent.run("hi", deps=Dependencies(db=db))
     return {tool.name for tool in model.last_model_request_parameters.function_tools}
 
@@ -263,7 +258,7 @@ async def test_the_knowledge_search_returns_as_many_entries_as_the_agent_says(
     async def embed(text):
         return [0.0]
 
-    monkeypatch.setattr("ai.agent.get_embedding_vector", embed)
+    monkeypatch.setattr("ai.capabilities.knowledge.get_embedding_vector", embed)
     db = FakeDB(rag_limit=3)
     await run_tools(["rag"], db, call_tools=["retrieve"])
     assert ("get_similar_rag", 3) in db.calls

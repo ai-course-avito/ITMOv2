@@ -90,6 +90,7 @@ class AgentConfig(BaseModel):
     memo_limit: Optional[int] = None
     rag_limit: Optional[int] = None
     auto_memory: Optional[bool] = None
+    parallel_tool_calls: Optional[bool] = None
 
 
 class AgentVersion(BaseModel):
@@ -177,6 +178,7 @@ class AgentConfigInput(BaseModel):
     memo_limit: Optional[int] = None
     rag_limit: Optional[int] = None
     auto_memory: Optional[bool] = None
+    parallel_tool_calls: Optional[bool] = None
 
 
 class AgentCreate(BaseModel):

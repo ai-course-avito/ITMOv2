@@ -84,6 +84,8 @@ function Overview({ version }: { version: AgentVersion }) {
             <dd>{cfg.rag_limit ?? 'default'}</dd>
             <dt className="text-muted-foreground">Auto memory</dt>
             <dd>{cfg.auto_memory === undefined ? 'default' : cfg.auto_memory ? 'on' : 'off'}</dd>
+            <dt className="text-muted-foreground">Parallel tool calls</dt>
+            <dd>{cfg.parallel_tool_calls === undefined ? 'default' : cfg.parallel_tool_calls ? 'on' : 'off'}</dd>
           </dl>
         </Section>
       </div>

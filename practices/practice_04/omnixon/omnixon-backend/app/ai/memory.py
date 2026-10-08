@@ -5,6 +5,7 @@ import asyncpg
 import logfire
 from core import TOOL_MEMORY
 from pydantic_ai import Agent, RunContext
+from pydantic_ai.toolsets import FunctionToolset
 
 from core import metrics
 from database import Memory, PostgresDB
@@ -281,65 +282,67 @@ async def run_backfill(db: PostgresDB) -> None:
         logfire.exception("Adding embeddings to old memories failed")
 
 
-def register_memory_tools(agent: Agent) -> None:
-    @agent.tool
-    async def remember(context: RunContext[Dependencies], fact: str) -> str:
-        """Save a lasting fact about the user so it can be recalled in later conversations.
+memory_tools = FunctionToolset[Dependencies]()  # remember / recall / forget; given to an agent by capabilities.Memory
 
-        Args:
-            context: The call context.
-            fact: One short, self-contained fact, e.g. "Prefers answers in Russian".
-        """
-        db = context.deps.db
-        scope = _scope(db)
-        fact = fact.strip()
-        if scope is None:
-            return "Memory is not available."
-        if not fact or len(fact) > MAX_MEMORY_CHARS:
-            return f"Not saved: a fact must be 1-{MAX_MEMORY_CHARS} characters long."
 
-        memory, is_new, similar = await save_memory(db, scope, fact)
-        if not is_new:
-            return f"Already remembered as memory [{memory.id}]: {memory.content}"
-        reply = f"Saved as memory [{memory.id}]."
-        if similar:
-            reply += (
-                " Similar memories exist; if this replaces one of them, delete the "
-                "outdated one with `forget`:\n"
-                + "\n".join(format_memory_line(m) for m in similar)
-            )
-        return reply
+@memory_tools.tool
+async def remember(context: RunContext[Dependencies], fact: str) -> str:
+    """Save a lasting fact about the user so it can be recalled in later conversations.
 
-    @agent.tool
-    async def recall(context: RunContext[Dependencies], query: str = "") -> str:
-        """Search the memories saved about the user, by meaning.
+    Args:
+        context: The call context.
+        fact: One short, self-contained fact, e.g. "Prefers answers in Russian".
+    """
+    db = context.deps.db
+    scope = _scope(db)
+    fact = fact.strip()
+    if scope is None:
+        return "Memory is not available."
+    if not fact or len(fact) > MAX_MEMORY_CHARS:
+        return f"Not saved: a fact must be 1-{MAX_MEMORY_CHARS} characters long."
 
-        Args:
-            context: The call context.
-            query: What to look for, in a few words. Leave empty to list the newest memories.
-        """
-        db = context.deps.db
-        scope = _scope(db)
-        if scope is None:
-            return "Memory is not available."
+    memory, is_new, similar = await save_memory(db, scope, fact)
+    if not is_new:
+        return f"Already remembered as memory [{memory.id}]: {memory.content}"
+    reply = f"Saved as memory [{memory.id}]."
+    if similar:
+        reply += (
+            " Similar memories exist; if this replaces one of them, delete the "
+            "outdated one with `forget`:\n"
+            + "\n".join(format_memory_line(m) for m in similar)
+        )
+    return reply
 
-        memories = await recall_memories(db, scope, query, db.context.agent.memo_limit)
-        if not memories:
-            return "No matching memories."
-        return "\n".join(format_memory_line(memory) for memory in memories)
+@memory_tools.tool
+async def recall(context: RunContext[Dependencies], query: str = "") -> str:
+    """Search the memories saved about the user, by meaning.
 
-    @agent.tool
-    async def forget(context: RunContext[Dependencies], memory_id: int) -> str:
-        """Delete a memory that is outdated or wrong.
+    Args:
+        context: The call context.
+        query: What to look for, in a few words. Leave empty to list the newest memories.
+    """
+    db = context.deps.db
+    scope = _scope(db)
+    if scope is None:
+        return "Memory is not available."
 
-        Args:
-            context: The call context.
-            memory_id: The id shown in brackets next to the memory.
-        """
-        db = context.deps.db
-        scope = _scope(db)
-        if scope is None:
-            return "Memory is not available."
+    memories = await recall_memories(db, scope, query, db.context.agent.memo_limit)
+    if not memories:
+        return "No matching memories."
+    return "\n".join(format_memory_line(memory) for memory in memories)
 
-        deleted = await db.delete_memory(memory_id, *scope)
-        return f"Forgot memory [{memory_id}]." if deleted else "No such memory."
+@memory_tools.tool
+async def forget(context: RunContext[Dependencies], memory_id: int) -> str:
+    """Delete a memory that is outdated or wrong.
+
+    Args:
+        context: The call context.
+        memory_id: The id shown in brackets next to the memory.
+    """
+    db = context.deps.db
+    scope = _scope(db)
+    if scope is None:
+        return "Memory is not available."
+
+    deleted = await db.delete_memory(memory_id, *scope)
+    return f"Forgot memory [{memory_id}]." if deleted else "No such memory."

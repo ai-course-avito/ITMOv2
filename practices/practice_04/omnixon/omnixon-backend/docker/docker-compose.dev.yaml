@@ -11,9 +11,12 @@ services:
     environment:
       - POSTGRES_HOST=${POSTGRES_HOST:-db}
       - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - "${UPSTREAM_PORT:-8000}:80"
     restart: unless-stopped
@@ -30,6 +33,12 @@ services:
         - dev-app:/app
     tty: true
     stdin_open: true
+
+  # Shared state of the api replicas (who streams to whom, which MCP servers are down). Nothing to keep: no persistence.
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    restart: unless-stopped
 
   db:
     image: pgvector/pgvector:pg16

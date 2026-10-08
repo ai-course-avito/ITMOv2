@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Request, Body, HTTPException
 from typing import Sequence
 from typing import Annotated, Optional
 from pydantic import BaseModel, StringConstraints, field_validator
-from ai.utils import MCP_OPTIONS
+from ai.capabilities.mcp import MCP_OPTIONS
 from database import PostgresDB, MCPServer, RANK
 from database.models import NAME_MAX
 from access import default_agent_id, forbidden, rank_of, require

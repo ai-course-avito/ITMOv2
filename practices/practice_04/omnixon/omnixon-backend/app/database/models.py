@@ -7,6 +7,7 @@ from typing import Optional, Any, Dict, List
 from core import (
     INITIAL_API_KEY,
     DEFAULT_AUTO_MEMORY,
+    DEFAULT_PARALLEL_TOOL_CALLS,
     DEFAULT_MEMO_LIMIT,
     DEFAULT_RAG_LIMIT,
     DEFAULT_MESSAGE_LIMIT,
@@ -150,6 +151,9 @@ class AgentConfig(BaseModel):
     auto_memory: Optional[bool] = (
         None  # learn from every exchange (default: DEFAULT_AUTO_MEMORY)
     )
+    parallel_tool_calls: Optional[bool] = (
+        None  # tools the model calls in one turn run together (default: DEFAULT_PARALLEL_TOOL_CALLS)
+    )
 
 
 class AgentConnection(BaseModel):
@@ -226,6 +230,11 @@ class Agent(Named):
     def auto_memory(self) -> bool:
         setting = self.config.auto_memory
         return DEFAULT_AUTO_MEMORY if setting is None else setting
+
+    @property
+    def parallel_tool_calls(self) -> bool:
+        setting = self.config.parallel_tool_calls
+        return DEFAULT_PARALLEL_TOOL_CALLS if setting is None else setting
 
     @property
     def memo_limit(self) -> int:

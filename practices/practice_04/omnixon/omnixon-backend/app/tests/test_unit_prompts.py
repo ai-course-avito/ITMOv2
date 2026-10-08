@@ -1,6 +1,8 @@
 """unit prompts tests"""
 
 import pytest
+from ai import runner
+from ai.capabilities.parallel import PARALLEL_INSTRUCTIONS
 from ai.memory import MEMORY_INSTRUCTIONS
 from ai.attachments import Attachment
 
@@ -23,7 +25,16 @@ def capture_model(answer="ok"):
         seen.append(messages)
         return ModelResponse(parts=[TextPart(answer)])
 
-    return FunctionModel(respond), seen
+    async def stream(messages, info):  # every run streams: the JSON answer is the stream read to the end
+        seen.append(messages)
+        yield answer
+
+    return FunctionModel(respond, stream_function=stream), seen
+
+
+def instructions_of(messages):
+    """The instructions of the agent (its prompt and what its capabilities add): they are sent as the system message, not part of the history."""
+    return "\n".join(m.instructions for m in messages if getattr(m, "instructions", None))
 
 
 def parts_of(messages, kind):
@@ -34,16 +45,15 @@ def parts_of(messages, kind):
 async def test_memories_are_put_in_front_of_the_users_message_not_in_the_system_prompt(
     monkeypatch,
 ):
-    from ai import endpoint
 
     db = FakeDB(memories=[memory(2, "Likes tea."), memory(1, "Lives in Prague.")])
     model, seen = capture_model()
-    monkeypatch.setattr(endpoint, "generate_model", lambda request_json, **kw: model)
+    monkeypatch.setattr(runner, "generate_model", lambda request_json, **kw: model)
 
-    answer = await endpoint.agent_endpoint(db, "What do you know about me?")
+    answer = (await runner.agent_run(db, "What do you know about me?")).output
     assert answer == "ok"
 
-    system = "\n".join(parts_of(seen[0], "system-prompt"))
+    system = instructions_of(seen[0])
     user = parts_of(seen[0], "user-prompt")[-1]
     # the system prompt is the same for every user: instructions, no personal data
     assert MEMORY_INSTRUCTIONS in system and "Be helpful." in system
@@ -66,20 +76,18 @@ async def test_memories_are_put_in_front_of_the_users_message_not_in_the_system_
 async def test_without_the_memory_tool_the_model_gets_neither_instructions_nor_memories(
     monkeypatch,
 ):
-    from ai import endpoint
 
     db = FakeDB(memories=[memory(1, "Likes tea.")], tools=("rag",))
     model, seen = capture_model()
-    monkeypatch.setattr(endpoint, "generate_model", lambda request_json, **kw: model)
+    monkeypatch.setattr(runner, "generate_model", lambda request_json, **kw: model)
 
-    await endpoint.agent_endpoint(db, "hello")
-    assert MEMORY_INSTRUCTIONS not in "\n".join(parts_of(seen[0], "system-prompt"))
+    await runner.agent_run(db, "hello")
+    assert MEMORY_INSTRUCTIONS not in instructions_of(seen[0])
     assert parts_of(seen[0], "user-prompt")[-1] == "hello"
 
 
 @pytest.mark.asyncio
 async def test_the_memory_block_does_not_pile_up_in_the_history(monkeypatch):
-    from ai import endpoint
     from database import Message
 
     history = [
@@ -98,9 +106,9 @@ async def test_the_memory_block_does_not_pile_up_in_the_history(monkeypatch):
     ]
     db = FakeDB(memories=[memory(1, "Likes tea.")], messages=history)
     model, seen = capture_model()
-    monkeypatch.setattr(endpoint, "generate_model", lambda request_json, **kw: model)
+    monkeypatch.setattr(runner, "generate_model", lambda request_json, **kw: model)
 
-    await endpoint.agent_endpoint(db, "again")
+    await runner.agent_run(db, "again")
     users = parts_of(seen[0], "user-prompt")
     assert users[0] == "I like tea."  # an old message is as it was written
     assert users[-1].startswith("<Memory>") and users[-1].endswith("again")
@@ -140,12 +148,11 @@ def tool_then_answer_model():
 
 @pytest.mark.asyncio
 async def test_a_run_reports_its_model_and_tool_calls_only_when_asked(monkeypatch):
-    from ai import endpoint
 
     monkeypatch.setattr(
-        endpoint, "generate_model", lambda j, **kw: tool_then_answer_model()
+        runner, "generate_model", lambda j, **kw: tool_then_answer_model()
     )
-    run = await endpoint.agent_run(
+    run = await runner.agent_run(
         FakeDB(memories=[memory(2, "Likes tea.")]), "forget tea", trace=True
     )
 
@@ -162,9 +169,9 @@ async def test_a_run_reports_its_model_and_tool_calls_only_when_asked(monkeypatc
     assert last.text == "Done."
 
     monkeypatch.setattr(
-        endpoint, "generate_model", lambda j, **kw: tool_then_answer_model()
+        runner, "generate_model", lambda j, **kw: tool_then_answer_model()
     )
-    plain = await endpoint.agent_run(
+    plain = await runner.agent_run(
         FakeDB(memories=[memory(2, "Likes tea.")]), "forget tea"
     )
     assert plain.output == "Done." and plain.trace == []
@@ -172,16 +179,13 @@ async def test_a_run_reports_its_model_and_tool_calls_only_when_asked(monkeypatc
 
 @pytest.mark.asyncio
 async def test_a_stream_yields_the_steps_between_the_text(monkeypatch):
-    from ai import endpoint
     from ai.trace import TraceStep
 
     db = FakeDB(memories=[memory(2, "Likes tea.")])
     monkeypatch.setattr(
-        endpoint, "generate_model", lambda j, **kw: tool_then_answer_model()
+        runner, "generate_model", lambda j, **kw: tool_then_answer_model()
     )
-    seen = [
-        c async for c in endpoint.agent_stream_endpoint(db, "forget tea", trace=True)
-    ]
+    seen = [c async for c in runner.run_agent(db, "forget tea", trace=True)]
 
     steps = [c for c in seen if isinstance(c, TraceStep)]
     text = "".join(c for c in seen if isinstance(c, str))
@@ -190,15 +194,12 @@ async def test_a_stream_yields_the_steps_between_the_text(monkeypatch):
     assert "Done." in text
 
     monkeypatch.setattr(
-        endpoint, "generate_model", lambda j, **kw: tool_then_answer_model()
+        runner, "generate_model", lambda j, **kw: tool_then_answer_model()
     )
     only_text = [
-        c
-        async for c in endpoint.agent_stream_endpoint(
-            FakeDB(memories=[memory(2, "x")]), "go"
-        )
+        c async for c in runner.run_agent(FakeDB(memories=[memory(2, "x")]), "go")
     ]
-    assert all(isinstance(c, str) for c in only_text)
+    assert all(isinstance(c, (str, runner.Finished)) for c in only_text)
 
 
 def test_the_tracer_keeps_a_failed_tool_and_clips_long_results():
@@ -254,28 +255,90 @@ def test_the_tracer_keeps_a_failed_tool_and_clips_long_results():
 
 
 @pytest.mark.asyncio
-async def test_an_agent_without_a_prompt_gets_no_empty_system_message():
-    from ai.endpoint import _build_system_prompt
+async def test_an_agent_without_a_prompt_has_no_instructions_of_its_own(monkeypatch):
     from ai.utils import get_conversation_history
 
+    model, seen = capture_model()
+    monkeypatch.setattr(runner, "generate_model", lambda request_json, **kw: model)
     db = FakeDB()
     db.context.agent.prompt = ""
-    # with the memory tool the system prompt is just the instructions, no blank lines in front
-    assert await _build_system_prompt(db) == MEMORY_INSTRUCTIONS
-    db.context.agent.tools = ["rag"]
-    assert await _build_system_prompt(db) == ""
+    # with the memory tool the instructions are just what the capabilities say
+    await runner.agent_run(db, "hi")
+    assert instructions_of(seen[0]) == f"{MEMORY_INSTRUCTIONS}\n\n{PARALLEL_INSTRUCTIONS}"
 
-    # nothing to say: no system message at all (an empty one is refused by some providers)
-    assert list(await get_conversation_history(db, "", True)) == []
-    with_prompt = await get_conversation_history(db, "Be helpful.", True)
-    assert [p.part_kind for m in with_prompt for p in m.parts] == ["system-prompt"]
+    # nothing to say: no instructions at all (an empty system message is refused by some providers)
+    db.context.agent.tools = ["rag"]
+    await runner.agent_run(db, "hi")
+    assert instructions_of(seen[1]) == PARALLEL_INSTRUCTIONS
+    db.context.agent.tools = []
+    await runner.agent_run(db, "hi")
+    assert instructions_of(seen[2]) == ""
+
+    # the history is only the exchange: the prompt never goes into it
+    assert list(await get_conversation_history(db, True)) == []
 
 
 def test_the_memory_block_goes_before_the_text_and_files_after_it():
-    from ai.endpoint import _user_prompt
+    from ai.runner import user_prompt
 
-    assert _user_prompt("hi", [], "") == "hi"
-    assert _user_prompt("hi", [], "<Memory>x</Memory>") == "<Memory>x</Memory>\n\nhi"
+    assert user_prompt("hi", [], "") == "hi"
+    assert user_prompt("hi", [], "<Memory>x</Memory>") == "<Memory>x</Memory>\n\nhi"
     files = [Attachment(data=PNG_B64, media_type="image/png")]
-    prompt = _user_prompt("hi", files, "<Memory>x</Memory>")
+    prompt = user_prompt("hi", files, "<Memory>x</Memory>")
     assert prompt[0] == "<Memory>x</Memory>\n\nhi" and len(prompt) == 2
+
+
+@pytest.mark.asyncio
+async def test_a_plain_run_asks_the_model_for_whole_answers_and_a_stream_for_pieces(monkeypatch):
+    """One runner, two ways of asking the provider: `stream=False` (the JSON endpoint) sends no `stream` request and yields no text pieces."""
+    from pydantic_ai.messages import ModelResponse, TextPart
+    from pydantic_ai.models.function import FunctionModel
+
+    asked = []
+
+    def respond(messages, info):
+        asked.append("whole")
+        return ModelResponse(parts=[TextPart("ok")])
+
+    async def stream(messages, info):
+        asked.append("pieces")
+        yield "ok"
+
+    monkeypatch.setattr(runner, "generate_model", lambda j, **kw: FunctionModel(respond, stream_function=stream))
+    plain = [i async for i in runner.run_agent(FakeDB(), "hi", stream=False)]
+    streamed = [i async for i in runner.run_agent(FakeDB(), "hi")]
+    assert asked == ["whole", "pieces"]
+    assert [type(i).__name__ for i in plain] == ["Finished"] and plain[0].output == "ok"
+    assert streamed[0] == "ok" and streamed[-1].output == "ok"
+    assert (await runner.agent_run(FakeDB(), "hi")).output == "ok" and asked[-1] == "whole"
+
+
+@pytest.mark.asyncio
+async def test_a_run_that_is_stopped_before_its_end_stores_nothing_and_leaves_nothing_behind(monkeypatch):
+    import asyncio
+
+    from pydantic_ai.messages import ModelResponse, TextPart
+    from pydantic_ai.models.function import FunctionModel
+
+    from ai import interrupt
+
+    async def slow(messages, info):
+        yield "part one "
+        await asyncio.sleep(30)  # the model is thinking: a stop must not wait for it
+        yield "part two"
+
+    monkeypatch.setattr(
+        runner, "generate_model", lambda j, **kw: FunctionModel(lambda m, i: ModelResponse(parts=[TextPart("x")]), stream_function=slow)
+    )
+    db = FakeDB()
+    stream = interrupt.start((3, 7))
+    seen = []
+    try:
+        async with asyncio.timeout(5):  # not the 30 seconds of the model
+            async for item in interrupt.until_stopped(runner.run_agent(db, "hi"), stream):
+                seen.append(item)
+                stream.wanted.set()
+    finally:
+        interrupt.end(stream)
+    assert seen == ["part one "]
+    assert not hasattr(db, "stored")  # whoever stops stores what was said (save_interrupted), not the run

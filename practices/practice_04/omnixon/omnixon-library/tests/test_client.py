@@ -224,6 +224,10 @@ async def test_agent_config_is_sent_and_parsed(api):
     assert json.loads(api.requests[-1].content)["config"] == {"rag_limit": 12}
     await c.update_agent(1, config={"rag_limit": None})  # back to the service default (8)
     assert json.loads(api.requests[-1].content)["config"] == {"rag_limit": None}
+    await c.update_agent(1, config={"parallel_tool_calls": False})  # one call per turn, one after another
+    assert json.loads(api.requests[-1].content)["config"] == {"parallel_tool_calls": False}
+    await c.update_agent(1, config=AgentConfigInput(parallel_tool_calls=None))  # back to the default (on)
+    assert json.loads(api.requests[-1].content)["config"] == {"parallel_tool_calls": None}
 
 
 @pytest.mark.asyncio

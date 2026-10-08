@@ -1,4 +1,4 @@
-import { dialog, expect, field, nameBox, row, test, toast, unique } from './fixtures'
+import { AUTH, chooseCard, dialog, dropAgent, expect, field, nameBox, newAgent, row, test, toast, unique } from './fixtures'
 
 test('agent lifecycle: create, edit, versions, view, compare, roll back, delete', async ({ page }) => {
   const label = unique('Pirate bot')
@@ -145,4 +145,35 @@ test('an unknown agent shows the service error', async ({ page }) => {
   await page.goto('/agents/999999')
   await expect(page.getByText('Request failed')).toBeVisible()
   await expect(page.getByText('Agent not found')).toBeVisible()
+})
+
+test('parallel tool calls: shown as saved, changed and put back to the default', async ({ page, request }) => {
+  const agent = await newAgent(request, unique('Parallel'), { config: { parallel_tool_calls: false } })
+  try {
+    await page.goto(`/agents/${agent.id}`)
+    const parallel = field(page, 'Parallel tool calls')
+    await expect(parallel).toContainText('Off') // what was saved
+
+    await parallel.getByRole('combobox').click()
+    await page.getByRole('option').filter({ has: page.locator('.font-medium', { hasText: /^On$/ }) }).click() // not chooseCard: 'On' is also in the text of the default card
+    await field(page, 'Comment').getByRole('textbox').fill('together')
+    await page.getByRole('button', { name: 'Save changes' }).click()
+    await expect(toast(page, 'Agent saved')).toBeVisible()
+    const saved = await (await request.get(`/api/v1/admin/agents/${agent.id}`, { headers: AUTH })).json()
+    expect(saved.config.parallel_tool_calls).toBe(true)
+
+    await parallel.getByRole('combobox').click()
+    await chooseCard(page, 'Service default')
+    await field(page, 'Comment').getByRole('textbox').fill('default again')
+    await page.getByRole('button', { name: 'Save changes' }).click()
+    await expect(toast(page, 'Agent saved')).toBeVisible()
+    const back = await (await request.get(`/api/v1/admin/agents/${agent.id}`, { headers: AUTH })).json()
+    expect(back.config.parallel_tool_calls ?? null).toBeNull() // null resets the key
+
+    await page.getByRole('tab', { name: 'Versions' }).click()
+    await page.getByRole('button', { name: 'View version 2' }).click()
+    await expect(dialog(page, /Version 2/)).toContainText('Parallel tool calls') // the viewer lists it
+  } finally {
+    await dropAgent(request, agent.id)
+  }
 })

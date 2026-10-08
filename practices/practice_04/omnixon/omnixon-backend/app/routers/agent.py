@@ -27,6 +27,7 @@ class AgentConfigInput(BaseModel):
         None, ge=1, le=100
     )  # default: DEFAULT_RAG_LIMIT (8)
     auto_memory: Optional[bool] = None  # default: on (DEFAULT_AUTO_MEMORY)
+    parallel_tool_calls: Optional[bool] = None  # default: on (DEFAULT_PARALLEL_TOOL_CALLS)
 
     _check_tools = field_validator("tools")(validate_tools)
 

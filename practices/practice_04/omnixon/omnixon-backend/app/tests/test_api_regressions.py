@@ -9,6 +9,9 @@ from shared import (
     CALC_ANSWER,
     CALC_QUESTION,
     MCP_CALCULATOR_URL,
+    agent_on,
+    fake_log,
+    fake_model,
     collect_sse,
     digits_only,
     history_of,
@@ -232,36 +235,20 @@ async def test_errors_that_will_not_pass_are_not_retried(client, broken_model):
 @pytest.mark.asyncio
 @pytest.mark.order(16)
 async def test_sampling_options_of_a_model_reach_the_provider(client):
-    agent_id = (await client.get("/api/v1/agents/self")).json()["id"]
-    res = await client.post(
-        "/api/v1/admin/models",
-        json={
-            "name": "test",
-            "request_json": {
-                "model": "z-ai/glm-5.3-20260816",
-                "max_tokens": 60,
-                "temperature": 0,
-                "top_k": 20,
-            },
-        },
+    """Every key of a model's body reaches the provider as the provider's own parameter (the fake LLM server logs what it got; a real reasoning
+    model would spend a budget of 60 tokens on thinking and answer nothing)."""
+    model = await fake_model(client, "fake/sampling-check")
+    res = await client.patch(
+        f"/api/v1/admin/models/{model['id']}",
+        json={"request_json": {"model": "fake/sampling-check", "max_tokens": 60, "temperature": 0, "top_k": 20, "seed": 7}},
     )
-    model_id = res.json()["id"]
-    await client.patch(f"/api/v1/admin/agents/{agent_id}", json={"model_id": model_id})
-    user_id = "max_tokens_user"
-    try:
-        res = await client.post(
+    assert res.status_code == 200, res.text
+    async with agent_on(client, model) as (_, c):
+        res = await c.post(
             "/api/v1/request",
-            json={
-                "user_id": user_id,
-                "request": "Write a 200 word story about a lighthouse.",
-                "save_message": False,
-                "use_memo": False,
-            },
+            json={"user_id": "max_tokens_user", "request": "hi", "save_message": False, "use_memo": False},
         )
-        assert res.status_code == 200
-        # 60 tokens are a few sentences; ignoring max_tokens gave over a thousand characters
-        assert 0 < len(res.json()["response"]) < 400
-    finally:
-        await client.patch(f"/api/v1/admin/agents/{agent_id}", json={"model_id": 0})
-        await client.delete(f"/api/v1/admin/models/{model_id}")
-        await client.delete(f"/api/v1/users/{user_id}")
+        assert res.status_code == 200, res.text
+    keys = fake_log("fake/sampling-check")[0]["keys"]
+    # the OpenAI protocol calls the limit max_completion_tokens; either name is the limit
+    assert {"temperature", "top_k", "seed"} <= set(keys) and {"max_tokens", "max_completion_tokens"} & set(keys)

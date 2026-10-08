@@ -822,3 +822,31 @@ async def test_the_role_of_a_token_can_be_changed_up_to_what_the_caller_may_hand
             assert (await client.get("/api/v1/tokens/self")).json()["role"] == "owner"
         finally:
             await client.delete(url)
+
+
+@pytest.mark.asyncio
+@pytest.mark.order(24)
+async def test_the_role_the_openapi_schema_gives_every_route_is_the_door_it_has(client):
+    """Every route, from the schema itself: the role below the one it names is refused (403), the role it names gets past the door. Nothing here
+    is written by hand, so a new route is covered, and a route whose `x-min-role` lies is caught."""
+    schema = (await client.get("/openapi.json")).json()
+    roles = {}
+    async with role_clients(client) as x:
+        for path, item in schema["paths"].items():
+            for method, op in item.items():
+                role = op["x-min-role"]
+                if role == "none":
+                    continue
+                roles[(method.upper(), path)] = role
+                url = path
+                for name in {part[1:-1] for part in path.split("/") if part.startswith("{")}:
+                    url = url.replace("{" + name + "}", "999999999" if name.endswith("_id") and name != "user_id" else "nobody_streams")
+                if "/request" in url:  # these would call a model: the door is checked by the cases above
+                    continue
+                for held in ROLES:
+                    res = await x.clients[held].request(method.upper(), url, json={} if method != "get" else None)
+                    if RANK[held] < RANK[role]:
+                        assert res.status_code == 403, f"{held} must be refused: {method.upper()} {path} needs {role} -> {res.status_code} {res.text[:200]}"
+                    else:
+                        assert res.status_code != 403 or "own agent" in res.text, f"{held} must get in: {method.upper()} {path} -> {res.status_code} {res.text[:200]}"
+    assert {"admin", "user", "regular"} <= set(roles.values())

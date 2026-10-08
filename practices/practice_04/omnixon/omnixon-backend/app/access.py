@@ -11,9 +11,7 @@
 depend on what the route is about. Roles below admin never leave their own agent.
 """
 
-from contextvars import ContextVar
-from dataclasses import dataclass
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional
 
 from fastapi import HTTPException, Request
 
@@ -28,27 +26,12 @@ GRANTS = {
 }
 
 
-@dataclass(frozen=True)
-class CallChain:
-    """The agents one request went through when agents called each other (tool ask_agent), and the person it
-    started with. Each called agent talks to the user `agent_<caller>:<human>`, so the name never grows with depth."""
-
-    agents: Tuple[int, ...]  # the first is the agent the request came to
-    human: str  # external id of the user of that first agent
-
-
-# Set by ask_agent around the run of the called agent: the code of that run (its own ask_agent) sees it
-call_chain: ContextVar[Optional[CallChain]] = ContextVar(
-    "agent_call_chain", default=None
-)
-
-
 async def may_act_as(db: PostgresDB, agent_id: int) -> bool:
-    """May this request work as agent `agent_id` (X-Act-As-Agent, and an agent calling another)? An admin may work
-    as any agent; otherwise the agent before it in the call chain must have a connection to it."""
+    """May this request work as agent `agent_id` (X-Act-As-Agent, and an agent asking another)? An admin may work as any agent; otherwise the
+    agent that is asking (the last of the chain of the request) must have a connection to it."""
     if rank_of(db) >= RANK["admin"]:
         return True
-    chain = call_chain.get()
+    chain = db.context.chain
     if chain is None:
         return False
     return await db.find_agent_connection(chain.agents[-1], agent_id) is not None
@@ -73,6 +56,7 @@ def require(role: str) -> Callable:
         if rank_of(db) < minimum:
             raise forbidden(f"Forbidden: needs the {role} role")
 
+    check.min_role = role  # type: ignore[attr-defined]  # read by openapi.py: the schema says which role a route needs
     return check
 
 

@@ -93,6 +93,11 @@ MCP_TOOL_ERRORS = expiring(
         registry=REGISTRY,
     )
 )
+TOOL_ERRORS = Counter(
+    "omnixon_tool_errors_total",
+    "Tool calls that raised: the model got a failed result and the run went on",
+    registry=REGISTRY,
+)
 MCP_SERVERS_DROPPED = Counter(
     "omnixon_mcp_servers_dropped_total",
     "MCP servers left out of a request because they were down",

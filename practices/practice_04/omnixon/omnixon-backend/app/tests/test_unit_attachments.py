@@ -106,17 +106,15 @@ async def test_old_messages_with_files_tell_the_model_that_a_file_was_there():
             content={"type": "user", "content": "Thanks"},
         ),
     ]
-    history = await ai_utils.get_conversation_history(
-        FakeDB(messages=messages), "system"
-    )
-    assert history[1].parts[0].content == "What is this?\n[attached image: cat.png]"
+    history = await ai_utils.get_conversation_history(FakeDB(messages=messages))
+    assert history[0].parts[0].content == "What is this?\n[attached image: cat.png]"
     assert (
-        history[3].parts[0].content == "Thanks"
+        history[2].parts[0].content == "Thanks"
     )  # a message without files is unchanged
 
 
 def test_the_prompt_is_the_text_with_the_files_after_it():
-    from ai.endpoint import _user_message, _user_prompt
+    from ai.runner import user_message as _user_message, user_prompt as _user_prompt
 
     assert _user_prompt("hi", []) == "hi" and _user_message([]) == {}
     files = [Attachment(data=PNG_B64, media_type="image/png", name="a.png")]

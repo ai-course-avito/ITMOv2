@@ -7,6 +7,7 @@ DEFAULTS = {
     "memo_limit": 20,
     "rag_limit": 8,
     "auto_memory": True,
+    "parallel_tool_calls": True,
 }
 
 CONCEPTS = """\
@@ -15,7 +16,7 @@ Omnixon runs LLM agents and keeps what they need. A client (a bot, a site) sends
 THINGS
 - Agent: a prompt + a model + settings (config) + the MCP servers it may use. Everything an agent does is decided by these. Every change to them is a numbered VERSION of the agent (list_versions, show_version, rollback_agent): nothing is lost, so changing an agent is safe.
 - Model: a record naming an OpenRouter model (and options like temperature) that agents run on. Shared: changing one changes every agent that uses it.
-- Config of an agent (only what is set is stored; null resets a key to the default): tools (built-in: "rag" searches the knowledge base, "memory" lets the model remember facts about a person; default both), message_limit (latest messages the model gets, default 10), memo_limit (memories shown at once, default 20), rag_limit (knowledge entries per search, default 8), auto_memory (after each saved exchange a second model call extracts lasting facts; default on). Defaults can be changed by whoever runs the service.
+- Config of an agent (only what is set is stored; null resets a key to the default): tools (built-in: "rag" searches the knowledge base, "memory" lets the model remember facts about a person; default both), message_limit (latest messages the model gets, default 10), memo_limit (memories shown at once, default 20), rag_limit (knowledge entries per search, default 8), auto_memory (after each saved exchange a second model call extracts lasting facts; default on), parallel_tool_calls (tools the model calls in one turn run at the same time and it is told to ask for independent ones together; default on). Defaults can be changed by whoever runs the service.
 - Knowledge base (per agent): entries of text found by meaning when the agent searches. Memory (per person and agent): short facts about a person.
 - User: a person who talks to an agent, known by an id the client chooses (the same id on two agents is two users). Chat: a thread of messages of one user with one agent; messages without a chat go to the user's default chat. Messages older than a week are forgotten; memories are not.
 - MCP server: an external server of tools an agent may call. Token: the secret a client (or this server) uses; it belongs to ONE agent and has a role.

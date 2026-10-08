@@ -4,7 +4,8 @@ import asyncio
 import math
 import uuid
 import pytest
-from ai.agent import generate_agent
+from pydantic_ai import Agent
+from ai.capabilities import Memory
 from ai.deps import Dependencies
 from ai import memory as memory_module
 from core import DATABASE_CONFIG, DEFAULT_TOOLS
@@ -257,7 +258,7 @@ async def test_remember_tool_tells_the_model_about_similar_memories(monkeypatch)
     from pydantic_ai.models.test import TestModel
 
     model = TestModel(call_tools=["remember"])
-    agent = generate_agent(model, None, ["memory"])
+    agent = Agent(model, deps_type=Dependencies, capabilities=[Memory()])
     result = await agent.run("hi", deps=Dependencies(db=db))
     returned = [
         part.content

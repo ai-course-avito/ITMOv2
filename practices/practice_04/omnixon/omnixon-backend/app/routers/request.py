@@ -8,15 +8,13 @@ from typing import AsyncIterator, List, Optional
 from pydantic import BaseModel, Field
 from database import PostgresDB, User
 from ai import interrupt
-from ai.endpoint import save_interrupted
 from ai.trace import TraceStep
 from ai.attachments import Attachment
 from core import (
     metrics,
 )
-from ai import agent_run, agent_stream_endpoint
+from ai import Finished, agent_run, run_agent, save_interrupted
 from core import (
-    REQUEST_TIMEOUT_SECONDS,
     async_logfire_decorator,
     error_response,
 )
@@ -168,7 +166,7 @@ async def request_stream(request: Request, data: MessageRequest) -> StreamingRes
         try:
             # First, so the client has the (possibly new) user even if the stream fails
             yield _sse_event("user", json.loads(user_snapshot.model_dump_json()))
-            chunks = agent_stream_endpoint(
+            chunks = run_agent(
                 db,
                 data.request,
                 save_message=data.save_message,
@@ -177,15 +175,14 @@ async def request_stream(request: Request, data: MessageRequest) -> StreamingRes
                 trace=data.trace,
             )
             try:
-                async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
-                    async for chunk in interrupt.until_stopped(chunks, stream):
-                        if isinstance(chunk, TraceStep):
-                            yield _sse_event(
-                                "trace", chunk.model_dump(exclude_none=True)
-                            )
-                        else:
-                            stream.partial.append(chunk)
-                            yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
+                async for chunk in interrupt.until_stopped(chunks, stream):
+                    if isinstance(chunk, Finished):
+                        continue  # the run has stored the exchange; `done` says it is over
+                    if isinstance(chunk, TraceStep):
+                        yield _sse_event("trace", chunk.model_dump(exclude_none=True))
+                    else:
+                        stream.partial.append(chunk)
+                        yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
             finally:
                 await chunks.aclose()
             if stream.interrupted:

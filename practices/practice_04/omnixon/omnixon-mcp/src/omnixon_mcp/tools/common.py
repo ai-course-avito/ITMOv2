@@ -57,6 +57,10 @@ CONFIG_PROPS = {
     "auto_memory": b(
         "After each saved exchange a second model call extracts lasting facts about the person (default on)."
     ),
+    "parallel_tool_calls": b(
+        "Tools the model calls in the same turn run at the same time, and the model is told to ask for independent ones together: fewer turns, "
+        "less time and fewer input tokens (default on). false: one call per turn, one after another."
+    ),
 }
 CONFIG_KEYS = tuple(CONFIG_PROPS)
 

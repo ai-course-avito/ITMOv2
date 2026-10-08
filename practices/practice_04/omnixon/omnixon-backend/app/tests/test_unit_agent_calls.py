@@ -6,17 +6,19 @@ import json
 import pytest
 from pydantic_ai.messages import (
     ModelResponse,
-    SystemPromptPart,
     TextPart,
     ToolCallPart,
     ToolReturnPart,
 )
-from pydantic_ai.models.function import FunctionModel
+from pydantic_ai.models.function import DeltaToolCall, FunctionModel
 
-from access import CallChain, call_chain, may_act_as
-from ai import agent_calls
-from ai.agent_calls import caller_user_id, connected_agents
-from ai.endpoint import agent_run
+from access import may_act_as
+from ai import runner
+from ai.capabilities import agent_calls
+from ai.capabilities.parallel import PARALLEL_INSTRUCTIONS
+from ai.capabilities.agent_calls import ask, caller_user_id, connected_agents
+from ai.runner import agent_run, agent_text
+from database import CallChain
 from database.mixins.agent_version import normal
 
 from shared import scratch_database
@@ -27,12 +29,7 @@ NO_TOOLS = {"tools": [], "auto_memory": False}
 def scripted(_messages, info):
     """A model whose behaviour is its system prompt: `call <id>` asks agent <id> and repeats what it said, `list`
     repeats list_agents, anything else answers with the prompt itself."""
-    prompt = next(
-        part.content
-        for m in _messages
-        for part in getattr(m, "parts", [])
-        if isinstance(part, SystemPromptPart)
-    )
+    prompt = info.instructions.replace("\n\n" + PARALLEL_INSTRUCTIONS, "")  # what the agent was told besides its prompt
     returned = [
         p
         for m in _messages
@@ -57,10 +54,19 @@ def scripted(_messages, info):
     return ModelResponse(parts=[TextPart(f"I am {prompt}")])
 
 
+async def scripted_stream(messages, info):
+    """The same behaviour, as a stream (every run streams)."""
+    for part in scripted(messages, info).parts:
+        if isinstance(part, TextPart):
+            yield part.content
+        else:
+            yield {0: DeltaToolCall(name=part.tool_name, json_args=json.dumps(part.args))}
+
+
 @pytest.fixture
 def fake_model(monkeypatch):
     monkeypatch.setattr(
-        "ai.endpoint.generate_model", lambda *args, **kwargs: FunctionModel(scripted)
+        runner, "generate_model", lambda *args, **kwargs: FunctionModel(scripted, stream_function=scripted_stream)
     )
 
 
@@ -138,12 +144,9 @@ async def test_a_token_below_admin_may_act_as_an_agent_only_through_a_connection
         assert not await may_act_as(
             db, b.id
         )  # no chain: the same as X-Act-As-Agent from a client
-        reset = call_chain.set(CallChain(agents=(a.id,), human="alice"))
-        try:
-            assert await may_act_as(db, b.id)  # a -> b
-            assert not await may_act_as(db, c.id)  # no a -> c
-        finally:
-            call_chain.reset(reset)
+        inside = db.with_context(chain=CallChain(agents=(a.id,), human="alice"))
+        assert await may_act_as(inside, b.id)  # a -> b
+        assert not await may_act_as(inside, c.id)  # no a -> c
         db.context.token = owner
 
 
@@ -175,7 +178,7 @@ async def test_an_agent_asks_a_connected_one_as_its_caller_and_its_person_and_he
             "agent_call",
             "request",
         ]  # b finished first
-        assert call_chain.get() is None  # nothing is left behind
+        assert db.context.chain is None  # the chain belongs to the handle of the called agent, nothing is left behind
 
 
 @pytest.mark.asyncio
@@ -238,15 +241,29 @@ async def test_asking_an_agent_that_is_not_there_or_not_connected_is_refused_in_
 ):
     async with scratch_database("conn_refused") as (pool, db):
         a = db.context.agent
-        assert (await agent_calls.ask(db, 999999, "hi")).startswith(
+        assert (await ask(db, 999999, "hi", agent_text)).startswith(
             "Refused: there is no agent 999999"
         )
 
         c = await db.create_agent("x", 0, name="c", config=NO_TOOLS)
         regular = await db.create_token("plain", a.id, "regular")
         db.context.token = await db.get_token_by_secret(regular.token)
-        answer = await agent_calls.ask(db, c.id, "hi")
+        answer = await ask(db, c.id, "hi", agent_text)
         assert (
             answer
             == f"Refused: agent {a.id} has no connection to agent {c.id}. Call list_agents to see which it has."
         )
+
+
+@pytest.mark.asyncio
+async def test_a_called_agent_that_fails_is_the_tools_answer_not_the_callers_failure():
+    async with scratch_database("conn_fails") as (pool, db):
+        a = db.context.agent
+        b = await db.create_agent("x", 0, name="b", config=NO_TOOLS)
+        await db.create_agent_connection(a.id, b.id, "b")
+
+        async def broken(called, request):
+            raise TimeoutError("the model did not answer")
+
+        text = await ask(db, b.id, "hi", broken)
+        assert text.startswith(f"Agent {b.id} could not answer (HTTP 504)")

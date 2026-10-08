@@ -301,6 +301,7 @@ class FakeDB:
         rag_limit=8,
         vectors=None,
         auto_memory=False,
+        parallel_tool_calls=True,
         tools=("rag", "memory"),
     ):
         self.context = SimpleNamespace(
@@ -313,6 +314,7 @@ class FakeDB:
                     memo_limit=memo_limit,
                     rag_limit=rag_limit,
                     auto_memory=auto_memory,
+                    parallel_tool_calls=parallel_tool_calls,
                     tools=list(tools),
                     model_id=0,
                 )

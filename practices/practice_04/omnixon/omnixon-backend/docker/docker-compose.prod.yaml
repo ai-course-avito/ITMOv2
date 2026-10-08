@@ -12,12 +12,24 @@ services:
       - INITIAL_API_KEY=${INITIAL_API_KEY}
       - LOGFIRE_TOKEN=${LOGFIRE_TOKEN}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
     ports:
       - "8081:80"
+    depends_on:
+      - redis
     restart: unless-stopped
     tty: true
     networks:
       - node-net
+
+  # Shared state of the api replicas (who streams to whom, which MCP servers are down). Nothing to keep: no persistence.
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    restart: unless-stopped
+    networks:
+      - node-net
+
 
 networks:
   node-net:

@@ -65,14 +65,19 @@ app/
     migrations/<n>.sql    the schema, applied in order
     schema.reference.sql  CURRENT state for humans to read — NOT used for migrating
   ai/
-    endpoint.py           agent_endpoint (JSON) and agent_stream_endpoint (SSE), system prompt building
-    agent.py              generate_agent(model, mcp_servers, tools): pydantic-ai Agent + RAG tool
+    runner.py             THE way an agent is run: `run_agent` (async generator of text / TraceStep / Finished), `agent_run`
+                          (whole answer, JSON), `agent_text` (what an agent asked by another one says), `save_interrupted`
+    capabilities/         what an agent is made of, one pydantic-ai capability each (`build_capabilities` is the composition root):
+                          knowledge (RAG), memory, agent_calls (list_agents / ask_agent), mcp (guarded MCP servers), tool_failures
+    transport.py          RetryingTransport: retries of the HTTP request to the model provider, under the client
+    mcp_health.py         which MCP servers are down (per process, or shared through Redis)
+    failures.py           describe_failure / server_label: what went wrong, in words a model can act on
     memory.py             memory prompt block, remember/recall/forget tools, embeddings, near-duplicates,
                           auto_memory extraction, embedding backfill
-    resilience.py         provider retries, dead MCP servers (probe + temporary exclusion)
     attachments.py        Attachment model (url|data), pydantic-ai content, history notes
-    utils.py              generate_model (request_json -> OpenRouterModel), build_mcp_server,
-                          get_conversation_history, embeddings, proxy http client
+    utils.py              generate_model (request_json -> OpenRouterModel), get_conversation_history, embeddings,
+                          http clients (proxy / direct, both retrying)
+  openapi.py              writes `x-min-role` (from the routes' `require(...)`) and the Bearer scheme into the OpenAPI schema
   access.py               WHO MAY DO WHAT: roles, require(role), ensure_agent_access, can_manage_token, GRANTS
   middlewares/postgres.py PURE ASGI middleware: Bearer token -> request.state.db, request log + metrics
   routers/                main.py (request/user/history) and admin.py (agent/agent_version/model/
@@ -105,7 +110,7 @@ pyproject.toml, uv.lock   dependencies (uv). No requirements.txt any more.
 - **Agent** (`agents`): `prompt`, `model_id` and **`config` JSONB**. An agent made for the initial token (`ensure_initial_token`, name "Default agent") starts with an **empty prompt**; an empty prompt sends no system message at all (only the memory instructions, when the tool is on). Default config
   `{"tools": ["rag", "memory"]}`; optional `message_limit` (latest messages given to the model, also the
   size of the `GET history` window), `memo_limit` (memories shown at once; >= 1) and `auto_memory`
-  (bool; **unset = on**, env `DEFAULT_AUTO_MEMORY`; see Memory). Unset limits fall
+  (bool; **unset = on**, env `DEFAULT_AUTO_MEMORY`; see Memory) and `parallel_tool_calls` (bool; **unset = on**, env `DEFAULT_PARALLEL_TOOL_CALLS`; see "What goes wrong" below / Request flow). Unset limits fall
   back to env `DEFAULT_MESSAGE_LIMIT` (10) / `DEFAULT_MEMO_LIMIT` (20). The API returns only what is
   stored. On PATCH only given config keys change; **`null` removes a key** (back to default).
 - **There are no units any more** (migration 11 turned each into a token). The main entity is the **agent**, and access is a **token** bound
@@ -126,7 +131,10 @@ pyproject.toml, uv.lock   dependencies (uv). No requirements.txt any more.
     usage stay the caller's). **owner**: tokens of any role (`GRANTS` in access.py: regular 0, user 2, admin 2, owner 4).
     Routes are gated by `Depends(require(role))` (the admin router needs `user` at least) and by `ensure_agent_access` /
     `default_agent_id` (agent ids in paths/params) inside handlers. **A new route must be given a role and, if it takes an agent id, a scope
-    check; add it to `_cases` in tests/test_api_roles.py** (`test_every_role_is_stopped_at_the_door_it_may_not_pass`).
+    check; add it to `_cases` in tests/test_api_roles.py** (`test_every_role_is_stopped_at_the_door_it_may_not_pass`). **The role of every route is in the
+    OpenAPI schema** (`x-min-role`: regular | user | admin | none, plus the Bearer scheme; `openapi.py` reads it from the `require(...)` dependencies, so it cannot
+    drift): `test_api_roles.py::test_the_role_the_openapi_schema_gives_every_route_is_the_door_it_has` walks the whole schema and checks the door for every
+    role, omnixon-mcp's `ADMIN_ONLY`/`lowest_role` are checked against it, and a snapshot carries it to the library.
   - Tests: `test_every_role_*`, `test_which_roles_a_token_may_hand_out`, `test_which_tokens_a_token_may_rename_and_delete`, mcp/rag/memory
     scope tests (HTTP), and `tests/test_unit_access.py` (access matrix, migration 11 on legacy data).
 - **User** (`users`): `external_id` (<= 64 chars) per **agent** (`users.agent_id`; the same id on two agents is two users). There is no list of all users; `GET /users?query=` finds the
@@ -145,8 +153,7 @@ pyproject.toml, uv.lock   dependencies (uv). No requirements.txt any more.
   **token that made the request** (also when an admin acts as another agent): `kind` request|stream|auto_memory, `model`, `status` (ok | HTTP
   status | cancelled), `duration_ms`, input/output tokens, `cost` (NULL when the provider did not say) and the token's name. **No texts are
   stored.** Cost comes from OpenRouter (`usage: {include: true}` is set in `generate_model` unless the model says otherwise; it is
-  `ModelResponse.provider_details["cost"]`). pydantic-ai leaves token counts at 0 for models without a price table, so `ai/utils.py`
-  patches `pydantic_ai.models.openai._map_usage` to take them from the response (a real request test guards it). It also makes the OpenRouter response types accept any `service_tier` (a provider answered `provisioned`, which the OpenAI literal refused, failing the whole answer): `_accept_any_service_tier`. Rows older than
+  `ModelResponse.provider_details["cost"]`). pydantic-ai 2 maps the token counts and the OpenRouter `service_tier` itself (the two patches this file used to carry are gone; `test_api_usage` guards the counts). Rows older than
   `USAGE_TTL_DAYS` (30) are folded into one `usage_monthly` row per (token, month, model) that never expires (`compact_usage`, a background
   task); a deleted token's rows stay with `token_id` NULL and its old name. `GET /admin/usage` (days, token_id, agent_id; by day/token/model)
   and `/admin/usage/monthly`; a user token sees the tokens of its own agent, admin all.
@@ -180,16 +187,18 @@ pyproject.toml, uv.lock   dependencies (uv). No requirements.txt any more.
   agent1 -> agent2 with a `description` (1-1000), unique pair, no self-loop, cascade on agent delete. A connection is part of agent1's
   behaviour: `connections: [{agent2_id, description}]` is in the version snapshot (`normal()` gives old snapshots `[]`, so no needless
   version), every create/PATCH/DELETE records a version of agent1, deleting an agent records one of each agent that called it, and a
-  rollback restores agent1's connections (skipping agents that are gone). **Built-in tools** (`ai/agent_calls.py`, registered when the agent
+  rollback restores agent1's connections (skipping agents that are gone). **Built-in tools** (the `AgentCalls` capability, `ai/capabilities/agent_calls.py`, present when the agent
   has outgoing connections, whatever `config.tools` says): `list_agents` (id, name, description) and `ask_agent(agent_id, request)`: the
-  called agent runs IN PROCESS (`agent_run`, usage kind `agent_call`, same token) on the request text only (not the caller's conversation),
+  called agent runs IN PROCESS (`agent_text` = `agent_run`, usage kind `agent_call`, same token) on the request text only (not the caller's conversation),
   as the user `agent_<caller id>:<id of the person the chain started with>` (a person id that does not fit 64 chars -> 16-char sha256), in
-  that user's default chat. `access.call_chain` (ContextVar `CallChain(agents, human)`) keeps the chain: an agent already in it is refused,
-  and at most `AGENT_CALL_DEPTH` (3) agents after the first. Access = `access.may_act_as` (shared with `X-Act-As-Agent` in the middleware):
+  that user's default chat. The chain (`database.CallChain(agents, human)`) is `db.context.chain`: **explicit, not a ContextVar**; `db.with_context(agent=..., chain=...)`
+  derives the handle the called agent runs with, so nothing is left behind and tasks cannot see each other's chain. An agent already in it is refused,
+  and at most `AGENT_CALL_DEPTH` (3) agents after the first. `AgentCalls(agents=, answer=)` gets "how to run an agent" injected (`runner.agent_text`),
+  so the capability does not import the runner. Access = `access.may_act_as` (shared with `X-Act-As-Agent` in the middleware):
   admin+ token, OR a connection from the previous agent of the chain to the target. Refusals and failures are the tool's result text,
-  never an error of the caller. Tests: `test_unit_agent_calls.py` (FunctionModel scripts the calls), `test_api_agent_connections.py`, `_cases`.
+  never an error of the caller. Tests: `test_unit_agent_calls.py` (FunctionModel scripts the calls, scratch DB), `test_api_agent_connections.py` (CRUD, versions) and `test_api_agent_calls.py` (the whole thing over HTTP with fake-llm models `fake/ask-<id>` / `fake/list` that call the tools: JSON and SSE, refusals, loops, usage), `_cases`.
 - **MCP server** (`mcp_servers`) + `agent_mcp_servers`: external tool servers attached to agents. Config
-  is `url`, optional `transport` (`streamable_http` default | `sse`) and the options in `ai.utils.MCP_OPTIONS`.
+  is `url`, optional `transport` (`streamable_http` default | `sse`) and the options in `ai.capabilities.mcp.MCP_OPTIONS`.
 
 **Attachments**: `attachments` on `/request` and `/request-stream` (`url` or base64 `data`, `media_type`,
 `name`; image/audio/video/PDF/text). Passed to the model after the text; the history keeps only a note
@@ -216,36 +225,50 @@ agent's `tools`.
   Stop / a new request of the pair publishes on `omnixon:stop`, the owner replica stops and saves and answers on `omnixon:stopped:<id>` with what was said);
   without it, per process. **Swarm**: the api may run as several replicas (`API_REPLICAS` in the prod deploy file, Redis service `omnixon_redis` in both deploy files and
   the root compose): start-up is safe (migrations under an advisory lock, `ensure_initial_token` under one, the embedding backfill by one replica via
-  `pg_try_advisory_lock`), background jobs are safe to run twice (usage folding is `DELETE ... RETURNING`), the MCP-down cache and metrics stay per replica.
+  `pg_try_advisory_lock`), background jobs are safe to run twice (usage folding is `DELETE ... RETURNING`), metrics stay per replica; the MCP-down cache is shared through Redis (`ai/mcp_health.py`, key `omnixon:mcp-down:<config hash>`).
   The test stack has a second replica `api2` (`API_URL_2`) and a test that stops a stream on one replica from the other.
-- Tests use `docker/fake-llm/server.py` (`fake/pong*`, `fake/echo*`, `fake/slow*` = 40 words 0.25 s apart; `/log?model=` shows what it received, e.g. the
+- Tests use `docker/fake-llm/server.py` (`fake/pong*`, `fake/echo*`, `fake/slow*` = 40 words 0.25 s apart, `fake/ask-<id>` calls `ask_agent`, `fake/ask2-<id>` calls it twice in one turn, `fake/list` calls `list_agents`; `/log?model=` shows what it received, e.g. the
   Authorization header) through `FAKE_LLM_URL`.
 
 ## Request flow
 
 `DatabaseMiddleware` authenticates the Bearer token -> `request.state.db` (a `PostgresDB` with
-`Context`), logs one JSON line per request -> router -> `agent_endpoint` / `agent_stream_endpoint`:
-build system prompt (agent prompt + memory block) -> history -> `generate_agent` (model, MCP toolsets,
-tools) -> run -> store messages (+ `auto_memory` in the background). `ai/resilience.py` wraps the run:
-**provider failures that may pass (5xx, 408/429, timeouts, dropped connections, empty answers) are retried
-twice more** (pause 1 s, 2 s) **from where the run broke** (`ai/resume.py`: the complete messages of the failed attempt are kept and the next one
-continues with them, so tools that already returned are NOT called again; usage, history and trace cover all attempts; a stream that already sent
-text is not restarted); 4xx such as a bad model name fail at once. **An MCP server never breaks
-the agent**: when a run fails with an MCP-looking error (the server is down at the start) the servers are probed,
-dead ones are left out (and stay out `MCP_DOWN_SECONDS`, with the reason), the run continues with the rest, and
-the model is told in the run's `instructions` which servers are missing and why (`_unavailable_servers_note`), so
-it can say so. **A failing tool call never ends the answer** (`ai/mcp_calls.py`, pydantic-ai's `process_tool_call`,
-set by `build_mcp_server`): a tool that answered `isError` gives its text to the model at once (same arguments, same
-result); a call that did not get through (connection, timeout, HTTP, MCP protocol error) is tried `MCP_TOOL_ATTEMPTS`
-(3) times, the later ones over a new connection, then the model gets "could not be called: 3 attempts failed. Last
-error: MCP error 408: ..." as the tool's result. Metric `omnixon_mcp_tool_errors_total{kind=refused|failed}`.
-pydantic-ai raises `ModelRetry` for both an `isError` result and a protocol error; only the latter has an `McpError`
-as `__context__` (`_refused`). Verified live: a 404 of a tool, a 2 s `read_timeout` (3 attempts, ~9 s, answer goes
-on) and the MCP container stopped (answer names `ConnectError`). A retried call may run twice if the first got
-through and only its answer was lost (Omnixon's own `/request` is cancelled with its client, so no duplicates there). `REQUEST_TIMEOUT_SECONDS` bounds a request
-(504). **A request whose client has gone away is cancelled** (`_until_disconnect`): this required the
+`Context`), logs one JSON line per request -> router -> **`ai.runner.run_agent`**, the one way an agent is run
+(`/request` reads it to the end with `agent_run`, `/request-stream` forwards it, `ask_agent` uses `agent_text`; there is no second path):
+history (`get_conversation_history`, no system message) + the memory block in front of the user's text -> `Agent(model, instructions=its prompt,
+capabilities=build_capabilities(...))` -> `agent.iter` -> store the exchange (+ `auto_memory` in the background). `stream=False` (what `agent_run`
+uses) lets the iteration run the model requests without streaming them (a provider request without `stream`); `stream=True` yields the text as it
+comes. The HTTP routes stay two (`/request`, `/request-stream`) as thin adapters over it.
+
+**What goes wrong, and how it is survived** (pydantic-ai 2 capabilities; nothing here wraps a whole run and restarts it any more):
+
+- **A provider request that fails** (connection, timeout, 408/425/429/5xx) is sent again under the model client, by `transport.RetryingTransport`
+  (`UPSTREAM_RETRIES` more times, `Retry-After` honoured, else 1 s, 2 s...), so the run never notices and nothing has to be resumed or de-duplicated;
+  the last answer is handed on as it is (4xx such as a bad model name fail at once, with the provider's own status).
+- **A tool that fails never ends the answer**: the `ToolFailures` capability (first in the list) turns whatever a tool raises in `on_tool_execute_error` into
+  pydantic-ai's `ToolFailed`, i.e. a FAILED tool result the model reads ("The tool `x` failed: ..."); that includes `UnexpectedModelBehavior` when the
+  tool's retries are used up ("exceeded max retries count"), which used to end the answer. `ModelRetry` still asks the model to correct itself.
+- **An MCP server never breaks the agent** (`capabilities/mcp.py`, `GuardedServer` around each `MCPToolset`, built with `tool_error_behavior="failed"`): one
+  that cannot be connected to gives the agent no tools and a note in its instructions saying which server and why, and is left alone for
+  `MCP_DOWN_SECONDS` (`mcp_health`); a call that did not get through is tried `MCP_TOOL_ATTEMPTS` (3) times, then the model gets "could not be called:
+  3 attempts failed. Last error: ..." (`ToolFailed`); a tool that answered an error of its own is a failed result at once. Metrics
+  `omnixon_mcp_tool_errors_total{kind=failed}`, `omnixon_tool_errors_total`. A retried call may run twice if the first got through and only its
+  answer was lost.
+- **Tool calls of one turn run at the same time** (pydantic-ai's default, measured: 4 calls of 0.4 s took 0.42 s), so a model that asks for independent tools
+  together saves turns, and every turn saved is a whole context not sent again. What a model does not do by itself is ask for them together, so the
+  `ParallelCalls` capability (`capabilities/parallel.py`; present when the agent has any tools and `parallel_tool_calls` is on) adds one static instruction
+  telling it to. Agent config `parallel_tool_calls: false` (env default `DEFAULT_PARALLEL_TOOL_CALLS`) turns it all off: no instruction, the provider gets
+  `parallel_tool_calls: false`, and the run goes `parallel_tool_call_execution_mode('sequential')`. The provider setting is sent ONLY when off (an
+  OpenAI-compatible server may not know it); a model record's own `parallel_tool_calls` still wins. Concurrency found a race: two `ask_agent` of one turn to
+  the same agent made its user at once and the loser got `None` (`insure_user` now reads it again). Tests: `test_unit_parallel.py` (timing, the setting,
+  the race) and `test_api_agent_calls.py` (fake model `fake/ask2-<id>` calls `ask_agent` twice in one turn).
+- `AbstractCapability` is a dataclass whose FIRST field is `id`: capabilities with their own fields are `@dataclass(kw_only=True)` and built with keywords
+  (a positional list landed in `id` and broke every run with MCP servers; a unit test found it).
+
+`REQUEST_TIMEOUT_SECONDS` bounds a run (504). **A request whose client has gone away is cancelled** (`_until_disconnect`): this required the
 middleware to be plain ASGI, because `BaseHTTPMiddleware` hides the disconnect from the route; a
-disconnect also ends a stream. Streaming uses `agent.iter` (NOT `run_stream_events`, whose background
+disconnect also ends a stream. The run is driven by ONE task from start to end (`interrupt.until_stopped`) and stopped by cancelling that task: closing the
+generator from elsewhere breaks pydantic-ai's anyio cancel scopes. Streaming uses `agent.iter` + `node.stream` (NOT `run_stream_events`, whose background
 task fails noisily on client disconnect) and yields text deltas, with a blank line between text parts of
 different model turns. SSE protocol: `event: user`, (with `trace`: `event: trace` steps as they finish), `data:` chunks (JSON strings), then `event: done`
 (or `event: error` with `{"detail"}`). Failures after the 200 header can only be reported as `event: error`.
@@ -253,7 +276,7 @@ different model turns. SSE protocol: `event: user`, (with `trace`: `event: trace
 **Trace** (`ai/trace.py`): with `trace: true` the response has `trace` (a list of `TraceStep`: `kind` model|tool,
 `name`, `args`, `result`, `text`, tokens, `duration_ms`, `error`) and the stream sends `event: trace` per step. It is
 built from the pydantic-ai messages of the run (`Tracer.feed` at each node of `agent.iter`), so it costs nothing;
-results are clipped to 4000 characters. `agent_run` returns the steps, `agent_endpoint` is its text-only wrapper.
+results are clipped to 4000 characters. `run_agent` yields the steps as they finish and `Finished.trace` holds all of them.
 
 Errors: `core.errors.error_response` maps exceptions to a status. Provider/MCP failures (including
 inside anyio `ExceptionGroup`s) are **502**, timeouts **504**, everything else 500. Known DB constraint
@@ -323,7 +346,7 @@ itself; `OPENROUTER_TOKEN` in config is effectively unused), `INITIAL_API_KEY`, 
 everything through a SOCKS5 proxy container), `DEFAULT_MODEL` (JSON body or plain name),
 `DEFAULT_MESSAGE_LIMIT`, `DEFAULT_MEMO_LIMIT`, `DEFAULT_AUTO_MEMORY` (true), `MESSAGE_TTL_DAYS` (7; 0 = forever),
 `MESSAGE_CLEANUP_INTERVAL_SECONDS`, `USAGE_TTL_DAYS` (30; 0 = never fold), `USAGE_COMPACT_INTERVAL_SECONDS`, `METRICS_TTL_DAYS` (7; 0 = forever), `REQUEST_TIMEOUT_SECONDS` (600), `UPSTREAM_RETRIES` (2),
-`UPSTREAM_RETRY_DELAY` (1), `MCP_PROBE_TIMEOUT` (5), `MCP_DOWN_SECONDS` (30), `MCP_TOOL_ATTEMPTS` (3) and `MCP_TOOL_RETRY_DELAY` (1,
+`UPSTREAM_RETRY_DELAY` (1), `MCP_DOWN_SECONDS` (30), `MCP_TOOL_ATTEMPTS` (3) and `MCP_TOOL_RETRY_DELAY` (1,
 doubling) for MCP tool calls that do not get through, `MCP_TOOL_RETRIES` (3: pydantic-ai's retries when the model writes a tool's
 arguments badly, e.g. not valid JSON; its default 1 failed whole answers with "Tool ... exceeded max retries count of 1"; a server's
 own `max_retries` wins), `REDIS_URL` (unset: one process), `AGENT_CALL_DEPTH` (3), `LOG_LEVEL`, `LOGFIRE_TOKEN`.
@@ -359,7 +382,7 @@ $C down -v                                                       # ONLY with -p 
   what the API container reads (CI copies `.env` to it); pass `--env-file .env` from the **docker/**
   directory so the DB password matches. UPSTREAM_PORT in the local file is 8083.
 - `tests/test_api_*.py` (HTTP, order-marked, **real LLM calls**, an LLM judge at temperature 0 for a few tests) and
-  `tests/test_unit_*.py` (no API; scratch databases created on the test Postgres). Last full run: **391 passed** (~4 min; run the test stack with an override that also unpublishes the api port when the user's stack holds 8083). Tests that need the
+  `tests/test_unit_*.py` (no API; scratch databases created on the test Postgres). Last full run: **417 tests, 416 passed** (~4 min; the one that failed was `test_stream_use_memo_false_ignores_history` (a real model answering "unknown"; 4 of 4 reruns passed); `test_ai_consistency_and_format` is the same kind (a real model ending a cat story with emoji); the unit tests alone: 210, ~45 s; run the test stack with an override that also unpublishes the api port when the user's stack holds 8083). Tests that need the
   embedding service or a vision model call the real providers.
 - Fast local loop for the unit tests: start `pgvector/pgvector:pg16` on a spare port and
   `POSTGRES_HOST=localhost POSTGRES_PORT=<p> POSTGRES_USER=postgres POSTGRES_PASSWORD=pw POSTGRES_DB=postgres
@@ -417,10 +440,7 @@ method), as was done for each lib release.
 
 - `.github/workflows/test.yml` still sets up Python although only Docker is used.
 - `requests` with an empty `request` string are forwarded to the model (works, wasteful).
-- A retry after a provider failure re-runs tool calls the model already made (memory dedupe and idempotent
-  tools make this harmless today).
 - Documents (PDF) as attachments depend on the provider/model; only images are covered by tests.
-- The `retries=2` argument in `ai/agent.py` triggers a pydantic-ai deprecation warning (`tool_retries`).
 
 ## Rename (Unilink -> Omnixon)
 
@@ -446,7 +466,7 @@ lives in **`../../unlink-telegram-bot`**.
 history, memory, knowledge base, MCP tools, streaming). Published on PyPI as **`omnixon-lib`** (import name
 `omnixon`). It is a thin, typed wrapper: one method per endpoint, pydantic models for every payload.
 
-Current version: **4.2.0** (set in `pyproject.toml`; 4.1.0 `AgentConfig.rag_limit`, 4.2.0 agent connections: `get_agent_connections(agent_id=None)`, `create/get/update/delete_agent_connection`, `AgentConnection`). **Not published from this work**: PyPI's latest is
+Current version: **4.3.0** (set in `pyproject.toml`; 4.3.0 `AgentConfig.parallel_tool_calls`, 4.1.0 `AgentConfig.rag_limit`, 4.2.0 agent connections: `get_agent_connections(agent_id=None)`, `create/get/update/delete_agent_connection`, `AgentConnection`). **Not published from this work**: PyPI's latest is
 1.2.1 (as seen earlier); 2.x and 3.x only exist locally/in git. Publishing is done by the user through a
 GitHub release (see below). The bot pins `omnixon-lib>=3.0.0`.
 
@@ -626,7 +646,7 @@ One drawing: `public/favicon.svg` (a white U on a black tile, nothing else). The
 - Every page behind the sign-in is `React.lazy` (`App.tsx`, a `Suspense` around the `Outlet` in `layout.tsx`): the first load is ~780 kB, not 2.7 MB; the
   front page and the login stay eager. A new page: `const X = lazy(() => import('@/pages/x'))`.
 - e2e only via `npm run test:e2e`: `docker compose ... run e2e` does NOT start `fake-llm` (it is no dependency of `e2e`: model calls then
-  answer 500 "Connection error") and without `--build` runs the specs baked into the OLD image. Last full run: 110 passed. `memories` and the
+  answer 500 "Connection error") and without `--build` runs the specs baked into the OLD image. Last full run: 111 passed. `memories` and the
   RAG search-error test wait for the (keyless) embedding call to OpenRouter: a slow network fails them once in a while; rerun before blaming code.
 - Column headings and mono values are styled in `src/index.css` (`[data-slot=table-head]`, `.value-mono`), not per page;
   don't give a header button its own `text-*`. Dialog footers: `DialogFooter` pulls itself out by a `p-4` dialog's padding,
@@ -816,7 +836,7 @@ connects through `.mcp.json` in this folder (`OMNIXON_TOKEN`, `OMNIXON_MCP_URL`)
   handler `(c: Ctx, **args)`. 52 tools for admin, 40 user, 14 regular. `get_agent` aggregates 5 calls; connections are addressed by the agents
   (`connect_agents(caller, called, description)`), not by connection id; answers are compact and name things.
 - **The names must not collide with the built-in tools an agent gets**: `list_agents` and `ask_agent` are built into an agent that has
-  connections (backend `ai/agent_calls.py`), so the MCP uses `find_agents` / `send_message`.
+  connections (backend `ai/capabilities/agent_calls.py`), so the MCP uses `find_agents` / `send_message`.
 - **Declare the routes**: every tool lists the routes it calls (`routes`, and `admin_routes` for the ones it calls only for an admin token).
   `tests/test_contract.py` checks them against the OpenAPI snapshot (`../omnixon-library/tests/server_openapi.json`): a route of the service
   with no tool and no entry in `LEFT_OUT` (with a reason) FAILS, a tool naming a route the service lacks fails, and a tool offered to a role
@@ -837,5 +857,5 @@ connects through `.mcp.json` in this folder (`OMNIXON_TOKEN`, `OMNIXON_MCP_URL`)
   with `PYTHONPATH=src` (the image is non-editable).
 - Claude Code caches a tool's schema by NAME: after the rewrite `get_agent`/`delete_agent` kept their old schema in a running session until
   it reconnected. Reconnect (`/mcp`) after changing a tool.
-- Tests: `uv run --group test pytest` (29: contract + behaviour against a `Service` table of answers). Verified live: Claude Code through the
+- Tests: `uv run --group test pytest` (30: contract + roles against the schema + behaviour against a `Service` table of answers). Verified live: Claude Code through the
   tools, and Agent manager (an agent with this MCP attached) creating an agent, connecting itself to it and asking it through `ask_agent`.

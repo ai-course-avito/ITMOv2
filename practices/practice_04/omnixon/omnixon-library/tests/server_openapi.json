@@ -75,6 +75,17 @@
             ],
             "title": "Message Limit"
           },
+          "parallel_tool_calls": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parallel Tool Calls"
+          },
           "rag_limit": {
             "anyOf": [
               {
@@ -137,6 +148,17 @@
               }
             ],
             "title": "Message Limit"
+          },
+          "parallel_tool_calls": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parallel Tool Calls"
           },
           "rag_limit": {
             "anyOf": [
@@ -1793,6 +1815,13 @@
         "title": "VersionDiff",
         "type": "object"
       }
+    },
+    "securitySchemes": {
+      "BearerToken": {
+        "description": "A token of the service (`Authorization: Bearer <token>`). Its role decides which routes it may call.",
+        "scheme": "bearer",
+        "type": "http"
+      }
     }
   },
   "info": {
@@ -1803,6 +1832,7 @@
   "paths": {
     "/api/v1/": {
       "get": {
+        "description": "Needs any token.",
         "operationId": "read_root_api_v1__get",
         "responses": {
           "200": {
@@ -1814,14 +1844,21 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Health check",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/api/v1/admin/agent-connections": {
       "get": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "get_agent_connections_api_v1_admin_agent_connections_get",
         "parameters": [
           {
@@ -1867,12 +1904,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "List the connections between agents (or those going out of one agent)",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       },
       "post": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "create_agent_connection_api_v1_admin_agent_connections_post",
         "requestBody": {
           "content": {
@@ -1906,14 +1950,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Let one agent call another",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       }
     },
     "/api/v1/admin/agent-connections/{connection_id}": {
       "delete": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "delete_agent_connection_api_v1_admin_agent_connections__connection_id__delete",
         "parameters": [
           {
@@ -1948,12 +1999,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Stop one agent from calling another",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       },
       "get": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "get_agent_connection_api_v1_admin_agent_connections__connection_id__get",
         "parameters": [
           {
@@ -1988,12 +2046,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Get a connection between agents",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       },
       "patch": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "update_agent_connection_api_v1_admin_agent_connections__connection_id__patch",
         "parameters": [
           {
@@ -2038,14 +2103,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Change what a connection tells the calling agent",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       }
     },
     "/api/v1/admin/agents": {
       "get": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "get_agents_api_v1_admin_agents_get",
         "responses": {
           "200": {
@@ -2063,12 +2135,19 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "List all agents",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       },
       "post": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "create_agent_api_v1_admin_agents_post",
         "requestBody": {
           "content": {
@@ -2102,14 +2181,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Create a new agent",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       }
     },
     "/api/v1/admin/agents/{agent_id}": {
       "delete": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "delete_agent_api_v1_admin_agents__agent_id__delete",
         "parameters": [
           {
@@ -2144,12 +2230,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Delete an agent",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       },
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_agent_api_v1_admin_agents__agent_id__get",
         "parameters": [
           {
@@ -2184,12 +2277,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Get an agent by ID",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "patch": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "update_agent_api_v1_admin_agents__agent_id__patch",
         "parameters": [
           {
@@ -2234,14 +2334,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Update an agent",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/agents/{agent_id}/mcp-servers": {
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_agent_mcp_servers_api_v1_admin_agents__agent_id__mcp_servers_get",
         "parameters": [
           {
@@ -2280,14 +2387,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "List MCP servers attached to an agent",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/agents/{agent_id}/mcp-servers/{mcp_server_id}": {
       "delete": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "remove_agent_mcp_server_api_v1_admin_agents__agent_id__mcp_servers__mcp_server_id__delete",
         "parameters": [
           {
@@ -2335,12 +2449,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Detach an MCP server from an agent",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "post": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "add_agent_mcp_server_api_v1_admin_agents__agent_id__mcp_servers__mcp_server_id__post",
         "parameters": [
           {
@@ -2388,14 +2509,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Attach an existing MCP server to an agent",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       }
     },
     "/api/v1/admin/agents/{agent_id}/rollback": {
       "post": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "rollback_agent_api_v1_admin_agents__agent_id__rollback_post",
         "parameters": [
           {
@@ -2440,14 +2568,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Make an agent what one of its versions was (recorded as a new version)",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/agents/{agent_id}/versions": {
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_agent_versions_api_v1_admin_agents__agent_id__versions_get",
         "parameters": [
           {
@@ -2486,14 +2621,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "History of an agent (newest first)",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/agents/{agent_id}/versions/{number}": {
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_agent_version_api_v1_admin_agents__agent_id__versions__number__get",
         "parameters": [
           {
@@ -2537,14 +2679,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "One version of an agent",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/agents/{agent_id}/versions/{number}/diff": {
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "diff_agent_versions_api_v1_admin_agents__agent_id__versions__number__diff_get",
         "parameters": [
           {
@@ -2607,14 +2756,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "What changed between two versions of an agent",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/mcp-servers": {
       "get": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "get_mcp_servers_api_v1_admin_mcp_servers_get",
         "responses": {
           "200": {
@@ -2632,12 +2788,19 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "List all MCP servers",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       },
       "post": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "create_mcp_server_api_v1_admin_mcp_servers_post",
         "requestBody": {
           "content": {
@@ -2671,14 +2834,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Create a new MCP server",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/mcp-servers/{mcp_server_id}": {
       "delete": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "delete_mcp_server_api_v1_admin_mcp_servers__mcp_server_id__delete",
         "parameters": [
           {
@@ -2713,12 +2883,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Delete an MCP server",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_mcp_server_api_v1_admin_mcp_servers__mcp_server_id__get",
         "parameters": [
           {
@@ -2753,12 +2930,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Get an MCP server by ID",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "patch": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "update_mcp_server_api_v1_admin_mcp_servers__mcp_server_id__patch",
         "parameters": [
           {
@@ -2803,14 +2987,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Update an MCP server",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/memories": {
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_memories_api_v1_admin_memories_get",
         "parameters": [
           {
@@ -2901,12 +3092,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "List the memories of a user (newest first)",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "post": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "create_memory_api_v1_admin_memories_post",
         "requestBody": {
           "content": {
@@ -2940,14 +3138,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Create a memory",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/memories/{memory_id}": {
       "delete": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "delete_memory_api_v1_admin_memories__memory_id__delete",
         "parameters": [
           {
@@ -2982,12 +3187,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Delete a memory",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_memory_api_v1_admin_memories__memory_id__get",
         "parameters": [
           {
@@ -3022,12 +3234,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Get a memory by ID",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "patch": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "update_memory_api_v1_admin_memories__memory_id__patch",
         "parameters": [
           {
@@ -3072,14 +3291,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Update a memory",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/models": {
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_models_api_v1_admin_models_get",
         "responses": {
           "200": {
@@ -3097,12 +3323,19 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "List all models",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "post": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "create_model_api_v1_admin_models_post",
         "requestBody": {
           "content": {
@@ -3136,14 +3369,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Create a new model",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       }
     },
     "/api/v1/admin/models/{model_id}": {
       "delete": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "delete_model_api_v1_admin_models__model_id__delete",
         "parameters": [
           {
@@ -3178,12 +3418,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Delete a model",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       },
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_model_api_v1_admin_models__model_id__get",
         "parameters": [
           {
@@ -3218,12 +3465,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Get a model by ID",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "patch": {
+        "description": "Needs a token with the **admin** role or higher.",
         "operationId": "update_model_api_v1_admin_models__model_id__patch",
         "parameters": [
           {
@@ -3268,14 +3522,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Update a model",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "admin"
       }
     },
     "/api/v1/admin/rag": {
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "search_rag_api_v1_admin_rag_get",
         "parameters": [
           {
@@ -3380,12 +3641,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "List RAG entries: all of the agent's, or the ones nearest to a query",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "post": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "create_rag_api_v1_admin_rag_post",
         "parameters": [
           {
@@ -3437,14 +3705,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Create a RAG entry",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/rag/{rag_id}": {
       "delete": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "delete_rag_api_v1_admin_rag__rag_id__delete",
         "parameters": [
           {
@@ -3497,12 +3772,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Delete a RAG entry",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_rag_api_v1_admin_rag__rag_id__get",
         "parameters": [
           {
@@ -3567,12 +3849,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Get a RAG entry by ID",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "patch": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "update_rag_api_v1_admin_rag__rag_id__patch",
         "parameters": [
           {
@@ -3635,14 +3924,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Update a RAG entry",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/tokens": {
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_tokens_api_v1_admin_tokens_get",
         "parameters": [
           {
@@ -3690,12 +3986,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "List tokens (of one agent, or of all for an admin)",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "post": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "create_token_api_v1_admin_tokens_post",
         "requestBody": {
           "content": {
@@ -3729,14 +4032,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Make a token. Its secret is in the answer, and only there",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/tokens/{token_id}": {
       "delete": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "delete_token_api_v1_admin_tokens__token_id__delete",
         "parameters": [
           {
@@ -3771,12 +4081,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Delete a token (it stops working at once)",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       },
       "patch": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "update_token_api_v1_admin_tokens__token_id__patch",
         "parameters": [
           {
@@ -3821,14 +4138,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Rename a token and/or change its role",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/usage": {
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_usage_api_v1_admin_usage_get",
         "parameters": [
           {
@@ -3908,14 +4232,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Recent usage by day, token and model (the last USAGE_TTL_DAYS days are in detail)",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/admin/usage/monthly": {
       "get": {
+        "description": "Needs a token with the **user** role or higher.",
         "operationId": "get_usage_monthly_api_v1_admin_usage_monthly_get",
         "parameters": [
           {
@@ -3981,14 +4312,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Older usage, folded into one row per token, month and model",
         "tags": [
           "Admin API"
-        ]
+        ],
+        "x-min-role": "user"
       }
     },
     "/api/v1/agents/self": {
       "get": {
+        "description": "Needs any token.",
         "operationId": "get_self_agent_api_v1_agents_self_get",
         "responses": {
           "200": {
@@ -4002,14 +4340,21 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Get the agent of the token (or the one acted as)",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/api/v1/request": {
       "post": {
+        "description": "Needs any token.",
         "operationId": "request_api_v1_request_post",
         "requestBody": {
           "content": {
@@ -4043,15 +4388,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Send a message and get an AI response",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/api/v1/request-stream": {
       "post": {
-        "description": "Server-sent events: `event: user` with the user, then one `data:` event per\ntext chunk (a JSON string), then `event: done` with the user, or `event: error`\nwith `{\"detail\": ...}`. With `trace: true`, `event: trace` events (one step of the\nchain of calls each) come in between, as the steps finish. A stream that is stopped (by `POST /users/{id}/interrupt`, or because the same user\nsent a new request) ends with `event: interrupted` (the user) instead of `done`; what was said so far is in the history.",
+        "description": "Server-sent events: `event: user` with the user, then one `data:` event per\ntext chunk (a JSON string), then `event: done` with the user, or `event: error`\nwith `{\"detail\": ...}`. With `trace: true`, `event: trace` events (one step of the\nchain of calls each) come in between, as the steps finish. A stream that is stopped (by `POST /users/{id}/interrupt`, or because the same user\nsent a new request) ends with `event: interrupted` (the user) instead of `done`; what was said so far is in the history.\n\nNeeds any token.",
         "operationId": "request_stream_api_v1_request_stream_post",
         "requestBody": {
           "content": {
@@ -4083,14 +4434,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Send a message and get an AI response via SSE",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/api/v1/tokens/self": {
       "get": {
+        "description": "Needs any token.",
         "operationId": "get_self_token_api_v1_tokens_self_get",
         "responses": {
           "200": {
@@ -4104,14 +4462,21 @@
             "description": "Successful Response"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Get the token in use: its role and its agent",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/api/v1/users": {
       "get": {
+        "description": "Needs any token.",
         "operationId": "search_users_api_v1_users_get",
         "parameters": [
           {
@@ -4168,12 +4533,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Find users by the start of their external ID",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       },
       "post": {
+        "description": "Needs any token.",
         "operationId": "create_user_api_v1_users_post",
         "requestBody": {
           "content": {
@@ -4207,15 +4579,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Create a new user",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/api/v1/users/recent": {
       "get": {
-        "description": "Latest first, by the latest message that has not expired (`MESSAGE_TTL_DAYS`, 7 by default). Not a list of all users: a user\nwith no kept messages is not in it, but can still be found by `GET /users?query=`.",
+        "description": "Latest first, by the latest message that has not expired (`MESSAGE_TTL_DAYS`, 7 by default). Not a list of all users: a user\nwith no kept messages is not in it, but can still be found by `GET /users?query=`.\n\nNeeds any token.",
         "operationId": "recent_users_api_v1_users_recent_get",
         "parameters": [
           {
@@ -4259,14 +4637,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "The users of the agent who wrote lately (their messages are still kept)",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/api/v1/users/{user_id}": {
       "delete": {
+        "description": "Needs any token.",
         "operationId": "delete_user_api_v1_users__user_id__delete",
         "parameters": [
           {
@@ -4301,12 +4686,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Delete a user",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       },
       "get": {
+        "description": "Needs any token.",
         "operationId": "get_user_api_v1_users__user_id__get",
         "parameters": [
           {
@@ -4341,12 +4733,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Get a user by external ID",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       },
       "patch": {
+        "description": "Needs any token.",
         "operationId": "update_user_api_v1_users__user_id__patch",
         "parameters": [
           {
@@ -4391,14 +4790,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Update a user",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/api/v1/users/{user_id}/chats": {
       "get": {
+        "description": "Needs any token.",
         "operationId": "get_chats_api_v1_users__user_id__chats_get",
         "parameters": [
           {
@@ -4437,12 +4843,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "The chats of a user, the latest first",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       },
       "post": {
+        "description": "Needs any token.",
         "operationId": "create_chat_api_v1_users__user_id__chats_post",
         "parameters": [
           {
@@ -4494,15 +4907,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Start a chat",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/api/v1/users/{user_id}/chats/{chat_id}": {
       "delete": {
-        "description": "The default chat can be deleted too: it is made again when a request without `chat_id` needs it.",
+        "description": "The default chat can be deleted too: it is made again when a request without `chat_id` needs it.\n\nNeeds any token.",
         "operationId": "delete_chat_api_v1_users__user_id__chats__chat_id__delete",
         "parameters": [
           {
@@ -4546,12 +4965,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Delete a chat with its messages",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       },
       "get": {
+        "description": "Needs any token.",
         "operationId": "get_chat_api_v1_users__user_id__chats__chat_id__get",
         "parameters": [
           {
@@ -4595,12 +5021,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "One chat of a user",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       },
       "patch": {
+        "description": "Needs any token.",
         "operationId": "rename_chat_api_v1_users__user_id__chats__chat_id__patch",
         "parameters": [
           {
@@ -4654,14 +5087,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Rename a chat",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/api/v1/users/{user_id}/chats/{chat_id}/history": {
       "delete": {
+        "description": "Needs any token.",
         "operationId": "clear_chat_history_api_v1_users__user_id__chats__chat_id__history_delete",
         "parameters": [
           {
@@ -4698,12 +5138,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Clear a chat (it stays, its messages go)",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       },
       "get": {
+        "description": "Needs any token.",
         "operationId": "get_chat_history_api_v1_users__user_id__chats__chat_id__history_get",
         "parameters": [
           {
@@ -4751,14 +5198,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "The messages of a chat",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/api/v1/users/{user_id}/history": {
       "delete": {
+        "description": "Needs any token.",
         "operationId": "delete_history_api_v1_users__user_id__history_delete",
         "parameters": [
           {
@@ -4786,12 +5240,19 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Clear the message history of the default chat of a user",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       },
       "get": {
+        "description": "Needs any token.",
         "operationId": "get_history_api_v1_users__user_id__history_get",
         "parameters": [
           {
@@ -4830,15 +5291,21 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Get the message history of the default chat of a user",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/api/v1/users/{user_id}/interrupt": {
       "post": {
-        "description": "Ends the stream of this user with the agent of the token: the stream gets `event: interrupted`, what was said so far is\nsaved to the history (marked `interrupted`) and to the memory, and then this returns. A new request of the same user does\nthe same by itself, so this is for stopping without saying anything new.",
+        "description": "Ends the stream of this user with the agent of the token: the stream gets `event: interrupted`, what was said so far is\nsaved to the history (marked `interrupted`) and to the memory, and then this returns. A new request of the same user does\nthe same by itself, so this is for stopping without saying anything new.\n\nNeeds any token.",
         "operationId": "interrupt_user_api_v1_users__user_id__interrupt_post",
         "parameters": [
           {
@@ -4873,10 +5340,16 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
         "summary": "Stop the answer that is being streamed to a user",
         "tags": [
           "Main API"
-        ]
+        ],
+        "x-min-role": "regular"
       }
     },
     "/healthz": {
@@ -4892,10 +5365,12 @@
             "description": "Successful Response"
           }
         },
+        "security": [],
         "summary": "Liveness: the process answers",
         "tags": [
           "Operations"
-        ]
+        ],
+        "x-min-role": "none"
       }
     },
     "/readyz": {
@@ -4911,10 +5386,12 @@
             "description": "Successful Response"
           }
         },
+        "security": [],
         "summary": "Readiness: the database answers and is migrated",
         "tags": [
           "Operations"
-        ]
+        ],
+        "x-min-role": "none"
       }
     }
   }

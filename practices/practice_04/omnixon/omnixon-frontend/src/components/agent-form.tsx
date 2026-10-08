@@ -1,4 +1,4 @@
-import { BrainCircuitIcon, BrainIcon, SettingsIcon } from 'lucide-react'
+import { BrainCircuitIcon, BrainIcon, ListOrderedIcon, SettingsIcon, SplitIcon } from 'lucide-react'
 import { FieldGroup, FieldLegend, FieldSeparator, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,6 +17,7 @@ export interface AgentDraft {
   memoLimit: string
   ragLimit: string
   autoMemory: 'default' | 'on' | 'off'
+  parallelToolCalls: 'default' | 'on' | 'off'
   comment: string
 }
 
@@ -33,6 +34,7 @@ export const emptyDraft: AgentDraft = {
   memoLimit: '',
   ragLimit: '',
   autoMemory: 'default',
+  parallelToolCalls: 'default',
   comment: '',
 }
 
@@ -50,6 +52,7 @@ export function draftFrom(a: { name: string; prompt: string; model_id: number; c
     memoLimit: c.memo_limit !== undefined ? String(c.memo_limit) : '',
     ragLimit: c.rag_limit !== undefined ? String(c.rag_limit) : '',
     autoMemory: c.auto_memory === undefined ? 'default' : c.auto_memory ? 'on' : 'off',
+    parallelToolCalls: c.parallel_tool_calls === undefined ? 'default' : c.parallel_tool_calls ? 'on' : 'off',
     comment: '',
   }
 }
@@ -69,6 +72,7 @@ export function configFrom(d: AgentDraft, mode: 'create' | 'update', original?: 
   put('memo_limit', d.memoLimit.trim() === '' ? undefined : Number(d.memoLimit))
   put('rag_limit', d.ragLimit.trim() === '' ? undefined : Number(d.ragLimit))
   put('auto_memory', d.autoMemory === 'default' ? undefined : d.autoMemory === 'on')
+  put('parallel_tool_calls', d.parallelToolCalls === 'default' ? undefined : d.parallelToolCalls === 'on')
   return cfg
 }
 
@@ -211,6 +215,35 @@ export function AgentSettings({ draft, onChange }: PartProps) {
               label: 'Off',
               icon: BrainCircuitIcon,
               description: 'Remember only what the model itself saves with its tool',
+            },
+          ]}
+        />
+      </FormField>
+      <FormField
+        label="Parallel tool calls"
+        description="Tools the model calls in one turn run together; fewer turns means less time and fewer input tokens."
+      >
+        <OptionSelect
+          value={draft.parallelToolCalls}
+          onChange={(v) => set({ parallelToolCalls: v as AgentDraft['parallelToolCalls'] })}
+          options={[
+            {
+              value: 'default',
+              label: 'Service default',
+              icon: SettingsIcon,
+              description: 'Whatever the service is set to (on, unless its DEFAULT_PARALLEL_TOOL_CALLS says otherwise)',
+            },
+            {
+              value: 'on',
+              label: 'On',
+              icon: SplitIcon,
+              description: 'The model may ask for independent tools together, and they run at the same time',
+            },
+            {
+              value: 'off',
+              label: 'Off',
+              icon: ListOrderedIcon,
+              description: 'One tool call per turn, one after another',
             },
           ]}
         />

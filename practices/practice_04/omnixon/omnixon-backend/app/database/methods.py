@@ -37,5 +37,7 @@ class PostgresDB(
 
         if self.context.user is None:
             self.context.user = await self.create_user(user_id)
+            if self.context.user is None:  # another task made it first (two tools of one turn asking the same agent)
+                self.context.user = await self.get_user(user_id)
 
         return True

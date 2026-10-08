@@ -9,7 +9,7 @@ import jsonschema
 import pytest
 
 from omnixon_mcp import tools as _tools  # noqa: F401
-from omnixon_mcp.access import RANK, Identity, lowest_role
+from omnixon_mcp.access import ADMIN_ONLY, RANK, Identity, lowest_role
 from omnixon_mcp.registry import GROUPS, REGISTRY, mcp_tools, tools_for
 
 SPEC = json.loads(
@@ -42,6 +42,17 @@ def test_every_route_of_the_service_has_a_tool_or_a_reason_to_have_none():
     assert not missing, f"routes with no tool (write one, or say why not in LEFT_OUT): {sorted(missing)}"
     assert not set(LEFT_OUT) - ROUTES, "LEFT_OUT names routes the service no longer has"
     assert not set(LEFT_OUT) & used_routes(), "a route in LEFT_OUT is used by a tool"
+
+
+def test_the_roles_the_server_assumes_are_the_roles_the_service_publishes():
+    """The service writes the role of every operation into its OpenAPI (`x-min-role`, read from the routes' own `require(...)`): the table
+    of this server must say the same, for every route."""
+    published = {(m.upper(), p): op["x-min-role"] for p, item in SPEC["paths"].items() for m, op in item.items()}
+    assert all(role in (*RANK, "none") for role in published.values())
+    for route, role in published.items():
+        if role != "none":
+            assert lowest_role(route) == role, f"{route}: the service says {role}, access.py says {lowest_role(route)}"
+    assert ADMIN_ONLY == {route for route, role in published.items() if role == "admin"}
 
 
 def test_the_routes_a_tool_declares_are_in_the_service():

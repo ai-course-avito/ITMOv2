@@ -1,7 +1,8 @@
 import asyncio
 import contextlib
 import contextvars
-from typing import Optional, Sequence, Type, TypeVar
+from dataclasses import dataclass
+from typing import Optional, Sequence, Tuple, Type, TypeVar
 
 import asyncpg
 from pydantic import BaseModel
@@ -12,11 +13,24 @@ from .models import Agent, Chat, Token, User
 T = TypeVar("T", bound=BaseModel)
 
 
+@dataclass(frozen=True)
+class CallChain:
+    """The agents a request went through when agents called each other (the tool `ask_agent`), and the person it started with. Each called
+    agent talks to the user `agent_<caller>:<person>`, so that name does not grow with depth. A chain is only ever extended (a new one is made)."""
+
+    agents: Tuple[int, ...]  # the first is the agent the request came to, the last the one that is running
+    human: str  # the external id of the person, a user of the first agent
+
+    def then(self, agent_id: int) -> "CallChain":
+        return CallChain(self.agents + (agent_id,), self.human)
+
+
 class Context(BaseModel):
     agent: Optional[Agent]  # the agent the request is about: the token's, or the one an admin acts as
     token: Optional[Token]  # who asks
     user: Optional[User]
     chat: Optional[Chat] = None  # the conversation the request is in
+    chain: Optional[CallChain] = None  # set for an agent that another agent is asking: how the request got here
 
 
 class _Pin:
@@ -63,6 +77,11 @@ class PostgresConnectionWithContext:
     def __init__(self, foundation: PostgresPool, context: Context):
         self.foundation = foundation
         self.context = context
+
+    def with_context(self, **changes):
+        """Database access for the same pool with a context that differs in `changes`: how a request goes on as another agent, user or chat
+        (the context of this one is left as it is)."""
+        return type(self)(self.foundation, self.context.model_copy(update=changes))
 
     async def __aenter__(self):
         return self

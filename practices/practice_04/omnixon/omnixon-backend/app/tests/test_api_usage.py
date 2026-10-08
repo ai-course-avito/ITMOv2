@@ -1,5 +1,7 @@
 """api usage tests"""
 
+import asyncio
+
 import pytest
 
 from shared import (
@@ -168,9 +170,14 @@ async def test_a_failed_request_is_counted_with_nothing_spent(client):
 async def test_acting_as_another_agent_is_paid_by_the_token_of_the_admin(client):
     async with role_clients(client) as x:
         owner = (await client.get("/api/v1/tokens/self")).json()
-        before = spent(
-            (await client.get("/api/v1/admin/usage")).json(), owner["id"]
-        ).requests
+        # earlier tests leave background work on the owner token (auto_memory runs after the answer): wait until the count stops moving
+        before = None
+        for _ in range(20):
+            now = spent((await client.get("/api/v1/admin/usage")).json(), owner["id"]).requests
+            if now == before:
+                break
+            before = now
+            await asyncio.sleep(0.5)
         async with as_token(x.tokens["admin"]["token"], act_as=x.b["id"]) as admin_on_b:
             res = await admin_on_b.post(
                 "/api/v1/request",

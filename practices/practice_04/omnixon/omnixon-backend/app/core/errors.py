@@ -4,7 +4,12 @@ import asyncio
 from typing import List, Tuple
 
 import httpx
-from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
+import httpx2
+from pydantic_ai.exceptions import ModelHTTPError, ModelAPIError, UnexpectedModelBehavior
+
+# pydantic-ai 2, the OpenAI SDK and FastMCP talk through httpx2; httpx is what the rest of Python uses
+TIMEOUTS = (httpx.TimeoutException, httpx2.TimeoutException)
+HTTP_ERRORS = (httpx.HTTPError, httpx2.HTTPError)
 
 
 def leaf_exceptions(exc: BaseException) -> List[BaseException]:
@@ -23,15 +28,15 @@ def error_response(exc: BaseException) -> Tuple[int, str]:
     leaves = leaf_exceptions(exc)
 
     for leaf in leaves:
-        if isinstance(leaf, httpx.TimeoutException):
+        if isinstance(leaf, TIMEOUTS):
             return 504, f"Upstream request timed out ({type(leaf).__name__})"
         if isinstance(leaf, asyncio.TimeoutError):
             return 504, "The request timed out"
 
     for leaf in leaves:
-        if isinstance(leaf, (ModelHTTPError, UnexpectedModelBehavior)):
+        if isinstance(leaf, (ModelHTTPError, ModelAPIError, UnexpectedModelBehavior)):
             return 502, f"Model provider error: {leaf}"
-        if isinstance(leaf, httpx.HTTPError):
+        if isinstance(leaf, HTTP_ERRORS):
             return 502, f"Upstream request failed ({type(leaf).__name__}): {leaf}"
 
     return 500, str(leaves[0]) if leaves else str(exc)

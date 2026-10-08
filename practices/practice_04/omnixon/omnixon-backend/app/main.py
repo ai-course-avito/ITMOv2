@@ -17,10 +17,12 @@ from core import (
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from ai import interrupt
 from ai.interrupt_bus import InterruptBus
+from ai.mcp_health import health
 from ai.memory import run_backfill
 from database import Context, PostgresDB, PostgresPool
 from database.retention import run_retention
 from database.usage_compaction import run_usage_compaction
+from openapi import add_roles
 from routers import setup_routers
 from routers.request import ClientDisconnected
 
@@ -46,6 +48,7 @@ async def lifespan(app: FastAPI):
         if REDIS_URL:  # several replicas: they stop each other's streams
             interrupt.bus = InterruptBus.from_url(REDIS_URL)
             background.append(asyncio.create_task(interrupt.bus.serve(interrupt.stop_for_replica)))
+        health.client_of = lambda: interrupt.bus.client if interrupt.bus else None
         try:
             yield
         finally:
@@ -62,6 +65,7 @@ setup_logging()
 app = FastAPI(lifespan=lifespan)
 setup_middleware(app)
 setup_routers(app)
+add_roles(app)
 
 
 @app.exception_handler(StarletteHTTPException)

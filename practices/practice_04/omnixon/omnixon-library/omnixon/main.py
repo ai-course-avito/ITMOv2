@@ -519,7 +519,7 @@ class Client:
     ) -> Agent:
         """name: required, shown everywhere instead of the id.
         config: {"tools": [...], "message_limit": int, "memo_limit": int, "rag_limit": int,
-        "auto_memory": bool}, every key optional. tools are any of "rag" and "memory"
+        "auto_memory": bool, "parallel_tool_calls": bool}, every key optional. tools are any of "rag" and "memory"
         (default: both). comment: shown in the history of the agent."""
         data = AgentCreate(
             **_given(

@@ -127,7 +127,7 @@ async def test_a_new_stream_of_the_same_pair_replaces_the_old_one_in_the_registr
 async def test_an_interrupted_exchange_is_saved_with_what_was_said_and_remembered(
     monkeypatch,
 ):
-    from ai import endpoint
+    from ai import runner
 
     async with scratch_database("interrupt_save_test") as (pool, db):
         learned = []
@@ -135,8 +135,8 @@ async def test_an_interrupted_exchange_is_saved_with_what_was_said_and_remembere
         async def learn(db_, user_input, answer):
             learned.append((user_input, answer))
 
-        monkeypatch.setattr(endpoint, "_learn", learn)
-        await endpoint.save_interrupted(db, "count to ten", "one two three")
+        monkeypatch.setattr(runner, "_learn", learn)
+        await runner.save_interrupted(db, "count to ten", "one two three")
         rows = [
             json.loads(r["content"])
             for r in await pool.pool.fetch("SELECT content FROM messages ORDER BY id")
@@ -149,7 +149,7 @@ async def test_an_interrupted_exchange_is_saved_with_what_was_said_and_remembere
         assert learned == [("count to ten", "one two three")]
 
         # nothing said yet: only the question is kept, and there is nothing to learn from
-        await endpoint.save_interrupted(db, "second question", "  \n")
+        await runner.save_interrupted(db, "second question", "  \n")
         rows = [
             json.loads(r["content"])
             for r in await pool.pool.fetch("SELECT content FROM messages ORDER BY id")
@@ -162,16 +162,16 @@ async def test_an_interrupted_exchange_is_saved_with_what_was_said_and_remembere
 
 @pytest.mark.asyncio
 async def test_a_cut_answer_is_given_to_the_model_as_an_answer_of_its_own(monkeypatch):
-    from ai import endpoint
+    from ai import runner
 
     async with scratch_database("interrupt_history_test") as (pool, db):
 
         async def learn(*args):
             pass
 
-        monkeypatch.setattr(endpoint, "_learn", learn)
-        await endpoint.save_interrupted(db, "count to ten", "one two three")
-        history = await ai_utils.get_conversation_history(db, "")
+        monkeypatch.setattr(runner, "_learn", learn)
+        await runner.save_interrupted(db, "count to ten", "one two three")
+        history = await ai_utils.get_conversation_history(db)
         assert [type(m).__name__ for m in history][-2:] == [
             "ModelRequest",
             "ModelResponse",

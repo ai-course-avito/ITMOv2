@@ -107,10 +107,10 @@ async def test_a_model_without_the_proxy_gets_a_client_that_goes_around_it(monke
     monkeypatch.setattr(ai_utils, "_http_client", None)
     monkeypatch.setattr(ai_utils, "_direct_client", None)
     monkeypatch.setattr(ai_utils, "OPENROUTER_PROXY", None)
-    assert (
-        ai_utils.http_client_for(True) is None
-        and ai_utils.http_client_for(False) is None
-    )  # no proxy: nothing to avoid
+    # no proxy: nothing to avoid, but the clients are still there (they retry what the provider drops)
+    assert ai_utils.http_client_for(True) is not None and ai_utils.http_client_for(False) is not None
+    monkeypatch.setattr(ai_utils, "_http_client", None)
+    monkeypatch.setattr(ai_utils, "_direct_client", None)
 
     monkeypatch.setattr(ai_utils, "OPENROUTER_PROXY", "socks5://proxy:1080")
     proxied, direct = ai_utils.http_client_for(True), ai_utils.http_client_for(False)

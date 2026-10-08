@@ -1,4 +1,5 @@
 # Example: the panel in front of a Omnixon service running on the host.
+# (The service itself, with its Redis, is in ../../omnixon-backend/docker or in the compose file at the root of this repository.)
 # For a service in another compose project, join its network and use its service name.
 services:
   admin-panel:
