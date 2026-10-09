@@ -22,13 +22,13 @@ test('choices are cards: an icon, a name, an id, and what belongs to them as lin
   // the model of the agent is a link to that model, not text with a separator
   const model = seeded.getByRole('link', { name: 'openai/gpt-4o-mini' })
   await expect(model).toHaveAttribute('href', /\/models\?open=\d+$/)
-  await expect(seeded.getByRole('link', { name: 'Open Default agent' })).toHaveAttribute('href', '/agents/1')
+  await expect(seeded.getByRole('link', { name: 'Open Default agent' })).toHaveAttribute('href', /\/agents\/1$/)
 
   // choosing a card leaves a small card in the field, not text, with a link to open the agent
   await seeded.getByText('Default agent', { exact: true }).click()
   await expect(agent).toContainText('Default agent')
   await expect(agent.locator('span.value-mono', { hasText: /^1$/ })).toBeVisible()
-  await expect(field(dialog(page, 'New token'), 'Agent').getByRole('link', { name: 'Open Default agent' })).toHaveAttribute('href', '/agents/1')
+  await expect(field(dialog(page, 'New token'), 'Agent').getByRole('link', { name: 'Open Default agent' })).toHaveAttribute('href', /\/agents\/1$/)
   await expect(page.locator('[data-slot=dialog-content] input[data-slot=input-group-control]')).toHaveCount(0) // no plain text box
 
   // the search on top finds a card by its id
@@ -72,7 +72,7 @@ test('the card of a token leads to its agent', async ({ page }) => {
   await page.getByRole('group', { name: 'Token', exact: true }).getByRole('combobox').click()
   const token = page.getByRole('option').filter({ hasText: 'initial' })
   await expect(token).toContainText('owner')
-  await expect(token.getByRole('link', { name: 'Default agent' })).toHaveAttribute('href', '/agents/1')
+  await expect(token.getByRole('link', { name: 'Default agent' })).toHaveAttribute('href', /\/agents\/1$/)
   await token.getByRole('link', { name: 'Default agent' }).click()
   await expect(page).toHaveURL(/\/agents\/1$/)
 })

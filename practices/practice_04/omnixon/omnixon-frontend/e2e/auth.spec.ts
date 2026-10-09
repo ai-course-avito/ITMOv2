@@ -27,9 +27,9 @@ test('an owner token signs in, survives a reload and can sign out', async ({ pag
   await expect(menu).toContainText('owner')
   await menu.click()
   await page.getByRole('menuitem', { name: 'Sign out' }).click()
-  await expect(page.locator('a[href="/login"]').first()).toBeVisible() // back on the front page
+  await expect(page.locator('a[href$="/login"]').first()).toBeVisible() // back on the front page
   await page.reload()
-  await expect(page.locator('a[href="/login"]').first()).toBeVisible()
+  await expect(page.locator('a[href$="/login"]').first()).toBeVisible()
 })
 
 test('a page opened without signing in leads to the login and then on to that page', async ({ page }) => {

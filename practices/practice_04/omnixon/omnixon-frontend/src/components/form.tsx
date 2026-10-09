@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { parseJsonObject, pretty } from '@/lib/format'
+import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 interface FormFieldProps {
@@ -160,7 +161,7 @@ export function OptionCard({ option, compact }: { option: Option; compact?: bool
       </span>
       {option.id && <IdBadge id={option.id} />}
       {!compact && option.to && (
-        <Link to={option.to} {...keepOut} aria-label={`Open ${option.label}`} className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground">
+        <Link to={option.to} {...keepOut} aria-label={t('Open {name}', { name: option.label })}className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground">
           <ArrowUpRightIcon className="size-4" />
         </Link>
       )}
@@ -207,7 +208,7 @@ function ChoiceCard({ option, compact }: { option: Option; compact?: boolean }) 
  * A short list of choices (an enum), as a list of simple cards: an icon, a name and what it means. Like the pickers of
  * entities, but with nothing to search or open. Base UI shows the raw value unless the options are passed as `items`.
  */
-export function OptionSelect({ id, value, onChange, options, placeholder = 'Select…', className, disabled }: OptionPickerProps) {
+export function OptionSelect({ id, value, onChange, options, placeholder = t('Select…'), className, disabled }: OptionPickerProps) {
   return (
     <Select value={value} onValueChange={(v) => v !== null && onChange(v)} items={options} disabled={disabled}>
       <SelectTrigger id={id} className={cn('h-auto min-h-10 w-full py-1.5', className)}>
@@ -233,7 +234,7 @@ export function OptionSelect({ id, value, onChange, options, placeholder = 'Sele
  * Choosing an entity (agent, model, server, unit …). The list is a list of cards with a search on top;
  * once one is chosen the field keeps a small card of it, with a link to open it.
  */
-export function OptionCombobox({ id, value, onChange, options, placeholder = 'Select…', className, disabled }: OptionPickerProps) {
+export function OptionCombobox({ id, value, onChange, options, placeholder = t('Select…'), className, disabled }: OptionPickerProps) {
   const selected = options.find((o) => o.value === value) ?? null
   const [query, setQuery] = useState('')
   return (
@@ -253,14 +254,14 @@ export function OptionCombobox({ id, value, onChange, options, placeholder = 'Se
           {selected ? <OptionCard option={selected} compact /> : <span className="flex-1 px-1 text-sm text-muted-foreground">{placeholder}</span>}
         </ComboboxTrigger>
         {selected?.to && (
-          <Link to={selected.to} aria-label={`Open ${selected.label}`} className="mr-1 grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+          <Link to={selected.to} aria-label={t('Open {name}', { name: selected.label })}className="mr-1 grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
             <ArrowUpRightIcon className="size-4" />
           </Link>
         )}
       </div>
       <ComboboxContent className="min-w-[22rem]">
-        <ComboboxInput showTrigger={false} placeholder="Search…" />
-        <ComboboxEmpty>Nothing found.</ComboboxEmpty>
+        <ComboboxInput showTrigger={false} placeholder={t('Search…')} />
+        <ComboboxEmpty>{t('Nothing found.')}</ComboboxEmpty>
         <ComboboxList className={cardList}>
           {(o: Option) => (
             <ComboboxItem key={o.value} value={o} className={cardItem}>
@@ -302,9 +303,9 @@ export function JsonEditor({
         style={{ minHeight: `${rows * 1.4 + 1}rem` }} // field-sizing would shrink an empty box to its placeholder; keep the rows asked for
       />
       <div className="flex items-center justify-between gap-2 text-xs">
-        {parsed.ok ? <span className="text-muted-foreground">Valid JSON</span> : <span className="text-destructive">{parsed.error}</span>}
+        {parsed.ok ? <span className="text-muted-foreground">{t('Valid JSON')}</span> : <span className="text-destructive">{parsed.error}</span>}
         <Button type="button" variant="ghost" size="xs" disabled={!parsed.ok} onClick={() => parsed.ok && onChange(pretty(parsed.value))}>
-          Format
+          {t('Format')}
         </Button>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { Layout } from '@/components/layout'
 import { canOpen, homePath } from '@/components/nav-items'
 import { Spinner } from '@/components/ui/spinner'
 import { signedOut, useAuth } from '@/lib/auth'
+import { locale } from '@/lib/i18n'
 import Landing from '@/pages/landing'
 import Login from '@/pages/login'
 
@@ -65,8 +66,9 @@ export default function App() {
         <Spinner />
       </div>
     )
+  // every address starts with the language (`/ru/chat`): the router works below it, so the links stay as they are written
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={`/${locale}`}>
       <Routes>
         {status === 'out' ? (
           <>

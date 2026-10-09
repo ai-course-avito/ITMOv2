@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DataTable, SortHeader } from '@/components/data-table'
 import { ErrorBox, Page, PageHeader } from '@/components/page'
 import { api } from '@/lib/api'
+import { t } from '@/lib/i18n'
 
 interface Sample {
   name: string
@@ -45,8 +46,8 @@ export default function Metrics() {
   const columns: ColumnDef<Sample>[] = [
     {
       accessorKey: 'name',
-      meta: { label: 'Metric' },
-      header: ({ column }) => <SortHeader column={column} title="Metric" />,
+      meta: { label: t('Metric') },
+      header: ({ column }) => <SortHeader column={column} title={t('Metric')} />,
       cell: ({ row }) => (
         <span className="value-mono" title={parsed.help.get(row.original.name)}>
           {row.original.name}
@@ -55,15 +56,15 @@ export default function Metrics() {
     },
     {
       accessorKey: 'labels',
-      meta: { label: 'Labels' },
-      header: 'Labels',
+      meta: { label: t('Labels') },
+      header: t('Labels'),
       cell: ({ getValue }) => <span className="value-mono block max-w-xl truncate text-muted-foreground">{getValue<string>()}</span>,
     },
     {
       accessorKey: 'value',
-      meta: { label: 'Value' },
+      meta: { label: t('Value') },
       sortingFn: (a, b) => Number(a.original.value) - Number(b.original.value),
-      header: ({ column }) => <SortHeader column={column} title="Value" />,
+      header: ({ column }) => <SortHeader column={column} title={t('Value')} />,
       cell: ({ getValue }) => <span className="value-mono">{getValue<string>()}</span>,
     },
   ]
@@ -71,15 +72,15 @@ export default function Metrics() {
   return (
     <Page>
       <PageHeader
-        title="Metrics"
-        description="Prometheus metrics of the service (/metrics). Labels are route templates, never ids; a series nobody touched for a week disappears."
+        title={t('Metrics')}
+        description={t('Prometheus metrics of the service (/metrics). Labels are route templates, never ids; a series nobody touched for a week disappears.')}
         actions={
           <>
             <label className="flex items-center gap-2 text-sm">
-              <Switch checked={auto} onCheckedChange={setAuto} /> Auto-refresh
+              <Switch checked={auto} onCheckedChange={setAuto} /> {t('Auto-refresh')}
             </label>
             <Button variant="outline" size="sm" onClick={() => q.refetch()} disabled={q.isFetching}>
-              <RefreshCwIcon className={q.isFetching ? 'animate-spin' : ''} /> Refresh
+              <RefreshCwIcon className={q.isFetching ? 'animate-spin' : ''} /> {t('Refresh')}
             </Button>
           </>
         }
@@ -89,22 +90,22 @@ export default function Metrics() {
       ) : (
         <Tabs defaultValue="table" className="min-h-0 flex-1 gap-3">
           <TabsList>
-            <TabsTrigger value="table">Samples</TabsTrigger>
-            <TabsTrigger value="raw">Raw</TabsTrigger>
+            <TabsTrigger value="table">{t('Samples')}</TabsTrigger>
+            <TabsTrigger value="raw">{t('Raw')}</TabsTrigger>
           </TabsList>
           <TabsContent value="table" className="flex min-h-0 flex-1 flex-col">
             <DataTable
               columns={columns}
               data={q.data === undefined ? undefined : rows}
               loading={q.isLoading}
-              searchPlaceholder="Filter samples…"
+              searchPlaceholder={t('Filter samples…')}
               pageSize={50}
               toolbar={
                 <InputGroup className="w-56">
                   <InputGroupAddon>
-                    <InputGroupText>Name</InputGroupText>
+                    <InputGroupText>{t('Name')}</InputGroupText>
                   </InputGroupAddon>
-                  <InputGroupInput aria-label="Metric name prefix" placeholder="prefix…" value={prefix} onChange={(e) => setPrefix(e.target.value)} />
+                  <InputGroupInput aria-label={t('Metric name prefix')} placeholder={t('prefix…')} value={prefix} onChange={(e) => setPrefix(e.target.value)} />
                 </InputGroup>
               }
             />

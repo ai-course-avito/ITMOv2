@@ -10,6 +10,7 @@ import { LoadingRows } from '@/components/page'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { useMcpServers } from '@/lib/data'
+import { t } from '@/lib/i18n'
 import { errorMessage, useAction } from '@/lib/queries'
 import { NAME_MAX, type Agent } from '@/lib/types'
 
@@ -75,12 +76,12 @@ export function AgentDialog({ mode, onClose }: { mode: AgentDialogMode | null; o
         if (isAdmin) for (const id of selected) if (!before.has(id)) await api.attachMcpServer(agent.id, id)
         if (isAdmin) for (const id of before) if (!selected.has(id)) await api.detachMcpServer(agent.id, id)
       } catch (e) {
-        toast.error(`The agent was saved, but its MCP servers were not fully updated: ${errorMessage(e)}`)
+        toast.error(t('The agent was saved, but its MCP servers were not fully updated: {error}', { error: errorMessage(e) }))
       }
       return agent
     },
     {
-      success: (a) => (editId !== null ? `Agent “${a.name}” saved` : `Agent “${a.name}” created`),
+      success: (a) => (editId !== null ? t('Agent “{name}” saved', { name: a.name }) : t('Agent “{name}” created', { name: a.name })),
       onSuccess: (a) => {
         for (const key of ['agents', 'agent', 'versions', 'agent-mcp', 'self-agent']) qc.invalidateQueries({ queryKey: [key] })
         onClose()
@@ -90,16 +91,21 @@ export function AgentDialog({ mode, onClose }: { mode: AgentDialogMode | null; o
   )
 
   const problem = validateDraft(draft)
-  const title = mode?.kind === 'edit' ? `Edit agent “${mode.agent.name}”` : mode?.kind === 'duplicate' ? `Duplicate agent “${mode.agent.name}”` : 'New agent'
+  const title =
+    mode?.kind === 'edit'
+      ? t('Edit agent “{name}”', { name: mode.agent.name })
+      : mode?.kind === 'duplicate'
+        ? t('Duplicate agent “{name}”', { name: mode.agent.name })
+        : t('New agent')
 
   return (
     <FormDialog
       open={open}
       onClose={onClose}
       title={title}
-      description="A prompt, a model, tools, limits and the MCP servers the agent may call. Every change is recorded as a version."
+      description={t('A prompt, a model, tools, limits and the MCP servers the agent may call. Every change is recorded as a version.')}
       size="lg"
-      submitLabel={editId !== null ? 'Save' : 'Create'}
+      submitLabel={editId !== null ? t('Save') : t('Create')}
       onSubmit={() => save.mutate(undefined)}
       submitDisabled={!ready || !!problem}
       pending={save.isPending}
@@ -113,7 +119,7 @@ export function AgentDialog({ mode, onClose }: { mode: AgentDialogMode | null; o
           {isAdmin && <FieldSeparator />}
           {isAdmin && (
           <FieldSet>
-            <FieldLegend>MCP servers</FieldLegend>
+            <FieldLegend>{t('MCP servers')}</FieldLegend>
             <FieldGroup className="gap-3 rounded-lg border p-3">
               {(servers.data ?? []).map((s) => (
                 <CheckboxField
@@ -130,7 +136,7 @@ export function AgentDialog({ mode, onClose }: { mode: AgentDialogMode | null; o
                   }
                 />
               ))}
-              {!servers.data?.length && <span className="text-sm text-muted-foreground">No MCP servers exist yet. Create them on the MCP servers page.</span>}
+              {!servers.data?.length && <span className="text-sm text-muted-foreground">{t('No MCP servers exist yet. Create them on the MCP servers page.')}</span>}
             </FieldGroup>
           </FieldSet>
           )}

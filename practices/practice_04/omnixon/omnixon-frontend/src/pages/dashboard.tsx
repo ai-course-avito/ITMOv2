@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { BotIcon, CpuIcon, KeyRoundIcon, PlugIcon } from 'lucide-react'
 import CountUp from '@/components/CountUp'
+import { LanguageSwitch } from '@/components/language-switch'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@/components/ui/item'
@@ -12,6 +13,8 @@ import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { modelName, useAgents, useMcpServers, useModels, useSelfAgent, useTokens } from '@/lib/data'
 import { fmtDate, truncate } from '@/lib/format'
+import { t } from '@/lib/i18n'
+import { roleName } from '@/lib/roles'
 
 function Status({ ok, label, detail }: { ok?: boolean; label: string; detail?: string }) {
   return (
@@ -36,21 +39,25 @@ export default function Dashboard() {
   const tokens = useTokens(undefined, true)
 
   const counts = [
-    { label: 'Agents', q: agents, to: '/agents', icon: BotIcon },
-    { label: 'Models', q: models, to: '/models', icon: CpuIcon },
-    { label: 'MCP servers', q: mcp, to: '/mcp-servers', icon: PlugIcon },
-    { label: 'Tokens', q: tokens, to: '/tokens', icon: KeyRoundIcon },
+    { label: t('Agents'), q: agents, to: '/agents', icon: BotIcon },
+    { label: t('Models'), q: models, to: '/models', icon: CpuIcon },
+    { label: t('MCP servers'), q: mcp, to: '/mcp-servers', icon: PlugIcon },
+    { label: t('Tokens'), q: tokens, to: '/tokens', icon: KeyRoundIcon },
   ]
   const selfModel = models.data?.find((m) => m.id === selfAgent.data?.model_id)
 
   return (
     <Page>
-      <PageHeader title="Dashboard" description="Service health, a summary of what is configured, and a way to every part of the panel." />
+      <PageHeader
+        title={t('Dashboard')}
+        description={t('Service health, a summary of what is configured, and a way to every part of the panel.')}
+        actions={<LanguageSwitch />}
+      />
       <PageScroll className="grid content-start gap-4">
         {isAdmin && (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {counts.map((c) => (
-            <Link key={c.label} to={c.to}>
+            <Link key={c.to} to={c.to}>
               <Card className="transition-colors hover:bg-muted/40">
                 <CardHeader>
                   <CardDescription className="flex items-center gap-2">
@@ -69,40 +76,40 @@ export default function Dashboard() {
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Service</CardTitle>
-              <CardDescription>Refreshes every 10 seconds.</CardDescription>
+              <CardTitle>{t('Service')}</CardTitle>
+              <CardDescription>{t('Refreshes every 10 seconds.')}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3">
-              <Status ok={live.data ? live.data.status === 'ok' : live.isError ? false : undefined} label="Liveness" detail="/healthz" />
+              <Status ok={live.data ? live.data.status === 'ok' : live.isError ? false : undefined} label={t('Liveness')} detail="/healthz" />
               <Status
                 ok={ready.data ? ready.data.status === 'ok' : undefined}
-                label="Readiness"
+                label={t('Readiness')}
                 detail={
                   ready.data
                     ? ready.data.status === 'ok'
-                      ? `database migrated to ${ready.data.migration}`
-                      : `${ready.data.status}${ready.data.expected ? ` (migration ${ready.data.migration} of ${ready.data.expected})` : ''}`
+                      ? t('database migrated to {migration}', { migration: ready.data.migration })
+                      : `${ready.data.status}${ready.data.expected ? ` (${t('migration {migration} of {expected}', { migration: ready.data.migration, expected: ready.data.expected })})` : ''}`
                     : '/readyz'
                 }
               />
-              <Status ok={root.data ? root.data.status === 'ok' : root.isError ? false : undefined} label="API root" detail="/api/v1/" />
+              <Status ok={root.data ? root.data.status === 'ok' : root.isError ? false : undefined} label={t('API root')} detail="/api/v1/" />
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>This session</CardTitle>
-              <CardDescription>The token you signed in with.</CardDescription>
+              <CardTitle>{t('This session')}</CardTitle>
+              <CardDescription>{t('The token you signed in with.')}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2 text-sm">
               <div className="flex flex-wrap items-center gap-2">
-                Token <span className="font-medium">{token?.name}</span> <Badge variant="secondary">{token?.id}</Badge>{' '}
-                <Badge>{token?.is_initial ? `${token.role}, initial` : token?.role}</Badge>
-                <span className="text-muted-foreground">created {fmtDate(token?.timestamp)}</span>
+                {t('Token')} <span className="font-medium">{token?.name}</span> <Badge variant="secondary">{token?.id}</Badge>{' '}
+                <Badge>{token?.is_initial ? t('{role}, initial', { role: roleName(token.role) }) : token ? roleName(token.role) : ''}</Badge>
+                <span className="text-muted-foreground">{t('created {date}', { date: fmtDate(token?.timestamp) })}</span>
               </div>
               {selfAgent.data ? (
                 <div className="grid gap-1">
                   <div>
-                    Agent{' '}
+                    {t('Agent')}{' '}
                     {role !== 'regular' ? (
                       <Link className="font-medium underline-offset-4 hover:underline" to={`/agents/${selfAgent.data.id}`}>
                         {selfAgent.data.name}
@@ -110,12 +117,12 @@ export default function Dashboard() {
                     ) : (
                       <span className="font-medium">{selfAgent.data.name}</span>
                     )}{' '}
-                    {selfModel && <span className="text-muted-foreground">on {modelName(selfModel.request_json)}</span>}
+                    {selfModel && <span className="text-muted-foreground">{t('on {model}', { model: modelName(selfModel.request_json) })}</span>}
                   </div>
-                  <p className="text-muted-foreground">{truncate(selfAgent.data.prompt, 200) || 'No prompt'}</p>
+                  <p className="text-muted-foreground">{truncate(selfAgent.data.prompt, 200) || t('No prompt')}</p>
                 </div>
               ) : (
-                <span className="text-muted-foreground">This token has no agent.</span>
+                <span className="text-muted-foreground">{t('This token has no agent.')}</span>
               )}
             </CardContent>
           </Card>

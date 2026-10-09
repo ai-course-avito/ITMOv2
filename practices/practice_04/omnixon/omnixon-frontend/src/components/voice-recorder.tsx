@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { InputGroupButton } from '@/components/ui/input-group'
+import { t } from '@/lib/i18n'
 import { blobToBase64, fmtClock, toWavBlob } from '@/lib/voice'
 import type { Attachment } from '@/lib/types'
 
@@ -79,11 +80,11 @@ export function VoiceRecorder({
   }, [phase])
 
   async function start() {
-    if (!navigator.mediaDevices?.getUserMedia) return void toast.error('This browser cannot record sound (it needs a secure page).')
+    if (!navigator.mediaDevices?.getUserMedia) return void toast.error(t('This browser cannot record sound (it needs a secure page).'))
     try {
       stream.current = await navigator.mediaDevices.getUserMedia({ audio: true })
     } catch (e) {
-      return void toast.error(`The microphone is not available: ${(e as Error).message || 'permission denied'}`)
+      return void toast.error(t('The microphone is not available: {reason}', { reason: (e as Error).message || t('permission denied') }))
     }
     chunks.current = []
     discard.current = false
@@ -99,7 +100,7 @@ export function VoiceRecorder({
         const name = `voice-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.wav`
         onRecorded({ data: await blobToBase64(wav), media_type: 'audio/wav', name }, sendWhenDone.current)
       } catch (e) {
-        toast.error(`Could not make a WAV file of the recording: ${(e as Error).message}`)
+        toast.error(t('Could not make a WAV file of the recording: {reason}', { reason: (e as Error).message }))
       } finally {
         setPhase('idle')
       }
@@ -121,32 +122,32 @@ export function VoiceRecorder({
 
   if (phase === 'idle')
     return (
-      <InputGroupButton variant="secondary" aria-label="Record voice" disabled={disabled} onClick={start}>
-        <MicIcon /> Voice
+      <InputGroupButton variant="secondary" aria-label={t('Record voice')} disabled={disabled} onClick={start}>
+        <MicIcon /> {t('Voice')}
       </InputGroupButton>
     )
 
   return (
-    <div role="group" aria-label="Recording" className="flex h-7 items-center gap-2 rounded-md border bg-background pr-1 pl-2">
+    <div role="group" aria-label={t('Recording')} className="flex h-7 items-center gap-2 rounded-md border bg-background pr-1 pl-2">
       {phase === 'encoding' ? (
         <span className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Spinner /> Making a WAV…
+          <Spinner /> {t('Making a WAV…')}
         </span>
       ) : (
         <>
           <span aria-hidden className="size-2 animate-pulse rounded-full bg-destructive" />
-          <span className="value-mono w-10 text-xs tabular-nums" aria-label="Recording time">
+          <span className="value-mono w-10 text-xs tabular-nums" aria-label={t('Recording time')}>
             {fmtClock(seconds)}
           </span>
           {recorder && stream.current && <LiveWaveform stream={stream.current} />}
-          <Button type="button" variant="ghost" size="icon-xs" aria-label="Discard the recording" onClick={cancel}>
+          <Button type="button" variant="ghost" size="icon-xs" aria-label={t('Discard the recording')} onClick={cancel}>
             <XIcon />
           </Button>
           <Button type="button" variant="secondary" size="xs" onClick={() => finish(false)}>
-            <SquareIcon /> Attach
+            <SquareIcon /> {t('Attach')}
           </Button>
           <Button type="button" size="xs" onClick={() => finish(true)}>
-            <SendIcon /> Send
+            <SendIcon /> {t('Send')}
           </Button>
         </>
       )}

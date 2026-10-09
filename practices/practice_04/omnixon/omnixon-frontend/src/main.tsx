@@ -7,6 +7,7 @@ import App from './App'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider } from '@/lib/auth'
+import { ensureLocalePrefix } from '@/lib/i18n'
 import { queryClient } from '@/lib/queries'
 
 // The panel used to keep the users it had seen in the browser; the service lists them now (GET /users/recent). Drop what was kept.
@@ -16,17 +17,20 @@ try {
   /* storage may be unavailable */
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-          <Toaster richColors position="bottom-right" />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
-  </StrictMode>,
-)
+// an address without its language (`/chat`) is sent to the same page with one (`/ru/chat`); the page then loads again
+if (ensureLocalePrefix()) {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+            <Toaster richColors position="bottom-right" />
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </StrictMode>,
+  )
+}

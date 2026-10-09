@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
+import { t } from '@/lib/i18n'
 import { errorMessage } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 
@@ -80,12 +81,12 @@ export function ErrorBox({ error, onRetry }: { error: unknown; onRetry?: () => v
   return (
     <Alert variant="destructive">
       <TriangleAlertIcon />
-      <AlertTitle>Request failed</AlertTitle>
+      <AlertTitle>{t('Request failed')}</AlertTitle>
       <AlertDescription>
         <p>{errorMessage(error)}</p>
         {onRetry && (
           <Button variant="outline" size="sm" className="mt-2" onClick={onRetry}>
-            <RefreshCwIcon /> Retry
+            <RefreshCwIcon /> {t('Retry')}
           </Button>
         )}
       </AlertDescription>

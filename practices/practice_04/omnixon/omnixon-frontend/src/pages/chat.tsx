@@ -25,6 +25,7 @@ import { ConfirmDialog, FormDialog } from '@/components/dialogs'
 import { api, ApiError, fileToAttachment, streamMessage } from '@/lib/api'
 import { newUserId, turnsOf, useChatHistory, useChats } from '@/lib/chats'
 import { useSelfAgent } from '@/lib/data'
+import { t } from '@/lib/i18n'
 import { loadPlayground, savePlayground } from '@/lib/playground-store'
 import { errorMessage } from '@/lib/queries'
 import type { Attachment, TraceStep } from '@/lib/types'
@@ -110,7 +111,7 @@ export default function Chat() {
     const key = `${agentKey}/${userId}/${chatId}`
     if (shownKey.current === key || !history.data || history.isFetching) return
     shownKey.current = key
-    setTurns(turnsOf(history.data).map((t) => ({ ...t })))
+    setTurns(turnsOf(history.data).map((turn) => ({ ...turn })))
   }, [history.data, history.isFetching, chatId, userId, agentKey, busy])
 
   function selectChat(id: number | null) {
@@ -132,13 +133,13 @@ export default function Chat() {
 
   const ready = agentId !== undefined
 
-  const patchLast = (patch: Partial<Turn>) => setTurns((t) => t.map((x, i) => (i === t.length - 1 ? { ...x, ...patch } : x)))
+  const patchLast = (patch: Partial<Turn>) => setTurns((list) => list.map((x, i) => (i === list.length - 1 ? { ...x, ...patch } : x)))
 
   async function send(e?: FormEvent, withFile?: Attachment) {
     e?.preventDefault()
     const attachments = withFile ? [...files, withFile] : files
     if ((!text.trim() && !attachments.length) || busy || !ready) return
-    setTurns((t) => [...t, { role: 'user', text, files: attachments.map(label) }, { role: 'assistant', text: '', pending: true, steps: [] }])
+    setTurns((list) => [...list, { role: 'user', text, files: attachments.map(label) }, { role: 'assistant', text: '', pending: true, steps: [] }])
     setText('')
     setFiles([])
     setBusy(true)
@@ -178,14 +179,14 @@ export default function Chat() {
               acc += c
               patchLast({ text: acc })
             },
-            onTrace: (step) => setTurns((t) => t.map((x, i) => (i === t.length - 1 ? { ...x, steps: [...(x.steps ?? []), step] } : x))),
+            onTrace: (step) => setTurns((list) => list.map((x, i) => (i === list.length - 1 ? { ...x, steps: [...(x.steps ?? []), step] } : x))),
             onInterrupted: () => patchLast({ interrupted: true, pending: false }),
             onError: (detail) => patchLast({ role: 'error', text: detail, pending: false }),
           },
           actAs,
           controller.signal,
         )
-        setTurns((t) => t.map((x, i) => (i === t.length - 1 && x.pending ? { ...x, pending: false } : x)))
+        setTurns((list) => list.map((x, i) => (i === list.length - 1 && x.pending ? { ...x, pending: false } : x)))
       } else {
         const res = await api.sendMessage(body, actAs, controller.signal)
         patchLast({ text: res.response, pending: false, steps: res.trace ?? [] })
@@ -221,14 +222,14 @@ export default function Chat() {
       const added = await Promise.all(Array.from(list).map(fileToAttachment))
       setFiles((f) => [...f, ...added])
     } catch {
-      toast.error('Could not read the file')
+      toast.error(t('Could not read the file'))
     }
     if (fileInput.current) fileInput.current.value = ''
   }
 
   function addUrl() {
     const u = urlInput.trim()
-    if (!/^https?:\/\//.test(u)) return toast.error('The URL must start with http:// or https://')
+    if (!/^https?:\/\//.test(u)) return toast.error(t('The URL must start with http:// or https://'))
     setFiles((f) => [...f, { url: u }])
     setUrlInput('')
   }
@@ -236,28 +237,34 @@ export default function Chat() {
   return (
     <Page>
       <PageHeader
-        title="Playground"
-        description="Talk to an agent through POST /request or /request-stream, with attachments and the per-request flags."
+        title={t('Playground')}
+        description={t('Talk to an agent through POST /request or /request-stream, with attachments and the per-request flags.')}
         actions={
           <>
-            <Button size="sm" onClick={() => { setUserDraft(userId); setSettingsOpen(true) }}>
-              <SlidersHorizontalIcon /> Change settings
+            <Button
+              size="sm"
+              onClick={() => {
+                setUserDraft(userId)
+                setSettingsOpen(true)
+              }}
+            >
+              <SlidersHorizontalIcon /> {t('Change settings')}
             </Button>
             <Button variant="outline" size="sm" onClick={() => (chatId !== null ? setClearing(true) : setTurns([]))} disabled={busy || !turns.length}>
-              <EraserIcon /> Clear chat
+              <EraserIcon /> {t('Clear chat')}
             </Button>
           </>
         }
       />
       <div className="flex min-h-0 flex-1 flex-col gap-3">
         {/* what the next message will be sent with: the settings are in the dialog, this keeps them in sight */}
-        <div className="flex flex-wrap items-center gap-1.5 text-xs" aria-label="Current settings">
-          <Badge variant="outline">{selfAgent.data?.name ?? 'agent'}</Badge>
-          <Badge variant="outline" data-testid="chat-user">{userId || 'new user'}</Badge>
-          <Badge variant="secondary">{stream ? 'stream' : 'single response'}</Badge>
-          <Badge variant="secondary">{useMemo ? 'with history' : 'no history'}</Badge>
-          <Badge variant="secondary">{saveMessage ? 'saved' : 'not saved'}</Badge>
-          {trace && <Badge variant="secondary">chain of calls</Badge>}
+        <div className="flex flex-wrap items-center gap-1.5 text-xs" aria-label={t('Current settings')}>
+          <Badge variant="outline">{selfAgent.data?.name ?? t('agent')}</Badge>
+          <Badge variant="outline" data-testid="chat-user">{userId || t('new user')}</Badge>
+          <Badge variant="secondary">{stream ? t('stream') : t('single response')}</Badge>
+          <Badge variant="secondary">{useMemo ? t('with history') : t('no history')}</Badge>
+          <Badge variant="secondary">{saveMessage ? t('saved') : t('not saved')}</Badge>
+          {trace && <Badge variant="secondary">{t('chain of calls')}</Badge>}
         </div>
         <Card className="min-h-0 flex-1 gap-0 py-0 md:flex-row">
           <ChatPanel
@@ -280,37 +287,37 @@ export default function Chat() {
           />
           <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 space-y-3 overflow-auto p-4">
-            {!turns.length && <EmptyState icon={MessageSquareIcon} title="Say something" description="Pick the agent, the user and the options with Change settings." className="h-full border-0" />}
-            {turns.map((t, i) => (
-              <div key={i} className={cn('flex flex-col gap-1', t.role === 'user' ? 'items-end' : 'items-start')}>
-                {t.role !== 'user' && (t.steps?.length || (t.pending && trace)) ? <TraceView steps={t.steps ?? []} running={t.pending} /> : null}
+            {!turns.length && <EmptyState icon={MessageSquareIcon} title={t('Say something')} description={t('Pick the agent, the user and the options with Change settings.')} className="h-full border-0" />}
+            {turns.map((turn, i) => (
+              <div key={i} className={cn('flex flex-col gap-1', turn.role === 'user' ? 'items-end' : 'items-start')}>
+                {turn.role !== 'user' && (turn.steps?.length || (turn.pending && trace)) ? <TraceView steps={turn.steps ?? []} running={turn.pending} /> : null}
                 <div
-                  data-testid={t.role === 'assistant' ? 'answer' : undefined}
+                  data-testid={turn.role === 'assistant' ? 'answer' : undefined}
                   className={cn(
                     'max-w-[85%] min-w-0 rounded-xl px-3 py-2 text-sm',
-                    t.role !== 'assistant' && 'whitespace-pre-wrap',
-                    t.role === 'user' && 'bg-primary text-primary-foreground',
+                    turn.role !== 'assistant' && 'whitespace-pre-wrap',
+                    turn.role === 'user' && 'bg-primary text-primary-foreground',
                     // an answer has no card: no background and no border, it is text on the page of the chat
-                    t.role === 'assistant' && 'bg-transparent px-0 lg:max-w-[min(85%,52rem)]',
-                    t.role === 'error' && 'border border-destructive/40 bg-destructive/10 text-destructive',
+                    turn.role === 'assistant' && 'bg-transparent px-0 lg:max-w-[min(85%,52rem)]',
+                    turn.role === 'error' && 'border border-destructive/40 bg-destructive/10 text-destructive',
                   )}
                 >
-                  {t.text ? (
-                    t.role === 'assistant' ? <Markdown>{t.text}</Markdown> : t.text
-                  ) : t.pending ? (
-                    <ShinyText text="Thinking…" speed={2.5} />
+                  {turn.text ? (
+                    turn.role === 'assistant' ? <Markdown>{turn.text}</Markdown> : turn.text
+                  ) : turn.pending ? (
+                    <ShinyText text={t('Thinking…')} speed={2.5} />
                   ) : (
-                    <em className="opacity-60">empty answer</em>
+                    <em className="opacity-60">{t('empty answer')}</em>
                   )}
-                  {t.pending && t.text && <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-current align-middle" />}
+                  {turn.pending && turn.text && <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-current align-middle" />}
                 </div>
-                {t.interrupted && (
+                {turn.interrupted && (
                   <Badge variant="outline" data-testid="interrupted">
-                    <SquareIcon /> interrupted
+                    <SquareIcon /> {t('interrupted')}
                   </Badge>
                 )}
-                {t.role === 'assistant' && t.text && !t.pending && <CopyButton text={t.text} label="Copy answer" />}
-                {t.files?.map((f, j) => (
+                {turn.role === 'assistant' && turn.text && !turn.pending && <CopyButton text={turn.text} label={t('Copy answer')} />}
+                {turn.files?.map((f, j) => (
                   <Badge key={j} variant="secondary">
                     <PaperclipIcon /> {f}
                   </Badge>
@@ -326,8 +333,8 @@ export default function Chat() {
                 {files.map((f, i) => (
                   <Badge key={i} variant="secondary" className="h-auto gap-1.5 py-1">
                     <PaperclipIcon /> {label(f)}
-                    {f.data && f.media_type?.startsWith('audio/') && <audio controls src={`data:${f.media_type};base64,${f.data}`} className="h-7 max-w-52" aria-label={`Listen to ${label(f)}`} />}
-                    <button type="button" aria-label="Remove" onClick={() => setFiles((x) => x.filter((_, j) => j !== i))}>
+                    {f.data && f.media_type?.startsWith('audio/') && <audio controls src={`data:${f.media_type};base64,${f.data}`} className="h-7 max-w-52" aria-label={t('Listen to {name}', { name: label(f) })} />}
+                    <button type="button" aria-label={t('Remove')} onClick={() => setFiles((x) => x.filter((_, j) => j !== i))}>
                       <XIcon className="size-3" />
                     </button>
                   </Badge>
@@ -342,12 +349,12 @@ export default function Chat() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send()
                 }}
-                placeholder={ready ? 'Message…' : 'Choose an agent first…'}
+                placeholder={ready ? t('Message…') : t('Choose an agent first…')}
               />
               <InputGroupAddon align="block-end" className="flex-wrap gap-2">
                 <input ref={fileInput} type="file" multiple hidden onChange={(e) => pickFiles(e.target.files)} />
                 <InputGroupButton variant="secondary" onClick={() => fileInput.current?.click()}>
-                  <FileUpIcon /> File
+                  <FileUpIcon /> {t('File')}
                 </InputGroupButton>
                 <VoiceRecorder
                   disabled={busy || !ready}
@@ -358,7 +365,7 @@ export default function Chat() {
                 />
                 <InputGroup className="h-7 w-64">
                   <InputGroupInput
-                    aria-label="Attachment URL"
+                    aria-label={t('Attachment URL')}
                     value={urlInput}
                     onChange={(e) => setUrlInput(e.target.value)}
                     onKeyDown={(e) => {
@@ -367,24 +374,24 @@ export default function Chat() {
                         addUrl()
                       }
                     }}
-                    placeholder="https://… attachment URL"
+                    placeholder={t('https://… attachment URL')}
                   />
                   <InputGroupAddon align="inline-end">
-                    <InputGroupButton size="icon-xs" aria-label="Add URL" disabled={!urlInput.trim()} onClick={addUrl}>
+                    <InputGroupButton size="icon-xs" aria-label={t('Add URL')} disabled={!urlInput.trim()} onClick={addUrl}>
                       <Link2Icon />
                     </InputGroupButton>
                   </InputGroupAddon>
                 </InputGroup>
                 <span className="ml-auto hidden items-center gap-1 text-xs text-muted-foreground sm:flex">
-                  <Kbd>Ctrl</Kbd>+<Kbd>Enter</Kbd> to send
+                  <Kbd>Ctrl</Kbd>+<Kbd>Enter</Kbd> {t('to send')}
                 </span>
                 {busy && (
                   <InputGroupButton variant="secondary" onClick={stop}>
-                    <SquareIcon /> Stop
+                    <SquareIcon /> {t('Stop')}
                   </InputGroupButton>
                 )}
                 <InputGroupButton type="submit" variant="default" disabled={busy || (!text.trim() && !files.length) || !ready}>
-                  {busy ? <Spinner /> : <SendIcon />} Send
+                  {busy ? <Spinner /> : <SendIcon />} {t('Send')}
                 </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>
@@ -395,9 +402,9 @@ export default function Chat() {
       <ConfirmDialog
         open={clearing}
         onOpenChange={setClearing}
-        title="Clear this chat?"
-        description="Its messages are deleted from the service; the chat stays. Memories stay."
-        confirmLabel="Clear"
+        title={t('Clear this chat?')}
+        description={t('Its messages are deleted from the service; the chat stays. Memories stay.')}
+        confirmLabel={t('Clear')}
         onConfirm={async () => {
           if (chatId !== null) await api.clearChatHistory(userId, chatId, actAs).catch((e) => toast.error(errorMessage(e)))
           setClearing(false)
@@ -413,53 +420,53 @@ export default function Chat() {
           setSettingsOpen(false)
           switchUser(userDraft.trim()) // the user typed in the settings is the user now
         }}
-        title="Playground settings"
-        description="Who answers, which user it talks to, and what the next messages are sent with. They apply at once."
+        title={t('Playground settings')}
+        description={t('Who answers, which user it talks to, and what the next messages are sent with. They apply at once.')}
       >
         <FieldGroup>
-              <AgentField
-                label="Agent"
-                description="The agent that answers, and whose users you can pick. Starts on the agent of your token."
-                agentId={agentId}
-                onChange={(v) => {
-                  choose(v) // ids differ from agent to agent: the user and the chat of that agent come back with it
-                }}
-              />
-              <FormField
-                label="User id"
-                description={
+          <AgentField
+            label={t('Agent')}
+            description={t('The agent that answers, and whose users you can pick. Starts on the agent of your token.')}
+            agentId={agentId}
+            onChange={(v) => {
+              choose(v) // ids differ from agent to agent: the user and the chat of that agent come back with it
+            }}
+          />
+          <FormField
+            label={t('User id')}
+            description={
+              <>
+                {t('Who the messages are from; their chats are on the left. Any id works: one that does not exist yet is created with the first message. Type 3 characters to find an existing user of this agent. Empty: a new user is made. Applied when this window is closed, and remembered for next time.')}
+                {userId && (
                   <>
-                    Who the messages are from; their chats are on the left. Any id works: one that does not exist yet is created with the first message. Type 3 characters to find an existing user of this agent. Empty: a new user is made. Applied when this window is closed, and remembered for next time.
-                    {userId && (
-                      <>
-                        {' '}
-                        <Link className="underline underline-offset-4" to={`/users?user=${encodeURIComponent(userId)}`}>
-                          Open this user's history
-                        </Link>
-                      </>
-                    )}
+                    {' '}
+                    <Link className="underline underline-offset-4" to={`/users?user=${encodeURIComponent(userId)}`}>
+                      {t("Open this user's history")}
+                    </Link>
                   </>
-                }
-              >
-                <UserSuggest value={userDraft} onChange={setUserDraft} actAs={actAs} disabled={!ready} placeholder="new user" />
-              </FormField>
-              <FieldSeparator />
-              <FormField label="Answer">
-                <ToggleGroup variant="outline" value={[stream ? 'stream' : 'single']} onValueChange={(v) => v.length && setStream(v[0] === 'stream')} className="w-full">
-                  <ToggleGroupItem value="stream" className="flex-1">
-                    Stream (SSE)
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="single" className="flex-1">
-                    Single response
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              </FormField>
-              <FieldSeparator>Per request</FieldSeparator>
-              <SwitchField label="Save the exchange" description="save_message" checked={saveMessage} onCheckedChange={setSaveMessage} />
-              <SwitchField label="Use history" description="use_memo; memory is set by the agent's tools" checked={useMemo} onCheckedChange={setUseMemo} />
-              <FieldSeparator />
-              <SwitchField label="Chain of calls" description="trace; shows every model call and tool call behind the answer" checked={trace} onCheckedChange={setTrace} />
-            </FieldGroup>
+                )}
+              </>
+            }
+          >
+            <UserSuggest value={userDraft} onChange={setUserDraft} actAs={actAs} disabled={!ready} placeholder={t('new user')} />
+          </FormField>
+          <FieldSeparator />
+          <FormField label={t('Answer')}>
+            <ToggleGroup variant="outline" value={[stream ? 'stream' : 'single']} onValueChange={(v) => v.length && setStream(v[0] === 'stream')} className="w-full">
+              <ToggleGroupItem value="stream" className="flex-1">
+                {t('Stream (SSE)')}
+              </ToggleGroupItem>
+              <ToggleGroupItem value="single" className="flex-1">
+                {t('Single response')}
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </FormField>
+          <FieldSeparator>{t('Per request')}</FieldSeparator>
+          <SwitchField label={t('Save the exchange')} description="save_message" checked={saveMessage} onCheckedChange={setSaveMessage} />
+          <SwitchField label={t('Use history')} description={t("use_memo; memory is set by the agent's tools")} checked={useMemo} onCheckedChange={setUseMemo} />
+          <FieldSeparator />
+          <SwitchField label={t('Chain of calls')} description={t('trace; shows every model call and tool call behind the answer')} checked={trace} onCheckedChange={setTrace} />
+        </FieldGroup>
       </FormDialog>
     </Page>
   )

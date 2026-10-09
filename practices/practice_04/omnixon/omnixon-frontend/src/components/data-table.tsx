@@ -37,6 +37,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { EmptyState, ErrorBox, LoadingRows } from '@/components/page'
 import { fmtDate } from '@/lib/format'
+import { plural, t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 /** A sortable column header: `header: ({ column }) => <SortHeader column={column} title="Name" />` */
@@ -66,8 +67,8 @@ export function idColumn<T extends { id: number }>(): ColumnDef<T> {
 export function nameColumn<T extends { id: number; name: string }>(to?: (row: T) => string): ColumnDef<T> {
   return {
     accessorKey: 'name',
-    meta: { label: 'Name' },
-    header: ({ column }) => <SortHeader column={column} title="Name" />,
+    meta: { label: t('Name') },
+    header: ({ column }) => <SortHeader column={column} title={t('Name')} />,
     cell: ({ row }) =>
       to ? (
         <Link to={to(row.original)} className="font-medium underline-offset-4 hover:underline" onClick={(e) => e.stopPropagation()}>
@@ -79,7 +80,7 @@ export function nameColumn<T extends { id: number; name: string }>(to?: (row: T)
   }
 }
 
-export function createdColumn<T extends { timestamp: string }>(label = 'Created'): ColumnDef<T> {
+export function createdColumn<T extends { timestamp: string }>(label = t('Created')): ColumnDef<T> {
   return {
     accessorKey: 'timestamp',
     meta: { label },
@@ -98,11 +99,11 @@ export interface RowAction<T> {
 
 /** The same icon and wording for the same action in every table. */
 export const rowAction = {
-  open: <T,>(onClick: (row: T) => void): RowAction<T> => ({ label: 'Open', icon: <ExternalLinkIcon />, onClick }),
-  edit: <T,>(onClick: (row: T) => void, disabled?: (row: T) => boolean): RowAction<T> => ({ label: 'Edit', icon: <PencilIcon />, onClick, disabled }),
-  duplicate: <T,>(onClick: (row: T) => void): RowAction<T> => ({ label: 'Duplicate', icon: <CopyPlusIcon />, onClick }),
+  open: <T,>(onClick: (row: T) => void): RowAction<T> => ({ label: t('Open'), icon: <ExternalLinkIcon />, onClick }),
+  edit: <T,>(onClick: (row: T) => void, disabled?: (row: T) => boolean): RowAction<T> => ({ label: t('Edit'), icon: <PencilIcon />, onClick, disabled }),
+  duplicate: <T,>(onClick: (row: T) => void): RowAction<T> => ({ label: t('Duplicate'), icon: <CopyPlusIcon />, onClick }),
   remove: <T,>(onClick: (row: T) => void, disabled?: (row: T) => boolean): RowAction<T> => ({
-    label: 'Delete',
+    label: t('Delete'),
     icon: <Trash2Icon />,
     destructive: true,
     onClick,
@@ -114,7 +115,7 @@ export const rowAction = {
 export function actionsColumn<T>(actions: RowAction<T>[]): ColumnDef<T> {
   return {
     id: 'actions',
-    header: () => <span className="sr-only">Actions</span>,
+    header: () => <span className="sr-only">{t('Actions')}</span>,
     enableHiding: false,
     enableSorting: false,
     cell: ({ row }) => (
@@ -181,7 +182,7 @@ export function DataTable<T>({
   error,
   onRetry,
   empty,
-  searchPlaceholder = 'Search…',
+  searchPlaceholder = t('Search…'),
   toolbar,
   initialSorting = [],
   initialHidden = {},
@@ -235,26 +236,28 @@ export function DataTable<T>({
           <InputGroupAddon>
             <SearchIcon />
           </InputGroupAddon>
-          <InputGroupInput aria-label="Search the table" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={searchPlaceholder} />
+          <InputGroupInput aria-label={t('Search the table')} value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={searchPlaceholder} />
           {filter && (
             <InputGroupAddon align="inline-end">
-              <InputGroupButton size="icon-xs" aria-label="Clear the search" onClick={() => setFilter('')}>
+              <InputGroupButton size="icon-xs" aria-label={t('Clear the search')} onClick={() => setFilter('')}>
                 <XIcon />
               </InputGroupButton>
             </InputGroupAddon>
           )}
         </InputGroup>
-        <span className="text-sm text-muted-foreground tabular-nums">{filter ? `${total} of ${rows.length}` : rows.length} rows</span>
+        <span className="text-sm text-muted-foreground tabular-nums">
+          {filter ? t('{total} of {all} rows', { total, all: rows.length }) : plural(rows.length, 'row', 'rows')}
+        </span>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {toolbar}
           {hideable.length > 1 && (
             <DropdownMenu>
               <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
-                <Columns3Icon /> Columns
+                <Columns3Icon /> {t('Columns')}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+                  <DropdownMenuLabel>{t('Toggle columns')}</DropdownMenuLabel>
                   {hideable.map((c) => (
                     <DropdownMenuCheckboxItem key={c.id} checked={c.getIsVisible()} onCheckedChange={(v) => c.toggleVisibility(!!v)}>
                       {typeof c.columnDef.meta === 'object' && c.columnDef.meta && 'label' in c.columnDef.meta ? String(c.columnDef.meta.label) : c.id}
@@ -298,7 +301,7 @@ export function DataTable<T>({
             ) : (
               <TableRow>
                 <TableCell colSpan={lastIndex + 1} className="h-24 text-center text-muted-foreground">
-                  No results.
+                  {t('No results.')}
                 </TableCell>
               </TableRow>
             )}
@@ -307,14 +310,12 @@ export function DataTable<T>({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
-        <span className="tabular-nums">
-          {from}–{to} of {total}
-        </span>
+        <span className="tabular-nums">{t('{from}–{to} of {total}', { from, to, total })}</span>
         <div className="flex items-center gap-3">
           <div className="hidden items-center gap-2 sm:flex">
-            Rows per page
+            {t('Rows per page')}
             <Select value={String(size)} onValueChange={(v) => v && table.setPageSize(Number(v))} items={PAGE_SIZES.map((n) => ({ value: String(n), label: String(n) }))}>
-              <SelectTrigger size="sm" className="w-16" aria-label="Rows per page">
+              <SelectTrigger size="sm" className="w-16" aria-label={t('Rows per page')}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent alignItemWithTrigger={false}>
@@ -327,19 +328,19 @@ export function DataTable<T>({
             </Select>
           </div>
           <ButtonGroup>
-            <Button variant="outline" size="icon-sm" aria-label="First page" disabled={!table.getCanPreviousPage()} onClick={() => table.setPageIndex(0)}>
+            <Button variant="outline" size="icon-sm" aria-label={t('First page')} disabled={!table.getCanPreviousPage()} onClick={() => table.setPageIndex(0)}>
               <ChevronsLeftIcon />
             </Button>
-            <Button variant="outline" size="icon-sm" aria-label="Previous page" disabled={!table.getCanPreviousPage()} onClick={() => table.previousPage()}>
+            <Button variant="outline" size="icon-sm" aria-label={t('Previous page')} disabled={!table.getCanPreviousPage()} onClick={() => table.previousPage()}>
               <ChevronLeftIcon />
             </Button>
             <InputGroupText className="rounded-none border border-x-0 px-3 tabular-nums">
               {pageIndex + 1} / {Math.max(1, table.getPageCount())}
             </InputGroupText>
-            <Button variant="outline" size="icon-sm" aria-label="Next page" disabled={!table.getCanNextPage()} onClick={() => table.nextPage()}>
+            <Button variant="outline" size="icon-sm" aria-label={t('Next page')} disabled={!table.getCanNextPage()} onClick={() => table.nextPage()}>
               <ChevronRightIcon />
             </Button>
-            <Button variant="outline" size="icon-sm" aria-label="Last page" disabled={!table.getCanNextPage()} onClick={() => table.setPageIndex(table.getPageCount() - 1)}>
+            <Button variant="outline" size="icon-sm" aria-label={t('Last page')} disabled={!table.getCanNextPage()} onClick={() => table.setPageIndex(table.getPageCount() - 1)}>
               <ChevronsRightIcon />
             </Button>
           </ButtonGroup>

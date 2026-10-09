@@ -35,6 +35,7 @@ import { EmptyState, LoadingRows, Page, PageHeader } from '@/components/page'
 import { api } from '@/lib/api'
 import { modelName, useAgentConnections, useAgents, useModels } from '@/lib/data'
 import { clip } from '@/lib/format'
+import { t } from '@/lib/i18n'
 import { agentOption } from '@/lib/options'
 import { useAction } from '@/lib/queries'
 import type { Agent, AgentConnection } from '@/lib/types'
@@ -78,7 +79,7 @@ function AgentNode({ data }: NodeProps<AgentFlowNode>) {
       </BaseNodeHeader>
       <BaseNodeContent className="gap-y-1.5 py-2">
         <p className="truncate text-xs text-muted-foreground" title={data.agent.prompt || undefined}>
-          {clip(data.agent.prompt) || <em>empty prompt</em>}
+          {clip(data.agent.prompt) || <em>{t('empty prompt')}</em>}
         </p>
         <Badge variant="secondary" className="max-w-full truncate font-mono text-[11px]">
           {data.model}
@@ -162,11 +163,11 @@ function ConnectionDialog({ editing, agents, onClose }: { editing: Editing; agen
       existing
         ? api.updateAgentConnection(existing.id, description.trim())
         : api.createAgentConnection(Number(agent1), Number(agent2), description.trim()),
-    { invalidate, success: existing ? 'Connection updated' : 'Connection created', onSuccess: onClose },
+    { invalidate, success: existing ? t('Connection updated') : t('Connection created'), onSuccess: onClose },
   )
   const remove = useAction(() => api.deleteAgentConnection(existing!.id), {
     invalidate,
-    success: 'Connection deleted',
+    success: t('Connection deleted'),
     onSuccess: () => {
       setDeleting(false)
       onClose()
@@ -181,47 +182,47 @@ function ConnectionDialog({ editing, agents, onClose }: { editing: Editing; agen
       <FormDialog
         open={editing !== null}
         onClose={onClose}
-        title={existing ? `${name(agent1)} → ${name(agent2)}` : 'New connection'}
-        description="The first agent may call the second one (tools list_agents and ask_agent). The description is what the first agent reads about the second."
-        submitLabel={existing ? 'Save' : 'Connect'}
+        title={existing ? `${name(agent1)} → ${name(agent2)}` : t('New connection')}
+        description={t('The first agent may call the second one (tools list_agents and ask_agent). The description is what the first agent reads about the second.')}
+        submitLabel={existing ? t('Save') : t('Connect')}
         onSubmit={() => save.mutate(undefined)}
         submitDisabled={!agent1 || !agent2 || same || !description.trim()}
         pending={save.isPending}
-        problem={same ? 'An agent cannot be connected to itself.' : undefined}
+        problem={same ? t('An agent cannot be connected to itself.') : undefined}
         footerStart={
           existing && (
             <Button type="button" variant="outline" className="text-destructive" onClick={() => setDeleting(true)}>
-              <Trash2Icon /> Delete
+              <Trash2Icon /> {t('Delete')}
             </Button>
           )
         }
       >
         <FieldGroup>
-          <FormField label="Calling agent">
+          <FormField label={t('Calling agent')}>
             <OptionCombobox
               value={agent1}
               onChange={setAgent1}
               options={options}
-              placeholder="Choose an agent"
+              placeholder={t('Choose an agent')}
               disabled={!!existing}
             />
           </FormField>
-          <FormField label="Called agent">
+          <FormField label={t('Called agent')}>
             <OptionCombobox
               value={agent2}
               onChange={setAgent2}
               options={options}
-              placeholder="Choose an agent"
+              placeholder={t('Choose an agent')}
               disabled={!!existing}
             />
           </FormField>
-          <FormField label="Description" description="What the called agent is for, written for the calling agent.">
+          <FormField label={t('Description')} description={t('What the called agent is for, written for the calling agent.')}>
             <Textarea
               maxLength={DESCRIPTION_MAX}
               rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Knows the prices and the stock of every product"
+              placeholder={t('Knows the prices and the stock of every product')}
             />
           </FormField>
         </FieldGroup>
@@ -229,8 +230,8 @@ function ConnectionDialog({ editing, agents, onClose }: { editing: Editing; agen
       <ConfirmDialog
         open={deleting}
         onOpenChange={setDeleting}
-        title="Delete this connection?"
-        description={`${name(agent1)} will no longer be able to call ${name(agent2)}. This is recorded as a version of ${name(agent1)}.`}
+        title={t('Delete this connection?')}
+        description={t('{from} will no longer be able to call {to}. This is recorded as a version of {from}.', { from: name(agent1), to: name(agent2) })}
         pending={remove.isPending}
         onConfirm={() => remove.mutate(undefined)}
       />
@@ -323,10 +324,10 @@ function Graph({
         <Background variant={BackgroundVariant.Dots} gap={20} size={1.2} color="var(--border)" />
         <Panel position="top-right" className="flex gap-2">
           <Button variant="outline" size="sm" onClick={layout}>
-            <LayoutGridIcon /> Arrange
+            <LayoutGridIcon /> {t('Arrange')}
           </Button>
           <Button size="sm" onClick={() => setEditing({})}>
-            <PlusIcon /> Add connection
+            <PlusIcon /> {t('Add connection')}
           </Button>
         </Panel>
       </ReactFlow>
@@ -347,16 +348,15 @@ export default function AgentGraph() {
   return (
     <Page>
       <PageHeader
-        title="Agent graph"
+        title={t('Agent graph')}
         description={
           <>
-            An arrow lets an agent call another one: it gets the tools <span className="value-mono">list_agents</span>{' '}
-            and <span className="value-mono">ask_agent</span>. Drag from the right edge of a card to another card, or
-            use Add connection; click an arrow to change or delete it. Agents are on the{' '}
+            {t('An arrow lets an agent call another one: it gets the tools')} <span className="value-mono">list_agents</span>{' '}
+            {t('and')} <span className="value-mono">ask_agent</span>. {t('Drag from the right edge of a card to another card, or use Add connection; click an arrow to change or delete it. Agents are on the')}{' '}
             <Link to="/agents" className="underline underline-offset-4">
-              Agents
+              {t('Agents')}
             </Link>{' '}
-            page.
+            {t('page.')}
           </>
         }
       />
@@ -365,8 +365,8 @@ export default function AgentGraph() {
       ) : agents.data.length < 2 ? (
         <EmptyState
           icon={WorkflowIcon}
-          title="Two agents are needed"
-          description="Make another agent to connect it to the first one."
+          title={t('Two agents are needed')}
+          description={t('Make another agent to connect it to the first one.')}
         />
       ) : (
         <ReactFlowProvider>

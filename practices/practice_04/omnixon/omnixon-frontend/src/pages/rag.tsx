@@ -19,6 +19,7 @@ import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { useAgents, useCurrentAgentId } from '@/lib/data'
 import { parseJsonObject, pretty, truncate } from '@/lib/format'
+import { t } from '@/lib/i18n'
 import { useAction } from '@/lib/queries'
 import type { RAG } from '@/lib/types'
 
@@ -49,15 +50,15 @@ function RagDialog({ agentId, agentName, editing, onClose }: { agentId: number; 
       const body = { content, embedding_content: embedText.trim() || null, metadata: parsed.ok ? parsed.value : null }
       return id === null ? api.createRag(body, agentId) : api.updateRag(id, body, agentId)
     },
-    { invalidate: ['rag', 'rag-entry'], success: id === null ? 'Entry created' : 'Entry updated', onSuccess: onClose },
+    { invalidate: ['rag', 'rag-entry'], success: id === null ? t('Entry created') : t('Entry updated'), onSuccess: onClose },
   )
 
   return (
     <FormDialog
       open={open}
       onClose={onClose}
-      title={id === null ? 'New knowledge entry' : `Entry ${id}`}
-      description={`For agent ${agentName}. The text is embedded for semantic search each time it is saved.`}
+      title={id === null ? t('New knowledge entry') : t('Entry {id}', { id })}
+      description={t('For agent {agent}. The text is embedded for semantic search each time it is saved.', { agent: agentName })}
       size="lg"
       onSubmit={() => save.mutate(undefined)}
       submitDisabled={!content.trim() || !parsed.ok}
@@ -67,14 +68,14 @@ function RagDialog({ agentId, agentName, editing, onClose }: { agentId: number; 
         <LoadingRows rows={3} />
       ) : (
         <FieldGroup>
-          <FormField label="Content">
+          <FormField label={t('Content')}>
             <Textarea rows={8} value={content} onChange={(e) => setContent(e.target.value)} />
           </FormField>
           <FieldSeparator />
-          <FormField label="Text to embed (optional)" description="Embed this instead of the content, e.g. a title or a question the content answers.">
+          <FormField label={t('Text to embed (optional)')} description={t('Embed this instead of the content, e.g. a title or a question the content answers.')}>
             <Input value={embedText} onChange={(e) => setEmbedText(e.target.value)} />
           </FormField>
-          <FormField label="Metadata (JSON, optional)">
+          <FormField label={t('Metadata (JSON, optional)')}>
             <JsonEditor value={meta} onChange={setMeta} rows={5} placeholder={'{"source": "faq.md"}'} />
           </FormField>
         </FieldGroup>
@@ -105,22 +106,22 @@ export default function Rag() {
     queryFn: () => (submitted === '' ? api.allRag(agentId) : api.searchRag(submitted, agentId, Number(limit) || 10, withEmbedding)),
     enabled: agentId !== undefined,
   })
-  const del = useAction((r: RAG) => api.deleteRag(r.id, agentId), { invalidate: ['rag', 'rag-entry'], success: 'Entry deleted', onSuccess: () => setDeleting(null) })
+  const del = useAction((r: RAG) => api.deleteRag(r.id, agentId), { invalidate: ['rag', 'rag-entry'], success: t('Entry deleted'), onSuccess: () => setDeleting(null) })
   const open = useAction(async (id: number) => api.rag(id, agentId), { onSuccess: (r) => setEditing(r) })
 
   const columns: ColumnDef<RAG>[] = [
     idColumn<RAG>(),
     {
       accessorKey: 'content',
-      meta: { label: 'Content' },
-      header: 'Content',
+      meta: { label: t('Content') },
+      header: t('Content'),
       cell: ({ getValue }) => <span className="block max-w-2xl whitespace-normal">{truncate(getValue<string | null>() ?? '', 300)}</span>,
     },
     {
       id: 'metadata',
-      meta: { label: 'Metadata' },
+      meta: { label: t('Metadata') },
       accessorFn: (r) => (Object.keys(r.metadata).length ? JSON.stringify(r.metadata) : ''),
-      header: 'Metadata',
+      header: t('Metadata'),
       cell: ({ row }) => (
         <span className="flex flex-wrap gap-1">
           {Object.entries(row.original.metadata).map(([k, v]) => (
@@ -128,7 +129,7 @@ export default function Rag() {
               {k}: {truncate(typeof v === 'string' ? v : JSON.stringify(v), 30)}
             </Badge>
           ))}
-          {row.original.embedding && <Badge variant="secondary">{row.original.embedding.length}-dim embedding</Badge>}
+          {row.original.embedding && <Badge variant="secondary">{t('{dim}-dim embedding', { dim: row.original.embedding.length })}</Badge>}
         </span>
       ),
     },
@@ -139,14 +140,14 @@ export default function Rag() {
   return (
     <Page>
       <PageHeader
-        title="Knowledge base"
-        description="Per-agent RAG entries. Every entry of the agent is listed; enter a query to find the closest ones by meaning."
+        title={t('Knowledge base')}
+        description={t('Per-agent RAG entries. Every entry of the agent is listed; enter a query to find the closest ones by meaning.')}
         actions={
           <>
             <ExportButton agent={agent} />
             <ImportButton disabled={!agent} onClick={() => setImporting(true)} />
             <Button disabled={agentId === undefined} onClick={() => setEditing('new')}>
-              <PlusIcon /> New entry
+              <PlusIcon /> {t('New entry')}
             </Button>
           </>
         }
@@ -155,35 +156,35 @@ export default function Rag() {
         onSubmit={() => setSubmitted(query.trim())}
         actions={
           <Button type="submit" disabled={agentId === undefined || (!query.trim() && submitted === '')}>
-            <SearchIcon /> Search
+            <SearchIcon /> {t('Search')}
           </Button>
         }
       >
         <AgentField className="w-64" agentId={agentId} onChange={(v) => setParams({ agent: v })} />
-        <FormField label="Search" className="min-w-64 flex-1">
+        <FormField label={t('Search')} className="min-w-64 flex-1">
           <Input
             value={query}
             onChange={(e) => {
               setQuery(e.target.value)
               if (!e.target.value.trim()) setSubmitted('') // an emptied search shows everything again
             }}
-            placeholder="What is the refund policy?"
+            placeholder={t('What is the refund policy?')}
           />
         </FormField>
-        <FormField label="Search limit" className="w-28">
+        <FormField label={t('Search limit')} className="w-28">
           <Input type="number" min={1} max={100} value={limit} disabled={!query.trim()} onChange={(e) => setLimit(e.target.value)} />
         </FormField>
-        <FormField label="Open by ID" className="w-40">
+        <FormField label={t('Open by ID')} className="w-40">
           <InputGroup>
             <InputGroupInput type="number" value={lookupId} onChange={(e) => setLookupId(e.target.value)} />
             <InputGroupAddon align="inline-end">
               <InputGroupButton disabled={!lookupId || agentId === undefined || open.isPending} onClick={() => open.mutate(Number(lookupId))}>
-                Open
+                {t('Open')}
               </InputGroupButton>
             </InputGroupAddon>
           </InputGroup>
         </FormField>
-        <CheckboxField label="With embeddings" checked={withEmbedding} onCheckedChange={setWithEmbedding} />
+        <CheckboxField label={t('With embeddings')} checked={withEmbedding} onCheckedChange={setWithEmbedding} />
       </QueryBar>
 
       <DataTable
@@ -194,19 +195,19 @@ export default function Rag() {
         onRetry={() => results.refetch()}
         empty={
           submitted === ''
-            ? { icon: BookOpenIcon, title: 'The knowledge base is empty', description: 'Add an entry, or import a JSON array of strings.' }
-            : { icon: BookOpenIcon, title: 'Nothing found' }
+            ? { icon: BookOpenIcon, title: t('The knowledge base is empty'), description: t('Add an entry, or import a JSON array of strings.') }
+            : { icon: BookOpenIcon, title: t('Nothing found') }
         }
-        searchPlaceholder={submitted === '' ? 'Filter the entries…' : 'Filter these results…'}
+        searchPlaceholder={submitted === '' ? t('Filter the entries…') : t('Filter these results…')}
         getRowId={(r) => String(r.id)}
         onRowClick={(r) => setEditing(r)}
       />
       <ImportDialog agent={agent} open={importing} onClose={() => setImporting(false)} />
-      {agentId !== undefined && <RagDialog key={editing === 'new' ? 'new' : (editing?.id ?? 'none')} agentId={agentId} agentName={agent?.name ?? `Agent ${agentId}`} editing={editing} onClose={() => setEditing(null)} />}
+      {agentId !== undefined && <RagDialog key={editing === 'new' ? 'new' : (editing?.id ?? 'none')} agentId={agentId} agentName={agent?.name ?? t('Agent {id}', { id: agentId })} editing={editing} onClose={() => setEditing(null)} />}
       <ConfirmDialog
         open={!!deleting}
         onOpenChange={(o) => !o && setDeleting(null)}
-        title={`Delete entry ${deleting?.id}?`}
+        title={t('Delete entry {id}?', { id: deleting?.id ?? '' })}
         pending={del.isPending}
         onConfirm={() => deleting && del.mutate(deleting)}
       />

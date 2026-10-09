@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTheme } from 'next-themes'
-import { EyeIcon, EyeOffIcon, LogOutIcon } from 'lucide-react'
+import { EyeIcon, EyeOffIcon, LanguagesIcon, LogOutIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,6 +14,8 @@ import { Page, PageHeader, PageScroll } from '@/components/page'
 import { session } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { maskToken } from '@/lib/format'
+import { locale, switchLocale, t, type Locale } from '@/lib/i18n'
+import { roleName } from '@/lib/roles'
 
 export default function SettingsPage() {
   const { token, logout } = useAuth()
@@ -23,62 +25,73 @@ export default function SettingsPage() {
 
   return (
     <Page>
-      <PageHeader title="Settings" description="Connection and appearance. Stored in this browser only." />
+      <PageHeader title={t('Settings')} description={t('Connection and appearance. Stored in this browser only.')} />
       <PageScroll className="grid content-start gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Connection</CardTitle>
-            <CardDescription>Token “{token?.name}” ({token?.role}) is signed in.</CardDescription>
+            <CardTitle>{t('Connection')}</CardTitle>
+            <CardDescription>{t('Token “{name}” ({role}) is signed in.', { name: token?.name ?? '', role: token ? roleName(token.role) : '' })}</CardDescription>
           </CardHeader>
           <CardContent>
             <FieldGroup>
-              <FormField label="Token">
+              <FormField label={t('Token')}>
                 <InputGroup>
                   <InputGroupInput readOnly className="value-mono" value={reveal ? session.token : maskToken(session.token)} />
                   <InputGroupAddon align="inline-end">
-                    <InputGroupButton size="icon-xs" aria-label={reveal ? 'Hide token' : 'Show token'} onClick={() => setReveal((v) => !v)}>
+                    <InputGroupButton size="icon-xs" aria-label={reveal ? t('Hide token') : t('Show token')} onClick={() => setReveal((v) => !v)}>
                       {reveal ? <EyeOffIcon /> : <EyeIcon />}
                     </InputGroupButton>
-                    <CopyButton text={session.token} label="Copy token" />
+                    <CopyButton text={session.token} label={t('Copy token')} />
                   </InputGroupAddon>
                 </InputGroup>
               </FormField>
               <FieldSeparator />
-              <FormField label="API URL" description="Empty = same origin (the /api proxy). A direct URL requires CORS on the service.">
+              <FormField label={t('API URL')} description={t('Empty = same origin (the /api proxy). A direct URL requires CORS on the service.')}>
                 <Input value={base} onChange={(e) => setBase(e.target.value)} placeholder="http://localhost:8083" />
               </FormField>
             </FieldGroup>
           </CardContent>
           <CardFooter className="justify-between">
             <Button variant="destructive" onClick={logout}>
-              <LogOutIcon /> Sign out
+              <LogOutIcon /> {t('Sign out')}
             </Button>
             <Button
               onClick={() => {
                 session.baseUrl = base
-                toast.success('API URL saved, reloading…')
+                toast.success(t('API URL saved, reloading…'))
                 setTimeout(() => location.reload(), 600)
               }}
             >
-              Save
+              {t('Save')}
             </Button>
           </CardFooter>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Appearance</CardTitle>
-            <CardDescription>The theme follows your system unless you choose one.</CardDescription>
+            <CardTitle>{t('Appearance')}</CardTitle>
+            <CardDescription>{t('The theme follows your system unless you choose one.')}</CardDescription>
           </CardHeader>
           <CardContent>
             <FieldGroup>
-              <FormField label="Theme">
+              <FormField label={t('Language')} description={t('The panel opens in this language on every visit; it is kept in this browser.')}>
+                <OptionSelect
+                  value={locale}
+                  onChange={(v) => v !== locale && switchLocale(v as Locale)}
+                  options={[
+                    { value: 'en', label: 'English', icon: LanguagesIcon, description: t('The panel in English') },
+                    { value: 'ru', label: 'Русский', icon: LanguagesIcon, description: t('The panel in Russian') },
+                  ]}
+                />
+              </FormField>
+              <FieldSeparator />
+              <FormField label={t('Theme')}>
                 <OptionSelect
                   value={theme ?? 'system'}
                   onChange={setTheme}
                   options={[
-                    { value: 'system', label: 'System', icon: MonitorIcon, description: 'Follow the theme of your device' },
-                    { value: 'light', label: 'Light', icon: SunIcon, description: 'Light surfaces, dark text' },
-                    { value: 'dark', label: 'Dark', icon: MoonIcon, description: 'Dark surfaces, light text' },
+                    { value: 'system', label: t('System'), icon: MonitorIcon, description: t('Follow the theme of your device') },
+                    { value: 'light', label: t('Light'), icon: SunIcon, description: t('Light surfaces, dark text') },
+                    { value: 'dark', label: t('Dark'), icon: MoonIcon, description: t('Dark surfaces, light text') },
                   ]}
                 />
               </FormField>

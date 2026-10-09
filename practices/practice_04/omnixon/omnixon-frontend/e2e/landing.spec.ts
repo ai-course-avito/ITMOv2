@@ -9,7 +9,7 @@ test('the front page presents Omnixon and puts the login at the top left', async
   await expect(page.locator('canvas').first()).toBeVisible()
 
   // the way in is the first thing in the header, left of the name
-  const login = page.getByRole('banner').locator('a[href="/login"]').first()
+  const login = page.getByRole('banner').locator('a[href$="/login"]').first()
   const name = page.getByRole('banner').getByRole('link', { name: 'Omnixon' })
   await expect(login).toBeVisible()
   const [a, b] = [await login.boundingBox(), await name.boundingBox()]
@@ -26,21 +26,21 @@ test('the front page presents Omnixon and puts the login at the top left', async
 
 test('Login on the front page leads to the sign in', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('banner').locator('a[href="/login"]').first().click()
+  await page.getByRole('banner').locator('a[href$="/login"]').first().click()
   await expect(page).toHaveURL(/\/login$/)
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
   await page.getByRole('link', { name: 'About Omnixon' }).click()
-  await expect(page).toHaveURL(/\/$/)
+  await expect(page).toHaveURL(/\/en\/?$/) // the front page of the English panel (`/en`)
 })
 
 test('the front page works on a phone and in both themes', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 })
   await page.goto('/')
-  await expect(page.getByRole('banner').locator('a[href="/login"]').first()).toBeVisible()
+  await expect(page.getByRole('banner').locator('a[href$="/login"]').first()).toBeVisible()
   const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)
   expect(wide).toBe(false) // no sideways scroll
   await page.getByRole('button', { name: 'Toggle theme' }).click()
-  await expect(page.getByRole('banner').locator('a[href="/login"]').first()).toBeVisible()
+  await expect(page.getByRole('banner').locator('a[href$="/login"]').first()).toBeVisible()
 })
 
 test('the code on the front page is coloured, with the Python and curl examples in tabs', async ({ page }) => {
@@ -63,7 +63,7 @@ test('the top of the front page is not overloaded: the name, a tagline and a req
   await expect(page.getByRole('list', { name: 'What it does' })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'See what it does' })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Sign in' })).toHaveCount(0)
-  await expect(page.getByRole('banner').locator('a[href="/login"]').first()).toBeVisible() // the way in stays in the header
+  await expect(page.getByRole('banner').locator('a[href$="/login"]').first()).toBeVisible() // the way in stays in the header
   // next to the request is the JSON that comes back: the answer in full and nothing else but dots
   const answer = page.getByTestId('hero-chat')
   await expect(answer).toContainText('"response"')

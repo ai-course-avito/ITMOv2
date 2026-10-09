@@ -3,9 +3,10 @@ import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { maskToken, pretty } from '@/lib/format'
+import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
-export function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) {
+export function CopyButton({ text, label = t('Copy') }: { text: string; label?: string }) {
   const [done, setDone] = useState(false)
   return (
     <Button
@@ -20,7 +21,7 @@ export function CopyButton({ text, label = 'Copy' }: { text: string; label?: str
           setDone(true)
           setTimeout(() => setDone(false), 1200)
         } catch {
-          toast.error('Clipboard is not available')
+          toast.error(t('Clipboard is not available'))
         }
       }}
     >
@@ -34,10 +35,10 @@ export function SecretValue({ value, revealed, onToggle }: { value: string; reve
   return (
     <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
       <code className="value-mono">{revealed ? value : maskToken(value)}</code>
-      <Button type="button" variant="ghost" size="icon-sm" aria-label={revealed ? 'Hide token' : 'Show token'} onClick={onToggle}>
+      <Button type="button" variant="ghost" size="icon-sm" aria-label={revealed ? t('Hide token') : t('Show token')} onClick={onToggle}>
         {revealed ? <EyeOffIcon /> : <EyeIcon />}
       </Button>
-      <CopyButton text={value} label="Copy token" />
+      <CopyButton text={value} label={t('Copy token')} />
     </div>
   )
 }

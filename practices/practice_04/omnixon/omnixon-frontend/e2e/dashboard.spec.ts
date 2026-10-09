@@ -32,7 +32,7 @@ test('the dashboard has cards that lead to every part of the panel', async ({ pa
     ['Metrics', '/metrics'],
   ]) {
     // the cards come after the four counters, which link to the same pages
-    await expect(page.getByRole('main').getByRole('link', { name: new RegExp(`^${title}`) }).last()).toHaveAttribute('href', url)
+    await expect(page.getByRole('main').getByRole('link', { name: new RegExp(`^${title}`) }).last()).toHaveAttribute('href', new RegExp(`${url}$`))
   }
   await page.getByRole('main').getByRole('link', { name: /^Models/ }).last().click()
   await expect(page).toHaveURL(/\/models$/)

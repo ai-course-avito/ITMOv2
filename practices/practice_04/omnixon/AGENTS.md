@@ -80,6 +80,7 @@ app/
   openapi.py              writes `x-min-role` (from the routes' `require(...)`) and the Bearer scheme into the OpenAPI schema
   access.py               WHO MAY DO WHAT: roles, require(role), ensure_agent_access, can_manage_token, GRANTS
   middlewares/postgres.py PURE ASGI middleware: Bearer token -> request.state.db, request log + metrics
+                          PUBLIC_PATHS / PUBLIC_PREFIXES: what is served without a token (the promo videos under /api/v1/media/)
   routers/                main.py (request/user/history) and admin.py (agent/agent_version/model/
                           mcp_server/token/rag/memory/usage); health.py (/healthz /readyz /metrics, no token);
                           request/response pydantic models live next to their routes
@@ -95,6 +96,8 @@ docker/                   Dockerfile.{api,test,env,mcp-calculator}, docker-compo
                           the deploy jobs name their compose file as `docker/docker-compose.<env>-deploy.yml`
 .github/workflows/test.yml            CI: builds the test stack and runs the tests
 scripts/dump_openapi.py   writes the OpenAPI snapshot used by omnixon-lib's contract test
+omnixon-ad/out/          the promo videos of the landing page (omnixon-ad-{ru,en}.mp4 and their soundtracks), served by main.py at
+                          /api/v1/media/ (StaticFiles, public). The rest of omnixon-ad/ (index.html, render.mjs, music.py) is the source they are rendered from.
 pyproject.toml, uv.lock   dependencies (uv). No requirements.txt any more.
 ```
 
@@ -643,6 +646,11 @@ One drawing: `public/favicon.svg` (a white U on a black tile, nothing else). The
   a static dot background, dagre (`@dagrejs/dagre`) left-to-right layout (positions are not stored: "Arrange" lays out again). Top right: Arrange,
   Add connection; dragging from a card's right handle to another card or clicking an edge opens `ConnectionDialog` (create / description / delete).
   e2e `agent-graph.spec.ts`.
+- **Languages** (English and Russian, `lib/i18n.ts`): the language is the first part of the address (`/en/...`, `/ru/...`, the router's basename).
+  No prefix: the saved choice (`omnixon.locale` in localStorage) or the system language, then a redirect. Every visible string is `t('English text')`
+  (`{name}` values: `t('Hi {name}', { name })`), and its Russian is an entry of `lib/i18n-ru.ts` with the same key: add both when adding text.
+  Counts with a noun: `plural(n, 'message', 'messages')`, whose Russian forms are in `ruForms`. Dates use `dateLocale`. Brands, API names and
+  server texts are not translated. The switch is `components/language-switch.tsx` (landing, login, dashboard header, settings).
 - Every page behind the sign-in is `React.lazy` (`App.tsx`, a `Suspense` around the `Outlet` in `layout.tsx`): the first load is ~780 kB, not 2.7 MB; the
   front page and the login stay eager. A new page: `const X = lazy(() => import('@/pages/x'))`.
 - e2e only via `npm run test:e2e`: `docker compose ... run e2e` does NOT start `fake-llm` (it is no dependency of `e2e`: model calls then
@@ -735,7 +743,7 @@ Do not touch containers or volumes you did not create (the user's `unilink` Post
 - **Voice** (`components/voice-recorder.tsx`, `lib/voice.ts`): MediaRecorder + an AnalyserNode drawn on a canvas for the live waveform (react-audio-visualize bundles React 18 internals and breaks the app), decoded and
   encoded to a mono 16-bit **WAV** (`audiobuffer-to-wav`) and attached as `audio/wav` (`Send` sends at once, `Attach` keeps it in the message).
   The e2e browser has a fake microphone (`playwright.config.ts` launch args + permission).
-- **Front page** (`pages/landing.tsx`, English): for visitors who are not signed in, at `/`; Login (top left of the header) goes to `/login`
+- **Front page** (`pages/landing.tsx`): for visitors who are not signed in; Login (top left of the header) goes to `/login`
   (`?next=` keeps where they were going; `App.tsx` builds the router for both states). Built from ReactBits components copied into
   `src/components/` (`shadcn add https://reactbits.dev/r/<Name>-TS-TW.json`; after adding, the CLI may write `from "cn"` imports and a `cn`
   dependency: change to `@/lib/utils` and `npm uninstall cn`; it also asks before overwriting `card.tsx`: keep ours). ReactBits is also used in

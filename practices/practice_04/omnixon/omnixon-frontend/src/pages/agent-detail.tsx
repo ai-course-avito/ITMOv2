@@ -22,6 +22,7 @@ import { api, ApiError } from '@/lib/api'
 import { useMcpServers, useTokens } from '@/lib/data'
 import { mcpOption } from '@/lib/options'
 import { fmtDate } from '@/lib/format'
+import { t } from '@/lib/i18n'
 import { useAction } from '@/lib/queries'
 import type { Agent, AgentVersion, MCPServer } from '@/lib/types'
 
@@ -41,7 +42,7 @@ function SettingsTab({ agent }: { agent: Agent }) {
         comment: draft.comment || null,
         expected_version: latest, // optimistic lock: refuse if someone changed the agent meanwhile
       }),
-    { invalidate: ['agent', 'agents', 'versions', 'self-agent'], success: 'Agent saved' },
+    { invalidate: ['agent', 'agents', 'versions', 'self-agent'], success: t('Agent saved') },
   )
   const problem = validateDraft(draft)
   const conflict = save.error instanceof ApiError && save.error.status === 409
@@ -51,8 +52,8 @@ function SettingsTab({ agent }: { agent: Agent }) {
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Name, prompt and model</CardTitle>
-            <CardDescription>What the agent is.</CardDescription>
+            <CardTitle>{t('Name, prompt and model')}</CardTitle>
+            <CardDescription>{t('What the agent is.')}</CardDescription>
           </CardHeader>
           <CardContent>
             <AgentBasics draft={draft} onChange={setDraft} />
@@ -60,8 +61,8 @@ function SettingsTab({ agent }: { agent: Agent }) {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Configuration</CardTitle>
-            <CardDescription>How the agent works. Empty limits use the service defaults.</CardDescription>
+            <CardTitle>{t('Configuration')}</CardTitle>
+            <CardDescription>{t('How the agent works. Empty limits use the service defaults.')}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6">
             <AgentSettings draft={draft} onChange={setDraft} />
@@ -70,15 +71,15 @@ function SettingsTab({ agent }: { agent: Agent }) {
         </Card>
       </div>
       {problem && <p className="text-sm text-destructive">{problem}</p>}
-      {conflict && <p className="text-sm text-destructive">The agent changed since you opened it. Reload the page to see the latest version, then apply your edit again.</p>}
+      {conflict && <p className="text-sm text-destructive">{t('The agent changed since you opened it. Reload the page to see the latest version, then apply your edit again.')}</p>}
       <div className="flex items-center gap-2">
         <Button disabled={!!problem || save.isPending || versions.isLoading} onClick={() => save.mutate(undefined)}>
-          {save.isPending && <Spinner />} Save changes
+          {save.isPending && <Spinner />} {t('Save changes')}
         </Button>
         <Button variant="outline" onClick={() => setDraft(draftFrom(agent))}>
-          Reset
+          {t('Reset')}
         </Button>
-        {latest !== undefined && <span className="text-xs text-muted-foreground">Based on version {latest}</span>}
+        {latest !== undefined && <span className="text-xs text-muted-foreground">{t('Based on version {number}', { number: latest })}</span>}
       </div>
     </div>
   )
@@ -91,8 +92,8 @@ function McpTab({ agent }: { agent: Agent }) {
   const [pick, setPick] = useState<string | null>(null)
   const [editing, setEditing] = useState<McpEditing>(null)
   const refresh = ['agent-mcp', 'versions']
-  const attach = useAction((mcp: number) => api.attachMcpServer(agent.id, mcp), { invalidate: refresh, success: 'Attached', onSuccess: () => setPick(null) })
-  const detach = useAction((mcp: number) => api.detachMcpServer(agent.id, mcp), { invalidate: refresh, success: 'Detached' })
+  const attach = useAction((mcp: number) => api.attachMcpServer(agent.id, mcp), { invalidate: refresh, success: t('Attached'), onSuccess: () => setPick(null) })
+  const detach = useAction((mcp: number) => api.detachMcpServer(agent.id, mcp), { invalidate: refresh, success: t('Detached') })
   const free = (all.data ?? []).filter((s) => !attached.data?.some((a) => a.id === s.id))
 
   const columns: ColumnDef<MCPServer>[] = [
@@ -107,12 +108,12 @@ function McpTab({ agent }: { agent: Agent }) {
     },
     {
       id: 'transport',
-      meta: { label: 'Transport' },
+      meta: { label: t('Transport') },
       accessorFn: (s) => String(s.config.transport ?? 'streamable_http'),
-      header: 'Transport',
+      header: t('Transport'),
       cell: ({ getValue }) => <Badge variant="secondary">{getValue<string>()}</Badge>,
     },
-    actionsColumn<MCPServer>([rowAction.edit((s) => setEditing(s)), { label: 'Detach', icon: <UnplugIcon />, onClick: (s) => detach.mutate(s.id) }]),
+    actionsColumn<MCPServer>([rowAction.edit((s) => setEditing(s)), { label: t('Detach'), icon: <UnplugIcon />, onClick: (s) => detach.mutate(s.id) }]),
   ]
 
   return (
@@ -120,22 +121,22 @@ function McpTab({ agent }: { agent: Agent }) {
       <div className="flex flex-wrap items-end gap-3 rounded-xl border bg-card p-3 shadow-xs">
         {isAdmin && (
           <>
-            <FormField label="Attach a server" className="min-w-64 flex-1">
+            <FormField label={t('Attach a server')} className="min-w-64 flex-1">
               <OptionCombobox
                 value={pick}
                 onChange={setPick}
                 options={free.map(mcpOption)}
-                placeholder={free.length ? 'Select an MCP server' : 'Nothing left to attach'}
+                placeholder={free.length ? t('Select an MCP server') : t('Nothing left to attach')}
                 disabled={!free.length}
               />
             </FormField>
             <Button disabled={!pick || attach.isPending} onClick={() => attach.mutate(Number(pick))}>
-              {attach.isPending ? <Spinner /> : <PlugIcon />} Attach
+              {attach.isPending ? <Spinner /> : <PlugIcon />} {t('Attach')}
             </Button>
           </>
         )}
         <Button variant={isAdmin ? 'outline' : 'default'} className={isAdmin ? undefined : 'ml-auto'} onClick={() => setEditing('new')}>
-          <PlusIcon /> New MCP server
+          <PlusIcon /> {t('New MCP server')}
         </Button>
       </div>
       <DataTable
@@ -143,8 +144,8 @@ function McpTab({ agent }: { agent: Agent }) {
         data={attached.data}
         loading={attached.isLoading}
         error={attached.error}
-        empty={{ icon: PlugIcon, title: 'No MCP servers attached', description: 'Create servers on the MCP servers page, then attach them here.' }}
-        searchPlaceholder="Search attached servers…"
+        empty={{ icon: PlugIcon, title: t('No MCP servers attached'), description: t('Create servers on the MCP servers page, then attach them here.') }}
+        searchPlaceholder={t('Search attached servers…')}
         getRowId={(s) => String(s.id)}
         onRowClick={(s) => setEditing(s)}
       />
@@ -161,7 +162,7 @@ function VersionsTab({ agent }: { agent: Agent }) {
   const [comment, setComment] = useState('')
   const rollback = useAction(() => api.rollback(agent.id, rollbackTo!, comment), {
     invalidate: ['versions', 'agent', 'agents', 'agent-mcp', 'diff', 'version'],
-    success: (v) => `Rolled back; recorded as version ${v.number}`,
+    success: (v) => t('Rolled back; recorded as version {number}', { number: v.number }),
     onSuccess: () => {
       setRollbackTo(null)
       setViewing(null)
@@ -173,49 +174,49 @@ function VersionsTab({ agent }: { agent: Agent }) {
   const columns: ColumnDef<AgentVersion>[] = [
     {
       accessorKey: 'number',
-      meta: { label: 'Version' },
-      header: ({ column }) => <SortHeader column={column} title="Version" />,
+      meta: { label: t('Version') },
+      header: ({ column }) => <SortHeader column={column} title={t('Version')} />,
       cell: ({ row }) => (
         <span className="flex items-center gap-2 value-mono">
-          {row.original.number} {row.original.number === latest && <Badge>latest</Badge>}
+          {row.original.number} {row.original.number === latest && <Badge>{t('latest')}</Badge>}
         </span>
       ),
       size: 130,
     },
     {
       accessorKey: 'comment',
-      meta: { label: 'Comment' },
-      header: 'Comment',
+      meta: { label: t('Comment') },
+      header: t('Comment'),
       cell: ({ getValue }) => getValue<string | null>() ?? <span className="text-muted-foreground">—</span>,
     },
     {
       id: 'token',
-      meta: { label: 'By token' },
+      meta: { label: t('By token') },
       accessorFn: (v) => v.created_by_token_id,
-      header: 'By token',
+      header: t('By token'),
       cell: ({ getValue }) => {
         const tokenId = getValue<number | null>()
-        return tokenId == null ? <span className="text-muted-foreground">—</span> : <span>{tokens.data?.find((t) => t.id === tokenId)?.name ?? `Token ${tokenId}`}</span>
+        return tokenId == null ? <span className="text-muted-foreground">—</span> : <span>{tokens.data?.find((tk) => tk.id === tokenId)?.name ?? t('Token {id}', { id: tokenId })}</span>
       },
     },
-    createdColumn<AgentVersion>('When'),
+    createdColumn<AgentVersion>(t('When')),
     {
       id: 'actions',
       enableHiding: false,
-      header: () => <span className="sr-only">Actions</span>,
+      header: () => <span className="sr-only">{t('Actions')}</span>,
       cell: ({ row }) => {
         const n = row.original.number
         const isLatest = n === latest
         return (
           <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-            <Button variant="outline" size="xs" aria-label={`View version ${n}`} onClick={() => setViewing({ number: n, tab: 'overview' })}>
-              <EyeIcon /> View
+            <Button variant="outline" size="xs" aria-label={t('View version {number}', { number: n })} onClick={() => setViewing({ number: n, tab: 'overview' })}>
+              <EyeIcon /> {t('View')}
             </Button>
-            <Button variant="outline" size="xs" aria-label={`Compare version ${n}`} disabled={isLatest} onClick={() => setViewing({ number: n, tab: 'changes' })}>
-              <GitCompareIcon /> Compare
+            <Button variant="outline" size="xs" aria-label={t('Compare version {number}', { number: n })} disabled={isLatest} onClick={() => setViewing({ number: n, tab: 'changes' })}>
+              <GitCompareIcon /> {t('Compare')}
             </Button>
-            <Button size="xs" aria-label={`Roll back to version ${n}`} disabled={isLatest} onClick={() => setRollbackTo(n)}>
-              <RotateCcwIcon /> Roll back
+            <Button size="xs" aria-label={t('Roll back to version {number}', { number: n })} disabled={isLatest} onClick={() => setRollbackTo(n)}>
+              <RotateCcwIcon /> {t('Roll back')}
             </Button>
           </div>
         )
@@ -231,8 +232,8 @@ function VersionsTab({ agent }: { agent: Agent }) {
         loading={q.isLoading}
         error={q.error}
         onRetry={() => q.refetch()}
-        empty={{ icon: HistoryIcon, title: 'No versions recorded yet' }}
-        searchPlaceholder="Search versions…"
+        empty={{ icon: HistoryIcon, title: t('No versions recorded yet') }}
+        searchPlaceholder={t('Search versions…')}
         initialSorting={[{ id: 'number', desc: true }]}
         getRowId={(v) => String(v.number)}
         onRowClick={(v) => setViewing({ number: v.number, tab: 'overview' })}
@@ -249,15 +250,15 @@ function VersionsTab({ agent }: { agent: Agent }) {
       <FormDialog
         open={rollbackTo !== null}
         onClose={() => setRollbackTo(null)}
-        title={`Roll back to version ${rollbackTo}?`}
-        description="The agent becomes what that version was and the rollback is recorded as a new version, so nothing is lost. Shared models and MCP servers are never edited; copies are created when they changed."
+        title={t('Roll back to version {number}?', { number: rollbackTo ?? '' })}
+        description={t('The agent becomes what that version was and the rollback is recorded as a new version, so nothing is lost. Shared models and MCP servers are never edited; copies are created when they changed.')}
         size="sm"
-        submitLabel="Roll back"
+        submitLabel={t('Roll back')}
         onSubmit={() => rollback.mutate(undefined)}
         pending={rollback.isPending}
       >
-        <FormField label="Comment (optional)">
-          <Input value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Why" />
+        <FormField label={t('Comment (optional)')}>
+          <Input value={comment} onChange={(e) => setComment(e.target.value)} placeholder={t('Why')} />
         </FormField>
       </FormDialog>
     </>
@@ -276,7 +277,7 @@ export default function AgentDetail() {
     <Page>
       {isAdmin && (
         <Link to="/agents" className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeftIcon className="size-4" /> Agents
+          <ArrowLeftIcon className="size-4" /> {t('Agents')}
         </Link>
       )}
       {agent.isError ? (
@@ -287,29 +288,29 @@ export default function AgentDetail() {
         <>
           <PageHeader
             title={agent.data.name}
-            description={`Agent ${agent.data.id}, created ${fmtDate(agent.data.timestamp)}`}
+            description={t('Agent {id}, created {date}', { id: agent.data.id, date: fmtDate(agent.data.timestamp) })}
             actions={
               <>
                 <Button size="sm" onClick={() => setEditing(true)}>
-                  <PencilIcon /> Edit
+                  <PencilIcon /> {t('Edit')}
                 </Button>
                 <Button variant="outline" size="sm" nativeButton={false} render={<Link to={`/rag?agent=${id}`} />}>
-                  <BookOpenIcon /> Knowledge base
+                  <BookOpenIcon /> {t('Knowledge base')}
                 </Button>
                 <Button variant="outline" size="sm" nativeButton={false} render={<Link to={`/memories?agent=${id}`} />}>
-                  <BrainIcon /> Memories
+                  <BrainIcon /> {t('Memories')}
                 </Button>
               </>
             }
           />
           <Tabs defaultValue="settings" className="min-h-0 flex-1 gap-3">
             <TabsList>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="settings">{t('Settings')}</TabsTrigger>
               <TabsTrigger value="mcp">
-                <PlugIcon /> MCP servers
+                <PlugIcon /> {t('MCP servers')}
               </TabsTrigger>
               <TabsTrigger value="versions">
-                <HistoryIcon /> Versions
+                <HistoryIcon /> {t('Versions')}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="settings" className="min-h-0 flex-1 overflow-auto">

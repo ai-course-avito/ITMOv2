@@ -13,14 +13,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
 import { useAuth } from '@/lib/auth'
+import { t } from '@/lib/i18n'
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const { token, isAdmin, logout } = useAuth()
   const { setTheme } = useTheme()
   const navigate = useNavigate()
-  const name = token?.name ?? 'Token'
-  const detail = token?.is_initial ? `${token.role}, initial` : (token?.role ?? '')
+  const name = token?.name ?? t('Token')
+  const detail = token?.is_initial ? t('{role}, initial', { role: token.role }) : (token?.role ?? '')
 
   const identity = (
     <>
@@ -54,25 +55,25 @@ export function NavUser() {
             <DropdownMenuGroup>
               {token && (isAdmin || token.role === 'user') && (
                 <DropdownMenuItem onClick={() => navigate(`/agents/${token.agent_id}`)}>
-                  <BotIcon /> My agent
+                  <BotIcon /> {t('My agent')}
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={() => navigate('/settings')}>
-                <SettingsIcon /> Settings
+                <SettingsIcon /> {t('Settings')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme('light')}>
-                <SunIcon /> Light theme
+                <SunIcon /> {t('Light theme')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme('dark')}>
-                <MoonIcon /> Dark theme
+                <MoonIcon /> {t('Dark theme')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme('system')}>
-                <MonitorIcon /> System theme
+                <MonitorIcon /> {t('System theme')}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
-              <LogOutIcon /> Sign out
+              <LogOutIcon /> {t('Sign out')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -41,7 +41,7 @@ test('names are shown in tables, cards and pages, with the technical value besid
     const agentCard = optionWithId(page, agent.id)
     await expect(agentCard).toContainText(agentName)
     await expect(agentCard).toContainText('You answer questions about refunds')
-    await expect(agentCard.getByRole('link', { name: modelId })).toHaveAttribute('href', `/models?open=${model.id}`)
+    await expect(agentCard.getByRole('link', { name: modelId })).toHaveAttribute('href', new RegExp(`/models\\?open=${model.id}$`))
     await page.keyboard.press('Escape')
     await dialog(page, 'New token').getByRole('button', { name: 'Cancel' }).click()
 
@@ -72,7 +72,7 @@ test('names are shown in tables, cards and pages, with the technical value besid
     const tokenCard = optionWithId(page, token.id)
     await expect(tokenCard).toContainText(tokenName)
     await expect(tokenCard).toContainText('user')
-    await expect(tokenCard.getByRole('link', { name: agentName })).toHaveAttribute('href', `/agents/${agent.id}`)
+    await expect(tokenCard.getByRole('link', { name: agentName })).toHaveAttribute('href', new RegExp(`/agents/${agent.id}$`))
   } finally {
     await request.delete(`/api/v1/admin/tokens/${token.id}`, { headers: AUTH })
     await request.delete(`/api/v1/admin/agents/${agent.id}`, { headers: AUTH })

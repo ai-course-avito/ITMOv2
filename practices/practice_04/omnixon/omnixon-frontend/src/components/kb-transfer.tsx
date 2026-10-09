@@ -9,6 +9,7 @@ import { FormDialog } from '@/components/dialogs'
 import { FormField } from '@/components/form'
 import { api } from '@/lib/api'
 import { downloadText, knowledgeJson, parseKnowledgeJson } from '@/lib/kb-json'
+import { plural, t } from '@/lib/i18n'
 import { errorMessage } from '@/lib/queries'
 import type { Agent } from '@/lib/types'
 
@@ -23,7 +24,7 @@ export function ExportButton({ agent }: { agent: Agent | undefined }) {
     try {
       const entries = await api.allRag(agent.id)
       downloadText(`knowledge-${slug(agent.name)}.json`, knowledgeJson(entries.map((e) => e.content ?? '')))
-      toast.success(entries.length ? `Exported ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}` : 'The knowledge base is empty: exported an empty list')
+      toast.success(entries.length ? t('Exported {count}', { count: plural(entries.length, 'entry', 'entries') }) : t('The knowledge base is empty: exported an empty list'))
     } catch (e) {
       toast.error(errorMessage(e))
     } finally {
@@ -32,7 +33,7 @@ export function ExportButton({ agent }: { agent: Agent | undefined }) {
   }
   return (
     <Button variant="outline" disabled={!agent || busy} onClick={run}>
-      {busy ? <Spinner /> : <DownloadIcon />} Export JSON
+      {busy ? <Spinner /> : <DownloadIcon />} {t('Export JSON')}
     </Button>
   )
 }
@@ -98,11 +99,11 @@ export function ImportDialog({ agent, open, onClose }: { agent: Agent | undefine
     qc.invalidateQueries({ queryKey: ['rag'] })
     const ok = items.length - failed.length
     if (!failed.length) {
-      toast.success(`Imported ${ok} ${ok === 1 ? 'entry' : 'entries'}`)
+      toast.success(t('Imported {count}', { count: plural(ok, 'entry', 'entries') }))
       reset()
       onClose()
     } else {
-      toast.error(`Imported ${ok} of ${items.length}; ${failed.length} failed`)
+      toast.error(t('Imported {ok} of {total}; {failed} failed', { ok, total: items.length, failed: failed.length }))
     }
   }
 
@@ -110,20 +111,23 @@ export function ImportDialog({ agent, open, onClose }: { agent: Agent | undefine
     <FormDialog
       open={open}
       onClose={close}
-      title="Import knowledge"
+      title={t('Import knowledge')}
       description={
         <>
-          A JSON array of strings, for example <code>{'["Refunds take 5 days.", "We ship worldwide."]'}</code>. Each string becomes an entry of {agent ? `“${agent.name}”` : 'the agent'}; entries already there stay.
+          {t('A JSON array of strings, for example')} <code>{'["Refunds take 5 days.", "We ship worldwide."]'}</code>.{' '}
+          {agent
+            ? t('Each string becomes an entry of “{name}”; entries already there stay.', { name: agent.name })
+            : t('Each string becomes an entry of the agent; entries already there stay.')}
         </>
       }
-      submitLabel={items ? `Import ${items.length} ${items.length === 1 ? 'entry' : 'entries'}` : 'Import'}
+      submitLabel={items ? t('Import {count}', { count: plural(items.length, 'entry', 'entries') }) : t('Import')}
       onSubmit={run}
       submitDisabled={!items || !agent || running || (failures.length > 0 && done === items.length)}
       pending={running}
       problem={problem}
     >
       <div className="grid gap-4">
-        <FormField label="JSON file">
+        <FormField label={t('JSON file')}>
           <input
             ref={input}
             type="file"
@@ -135,27 +139,27 @@ export function ImportDialog({ agent, open, onClose }: { agent: Agent | undefine
         </FormField>
         {items && !running && !failures.length && (
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <FileJsonIcon className="size-4" /> {file}: {items.length} {items.length === 1 ? 'entry' : 'entries'} ready.
+            <FileJsonIcon className="size-4" /> {t('{file}: {count} ready.', { file: file ?? '', count: plural(items.length, 'entry', 'entries') })}
           </p>
         )}
         {(running || failures.length > 0) && items && (
           <div className="grid gap-2">
-            <Progress value={(done / items.length) * 100} aria-label="Import progress" />
+            <Progress value={(done / items.length) * 100} aria-label={t('Import progress')} />
             <p className="text-sm text-muted-foreground">
-              {running ? `Importing… ${done} of ${items.length}` : `Imported ${items.length - failures.length} of ${items.length}.`}
+              {running
+                ? t('Importing… {done} of {total}', { done, total: items.length })
+                : t('Imported {ok} of {total}.', { ok: items.length - failures.length, total: items.length })}
             </p>
           </div>
         )}
         {failures.length > 0 && (
           <div className="grid gap-1 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm" role="alert">
-            <p className="font-medium text-destructive">{failures.length} could not be imported</p>
+            <p className="font-medium text-destructive">{t('{count} could not be imported', { count: failures.length })}</p>
             <ul className="max-h-40 overflow-auto text-muted-foreground">
               {failures.slice(0, 20).map((f) => (
-                <li key={f.index}>
-                  Item {f.index}: {f.error}
-                </li>
+                <li key={f.index}>{t('Item {index}: {error}', { index: f.index, error: f.error })}</li>
               ))}
-              {failures.length > 20 && <li>…and {failures.length - 20} more</li>}
+              {failures.length > 20 && <li>{t('…and {count} more', { count: failures.length - 20 })}</li>}
             </ul>
           </div>
         )}
@@ -167,7 +171,7 @@ export function ImportDialog({ agent, open, onClose }: { agent: Agent | undefine
 export function ImportButton({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) {
   return (
     <Button variant="outline" disabled={disabled} onClick={onClick}>
-      <UploadIcon /> Import JSON
+      <UploadIcon /> {t('Import JSON')}
     </Button>
   )
 }

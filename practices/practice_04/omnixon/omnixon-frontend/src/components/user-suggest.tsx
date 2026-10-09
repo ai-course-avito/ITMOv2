@@ -3,6 +3,7 @@ import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, 
 import { OptionCard, cardItem, cardList } from '@/components/form'
 import { userOption } from '@/lib/options'
 import { api } from '@/lib/api'
+import { t } from '@/lib/i18n'
 import { useDebounced } from '@/lib/use-debounced'
 import type { User } from '@/lib/types'
 import { cn } from '@/lib/utils'
@@ -20,7 +21,7 @@ export function UserSuggest({
   onChange,
   actAs,
   disabled,
-  placeholder = 'telegram-12345',
+  placeholder = 'telegram-12345', // an example id, as the clients name their users
   disabledPlaceholder,
   className,
 }: {
@@ -47,12 +48,12 @@ export function UserSuggest({
   const items: User[] = searching ? (found.data ?? []) : []
   const empty =
     typed.length < MIN_SEARCH
-      ? `Type at least ${MIN_SEARCH} characters to search`
+      ? t('Type at least {count} characters to search', { count: MIN_SEARCH })
       : found.isError
-        ? 'The search failed'
+        ? t('The search failed')
         : found.isFetching || query !== typed
-          ? 'Searching…'
-          : `No users start with “${typed}”`
+          ? t('Searching…')
+          : t('No users start with “{text}”', { text: typed })
 
   return (
     <Combobox

@@ -14,6 +14,7 @@ import {
   SettingsIcon,
   UsersIcon,
 } from 'lucide-react'
+import { t } from '@/lib/i18n'
 import { rankOf, type Role } from '@/lib/types'
 
 export interface NavItem {
@@ -36,113 +37,113 @@ export interface NavGroup {
 /** Where everything is: the sidebar, the dashboard cards and the routes all read this. */
 export const navGroups: NavGroup[] = [
   {
-    label: 'Overview',
+    label: t('Overview'),
     items: [
       {
-        title: 'Dashboard',
+        title: t('Dashboard'),
         url: '/dashboard',
         icon: <LayoutDashboardIcon />,
-        description: 'Service health and a summary',
+        description: t('Service health and a summary'),
         minRole: 'regular',
       },
       {
-        title: 'Playground',
+        title: t('Playground'),
         url: '/chat',
         icon: <MessageSquareIcon />,
-        description: 'Talk to an agent, with files and voice, over JSON or SSE',
+        description: t('Talk to an agent, with files and voice, over JSON or SSE'),
         minRole: 'regular',
       },
       {
-        title: 'Usage',
+        title: t('Usage'),
         url: '/usage',
         icon: <ChartColumnIcon />,
-        description: 'What each token spent on the models',
+        description: t('What each token spent on the models'),
         minRole: 'user',
       },
       {
-        title: 'Metrics',
+        title: t('Metrics'),
         url: '/metrics',
         icon: <ActivityIcon />,
-        description: 'Prometheus samples of the service',
+        description: t('Prometheus samples of the service'),
         minRole: 'admin',
       },
     ],
   },
   {
-    label: 'Behaviour',
+    label: t('Behaviour'),
     items: [
       {
-        title: 'My agent',
+        title: t('My agent'),
         url: '/my-agent',
         icon: <BotIcon />,
-        description: 'Prompt, model, tools, MCP servers, versions',
+        description: t('Prompt, model, tools, MCP servers, versions'),
         minRole: 'user',
         onlyRole: 'user',
       },
       {
-        title: 'Agents',
+        title: t('Agents'),
         url: '/agents',
         icon: <BotIcon />,
-        description: 'Prompts, tools, limits, versions and rollback',
+        description: t('Prompts, tools, limits, versions and rollback'),
         minRole: 'admin',
       },
       {
-        title: 'Agent graph',
+        title: t('Agent graph'),
         url: '/agent-graph',
         icon: <WorkflowIcon />,
-        description: 'Which agent may call which, and what for',
+        description: t('Which agent may call which, and what for'),
         minRole: 'admin',
       },
       {
-        title: 'Models',
+        title: t('Models'),
         url: '/models',
         icon: <CpuIcon />,
-        description: 'OpenRouter request bodies agents run on',
+        description: t('OpenRouter request bodies agents run on'),
         minRole: 'admin',
       },
       {
-        title: 'MCP servers',
+        title: t('MCP servers'),
         url: '/mcp-servers',
         icon: <PlugIcon />,
-        description: 'External tool servers for agents',
+        description: t('External tool servers for agents'),
         minRole: 'admin',
       },
     ],
   },
   {
-    label: 'Data',
+    label: t('Data'),
     items: [
       {
-        title: 'Knowledge base',
+        title: t('Knowledge base'),
         url: '/rag',
         icon: <BookOpenIcon />,
-        description: 'Per-agent entries found by meaning',
+        description: t('Per-agent entries found by meaning'),
         minRole: 'user',
       },
       {
-        title: 'Memories',
+        title: t('Memories'),
         url: '/memories',
         icon: <BrainIcon />,
-        description: 'What the model remembers about a user',
+        description: t('What the model remembers about a user'),
         minRole: 'user',
       },
       {
-        title: 'Users & history',
+        title: t('Users & history'),
         url: '/users',
         icon: <UsersIcon />,
-        description: 'Look a user up, read or clear their history',
+        description: t('Look a user up, read or clear their history'),
         minRole: 'regular',
       },
     ],
   },
   {
-    label: 'Access',
+    label: t('Access'),
     items: [
       {
-        title: 'Tokens',
+        title: t('Tokens'),
         url: '/tokens',
         icon: <KeyRoundIcon />,
-        description: 'Who may use an agent, and as what',
+        description: t('Who may use an agent, and as what'),
         minRole: 'user',
       },
     ],
@@ -150,10 +151,10 @@ export const navGroups: NavGroup[] = [
 ]
 
 export const settingsItem: NavItem = {
-  title: 'Settings',
+  title: t('Settings'),
   url: '/settings',
   icon: <SettingsIcon />,
-  description: 'Connection and appearance',
+  description: t('Connection and appearance'),
   minRole: 'regular',
 }
 

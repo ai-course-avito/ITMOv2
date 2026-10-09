@@ -3,6 +3,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
+import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 const SIZES = { sm: 'sm:max-w-md', md: 'sm:max-w-xl', lg: 'sm:max-w-3xl' } as const
@@ -34,7 +35,7 @@ export function FormDialog({
   description,
   size = 'md',
   children,
-  submitLabel = 'Save',
+  submitLabel = t('Save'),
   onSubmit,
   submitDisabled,
   pending,
@@ -60,7 +61,7 @@ export function FormDialog({
             <div className="flex items-center gap-2">{footerStart}</div>
             <div className="flex items-center gap-2">
               <Button type="button" variant="outline" onClick={onClose}>
-                {onSubmit ? 'Cancel' : 'Close'}
+                {onSubmit ? t('Cancel') : t('Close')}
               </Button>
               {onSubmit && (
                 <Button type="submit" disabled={submitDisabled || pending}>
@@ -80,7 +81,7 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = 'Delete',
+  confirmLabel = t('Delete'),
   destructive = true,
   pending,
   onConfirm,
@@ -102,7 +103,7 @@ export function ConfirmDialog({
           {description && <AlertDialogDescription>{description}</AlertDialogDescription>}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('Cancel')}</AlertDialogCancel>
           <AlertDialogAction variant={destructive ? 'destructive' : 'default'} disabled={pending} onClick={onConfirm}>
             {pending && <Spinner />} {confirmLabel}
           </AlertDialogAction>

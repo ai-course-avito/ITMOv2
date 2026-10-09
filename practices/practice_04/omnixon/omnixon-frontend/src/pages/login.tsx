@@ -5,6 +5,7 @@ import { KeyRoundIcon, MoonIcon, SunIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Logo } from '@/components/logo'
+import { LanguageSwitch } from '@/components/language-switch'
 import DotField from '@/components/DotField'
 import TechText from '@/components/TechText'
 import { FormField } from '@/components/form'
@@ -12,6 +13,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { FieldGroup } from '@/components/ui/field'
 import { session } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { t } from '@/lib/i18n'
 import { errorMessage } from '@/lib/queries'
 
 export default function Login() {
@@ -44,7 +46,7 @@ export default function Login() {
           <DotField dotRadius={1.5} dotSpacing={16} cursorRadius={380} bulgeStrength={55} gradientFrom={dark ? 'rgba(250,250,250,0.26)' : 'rgba(24,24,27,0.26)'} gradientTo={dark ? 'rgba(250,250,250,0.26)' : 'rgba(24,24,27,0.26)'} glowColor={dark ? 'rgba(250,250,250,0.05)' : 'rgba(24,24,27,0.04)'} />
         </div>
         <div className="relative z-10 flex items-center gap-3 p-6 text-sm text-muted-foreground">
-          <Logo className="size-7" /> One API for every model, memory and tool.
+          <Logo className="size-7" /> {t('One API for every model, memory and tool.')}
         </div>
         <div className="relative z-10 flex-1">
           <TechText
@@ -59,27 +61,30 @@ export default function Login() {
           />
         </div>
         <div className="relative z-10 flex items-center justify-between p-6 text-xs text-muted-foreground">
-          <span>Hover the wordmark. Drag a letter.</span>
+          <span>{t('Hover the wordmark. Drag a letter.')}</span>
           <Link to="/" className="underline-offset-4 hover:underline">
-            About Omnixon
+            {t('About Omnixon')}
           </Link>
         </div>
       </div>
 
       <div className="relative flex items-center justify-center p-6">
-        <Button variant="ghost" size="icon-sm" aria-label="Toggle theme" className="absolute top-4 right-4" onClick={() => setTheme(dark ? 'light' : 'dark')}>
-          {dark ? <SunIcon /> : <MoonIcon />}
-        </Button>
+        <div className="absolute top-4 right-4 flex items-center gap-1">
+          <LanguageSwitch />
+          <Button variant="ghost" size="icon-sm" aria-label={t('Toggle theme')} onClick={() => setTheme(dark ? 'light' : 'dark')}>
+            {dark ? <SunIcon /> : <MoonIcon />}
+          </Button>
+        </div>
         <form onSubmit={submit} className="grid w-full max-w-sm gap-6">
           <div className="grid gap-1.5">
-            <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-            <p className="text-sm text-muted-foreground">Use the Bearer token of any role. The first one, an owner, is the service's INITIAL_API_KEY.</p>
+            <h1 className="text-2xl font-semibold tracking-tight">{t('Sign in')}</h1>
+            <p className="text-sm text-muted-foreground">{t("Use the Bearer token of any role. The first one, an owner, is the service's INITIAL_API_KEY.")}</p>
           </div>
           <FieldGroup>
-            <FormField label="Token">
-              <Input type="password" autoFocus autoComplete="off" value={token} onChange={(e) => setToken(e.target.value)} placeholder="Your token" />
+            <FormField label={t('Token')}>
+              <Input type="password" autoFocus autoComplete="off" value={token} onChange={(e) => setToken(e.target.value)} placeholder={t('Your token')} />
             </FormField>
-            <FormField label="API URL (optional)" description="Leave empty to use this site's own /api proxy. A direct URL needs CORS on the service.">
+            <FormField label={t('API URL (optional)')} description={t("Leave empty to use this site's own /api proxy. A direct URL needs CORS on the service.")}>
               <Input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} placeholder="http://localhost:8083" />
             </FormField>
           </FieldGroup>
@@ -89,7 +94,7 @@ export default function Login() {
             </p>
           )}
           <Button type="submit" size="lg" disabled={busy || !token.trim()}>
-            {busy ? <Spinner /> : <KeyRoundIcon />} Sign in
+            {busy ? <Spinner /> : <KeyRoundIcon />} {t('Sign in')}
           </Button>
         </form>
       </div>

@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { CheckboxField, FormField, OptionCombobox, OptionSelect, SwitchField } from '@/components/form'
 import { useModels } from '@/lib/data'
+import { t } from '@/lib/i18n'
 import { modelOption } from '@/lib/options'
 import { AVAILABLE_TOOLS, NAME_MAX, type AgentConfig, type AgentConfigInput } from '@/lib/types'
 
@@ -22,7 +23,7 @@ export interface AgentDraft {
 }
 
 const DEFAULT_TOOLS = ['rag', 'memory']
-const sameTools = (a: string[], b: string[]) => a.length === b.length && a.every((t) => b.includes(t))
+const sameTools = (a: string[], b: string[]) => a.length === b.length && a.every((x) => b.includes(x))
 
 export const emptyDraft: AgentDraft = {
   name: '',
@@ -77,17 +78,17 @@ export function configFrom(d: AgentDraft, mode: 'create' | 'update', original?: 
 }
 
 export function validateDraft(d: AgentDraft): string | null {
-  if (!d.name.trim()) return 'Give the agent a name'
-  if (d.modelId === null) return 'Choose a model'
+  if (!d.name.trim()) return t('Give the agent a name')
+  if (d.modelId === null) return t('Choose a model')
   const ml = d.messageLimit.trim()
   if (ml !== '' && !(Number.isInteger(Number(ml)) && Number(ml) >= 0 && Number(ml) <= 1000))
-    return 'Message limit must be an integer from 0 to 1000'
+    return t('Message limit must be an integer from 0 to 1000')
   const mo = d.memoLimit.trim()
   if (mo !== '' && !(Number.isInteger(Number(mo)) && Number(mo) >= 1 && Number(mo) <= 1000))
-    return 'Memory limit must be an integer from 1 to 1000'
+    return t('Memory limit must be an integer from 1 to 1000')
   const rl = d.ragLimit.trim()
   if (rl !== '' && !(Number.isInteger(Number(rl)) && Number(rl) >= 1 && Number(rl) <= 100))
-    return 'Knowledge limit must be an integer from 1 to 100'
+    return t('Knowledge limit must be an integer from 1 to 100')
   return null
 }
 
@@ -107,28 +108,28 @@ export function AgentBasics({ draft, onChange }: PartProps) {
   const modelOptions = (models.data ?? []).map(modelOption)
   return (
     <FieldGroup>
-      <FormField label="Name">
+      <FormField label={t('Name')}>
         <Input
           maxLength={NAME_MAX}
           value={draft.name}
           onChange={(e) => set({ name: e.target.value })}
-          placeholder="Support bot"
+          placeholder={t('Support bot')}
         />
       </FormField>
-      <FormField label="System prompt">
+      <FormField label={t('System prompt')}>
         <Textarea
           rows={10}
           value={draft.prompt}
           onChange={(e) => set({ prompt: e.target.value })}
-          placeholder="You are a helpful assistant…"
+          placeholder={t('You are a helpful assistant…')}
         />
       </FormField>
-      <FormField label="Model">
+      <FormField label={t('Model')}>
         <OptionCombobox
           value={draft.modelId}
           onChange={(v) => set({ modelId: v })}
           options={modelOptions}
-          placeholder="Select a model"
+          placeholder={t('Select a model')}
         />
       </FormField>
     </FieldGroup>
@@ -141,47 +142,47 @@ export function AgentSettings({ draft, onChange }: PartProps) {
   return (
     <FieldGroup className="gap-4">
       <SwitchField
-        label="Custom tools"
-        description="Default: rag and memory."
+        label={t('Custom tools')}
+        description={t('Default: rag and memory.')}
         checked={draft.customTools}
         onCheckedChange={(v) => set({ customTools: v })}
       />
       {draft.customTools && (
         <FieldGroup className="gap-3 pl-1">
-          {AVAILABLE_TOOLS.map((t) => (
+          {AVAILABLE_TOOLS.map((tool) => (
             <CheckboxField
-              key={t}
-              label={t}
-              checked={draft.tools.includes(t)}
-              onCheckedChange={(v) => set({ tools: v ? [...draft.tools, t] : draft.tools.filter((x) => x !== t) })}
+              key={tool}
+              label={tool}
+              checked={draft.tools.includes(tool)}
+              onCheckedChange={(v) => set({ tools: v ? [...draft.tools, tool] : draft.tools.filter((x) => x !== tool) })}
             />
           ))}
         </FieldGroup>
       )}
       <div className="grid gap-4 sm:grid-cols-2">
-        <FormField label="Message limit" description="Latest messages given to the model. Empty = service default.">
+        <FormField label={t('Message limit')} description={t('Latest messages given to the model. Empty = service default.')}>
           <Input
             type="number"
             min={0}
             max={1000}
             value={draft.messageLimit}
             onChange={(e) => set({ messageLimit: e.target.value })}
-            placeholder="default"
+            placeholder={t('default')}
           />
         </FormField>
-        <FormField label="Memory limit" description="Memories shown at once (at least 1). Empty = service default.">
+        <FormField label={t('Memory limit')} description={t('Memories shown at once (at least 1). Empty = service default.')}>
           <Input
             type="number"
             min={1}
             max={1000}
             value={draft.memoLimit}
             onChange={(e) => set({ memoLimit: e.target.value })}
-            placeholder="default"
+            placeholder={t('default')}
           />
         </FormField>
         <FormField
-          label="Knowledge limit"
-          description="Knowledge base entries one search returns (1 to 100). Empty = service default (8)."
+          label={t('Knowledge limit')}
+          description={t('Knowledge base entries one search returns (1 to 100). Empty = service default (8).')}
         >
           <Input
             type="number"
@@ -189,39 +190,39 @@ export function AgentSettings({ draft, onChange }: PartProps) {
             max={100}
             value={draft.ragLimit}
             onChange={(e) => set({ ragLimit: e.target.value })}
-            placeholder="default"
+            placeholder={t('default')}
           />
         </FormField>
       </div>
-      <FormField label="Auto memory" description="After a saved exchange, one more model call extracts lasting facts.">
+      <FormField label={t('Auto memory')} description={t('After a saved exchange, one more model call extracts lasting facts.')}>
         <OptionSelect
           value={draft.autoMemory}
           onChange={(v) => set({ autoMemory: v as AgentDraft['autoMemory'] })}
           options={[
             {
               value: 'default',
-              label: 'Service default',
+              label: t('Service default'),
               icon: SettingsIcon,
-              description: 'Whatever the service is set to (on, unless its DEFAULT_AUTO_MEMORY says otherwise)',
+              description: t('Whatever the service is set to (on, unless its DEFAULT_AUTO_MEMORY says otherwise)'),
             },
             {
               value: 'on',
-              label: 'On',
+              label: t('On'),
               icon: BrainIcon,
-              description: 'Learn lasting facts after every saved exchange',
+              description: t('Learn lasting facts after every saved exchange'),
             },
             {
               value: 'off',
-              label: 'Off',
+              label: t('Off'),
               icon: BrainCircuitIcon,
-              description: 'Remember only what the model itself saves with its tool',
+              description: t('Remember only what the model itself saves with its tool'),
             },
           ]}
         />
       </FormField>
       <FormField
-        label="Parallel tool calls"
-        description="Tools the model calls in one turn run together; fewer turns means less time and fewer input tokens."
+        label={t('Parallel tool calls')}
+        description={t('Tools the model calls in one turn run together; fewer turns means less time and fewer input tokens.')}
       >
         <OptionSelect
           value={draft.parallelToolCalls}
@@ -229,21 +230,21 @@ export function AgentSettings({ draft, onChange }: PartProps) {
           options={[
             {
               value: 'default',
-              label: 'Service default',
+              label: t('Service default'),
               icon: SettingsIcon,
-              description: 'Whatever the service is set to (on, unless its DEFAULT_PARALLEL_TOOL_CALLS says otherwise)',
+              description: t('Whatever the service is set to (on, unless its DEFAULT_PARALLEL_TOOL_CALLS says otherwise)'),
             },
             {
               value: 'on',
-              label: 'On',
+              label: t('On'),
               icon: SplitIcon,
-              description: 'The model may ask for independent tools together, and they run at the same time',
+              description: t('The model may ask for independent tools together, and they run at the same time'),
             },
             {
               value: 'off',
-              label: 'Off',
+              label: t('Off'),
               icon: ListOrderedIcon,
-              description: 'One tool call per turn, one after another',
+              description: t('One tool call per turn, one after another'),
             },
           ]}
         />
@@ -255,8 +256,8 @@ export function AgentSettings({ draft, onChange }: PartProps) {
 export function AgentComment({ draft, onChange }: PartProps) {
   const set = useSetter(draft, onChange)
   return (
-    <FormField label="Comment" description="Shown in the version history of the agent.">
-      <Input value={draft.comment} onChange={(e) => set({ comment: e.target.value })} placeholder="What and why" />
+    <FormField label={t('Comment')} description={t('Shown in the version history of the agent.')}>
+      <Input value={draft.comment} onChange={(e) => set({ comment: e.target.value })} placeholder={t('What and why')} />
     </FormField>
   )
 }
@@ -268,7 +269,7 @@ export function AgentForm({ draft, onChange }: PartProps) {
       <AgentBasics draft={draft} onChange={onChange} />
       <FieldSeparator />
       <FieldSet>
-        <FieldLegend>Configuration</FieldLegend>
+        <FieldLegend>{t('Configuration')}</FieldLegend>
         <AgentSettings draft={draft} onChange={onChange} />
       </FieldSet>
       <FieldSeparator />

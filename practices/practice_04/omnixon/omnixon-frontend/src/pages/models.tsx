@@ -22,17 +22,18 @@ import { LoadingRows, Page, PageHeader } from '@/components/page'
 import { api } from '@/lib/api'
 import { modelName, useAgents, useModels } from '@/lib/data'
 import { clip, parseJsonObject, pretty } from '@/lib/format'
+import { t } from '@/lib/i18n'
 import { useAction } from '@/lib/queries'
 import { useOpenParam } from '@/lib/use-open-param'
 import { DEFAULT_BASE_URL, NAME_MAX, type Model, type ModelConnection } from '@/lib/types'
 
 // The sampling keys that get their own input; everything else stays in the JSON box.
 const NUMERIC = [
-  { key: 'temperature', label: 'Temperature', hint: '0 – 2' },
+  { key: 'temperature', label: t('Temperature'), hint: '0 – 2' },
   { key: 'top_p', label: 'Top P', hint: '0 – 1' },
-  { key: 'max_tokens', label: 'Max tokens', hint: 'a tiny value on a reasoning model gives an empty answer' },
-  { key: 'frequency_penalty', label: 'Frequency penalty', hint: '' },
-  { key: 'presence_penalty', label: 'Presence penalty', hint: '' },
+  { key: 'max_tokens', label: t('Max tokens'), hint: t('a tiny value on a reasoning model gives an empty answer') },
+  { key: 'frequency_penalty', label: t('Frequency penalty'), hint: '' },
+  { key: 'presence_penalty', label: t('Presence penalty'), hint: '' },
   { key: 'seed', label: 'Seed', hint: '' },
 ] as const
 
@@ -89,12 +90,12 @@ function toDraft(
 
 function fromDraft(d: Draft): { ok: true; value: Record<string, unknown> } | { ok: false; error: string } {
   const rest = parseJsonObject(d.rest)
-  if (!rest.ok) return { ok: false, error: `Other options: ${rest.error}` }
+  if (!rest.ok) return { ok: false, error: t('Other options: {error}', { error: rest.error }) }
   const value: Record<string, unknown> = { model: d.model.trim() }
   for (const { key, label } of NUMERIC) {
     const raw = d.numbers[key]?.trim()
     if (!raw) continue
-    if (Number.isNaN(Number(raw))) return { ok: false, error: `${label} must be a number` }
+    if (Number.isNaN(Number(raw))) return { ok: false, error: t('{label} must be a number', { label }) }
     value[key] = Number(raw)
   }
   return { ok: true, value: { ...value, ...rest.value } }
@@ -149,7 +150,7 @@ function ModelDialog({ editing, onClose }: { editing: Editing; onClose: () => vo
           }),
     {
       invalidate: ['models', 'model', 'agents', 'versions'],
-      success: id === null ? 'Model created' : 'Model updated',
+      success: id === null ? t('Model created') : t('Model updated'),
       onSuccess: onClose,
     },
   )
@@ -159,11 +160,11 @@ function ModelDialog({ editing, onClose }: { editing: Editing; onClose: () => vo
     <FormDialog
       open={open}
       onClose={onClose}
-      title={id === null ? 'New model' : `Model “${fresh.data?.name ?? id}”`}
+      title={id === null ? t('New model') : t('Model “{name}”', { name: fresh.data?.name ?? String(id) })}
       description={
         <>
-          An OpenRouter request body. Sampling keys are applied as settings; <code>provider</code>,{' '}
-          <code>reasoning</code>, <code>transforms</code>… go to OpenRouter; anything else is sent as{' '}
+          {t('An OpenRouter request body. Sampling keys are applied as settings;')} <code>provider</code>,{' '}
+          <code>reasoning</code>, <code>transforms</code>… {t('go to OpenRouter; anything else is sent as')}{' '}
           <code>extra_body</code>.
         </>
       }
@@ -177,15 +178,15 @@ function ModelDialog({ editing, onClose }: { editing: Editing; onClose: () => vo
         <LoadingRows rows={3} />
       ) : (
         <FieldGroup>
-          <FormField label="Name">
+          <FormField label={t('Name')}>
             <Input
               maxLength={NAME_MAX}
               value={draft.name}
               onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-              placeholder="Fast and cheap"
+              placeholder={t('Fast and cheap')}
             />
           </FormField>
-          <FormField label="Model">
+          <FormField label={t('Model')}>
             <Input
               value={draft.model}
               onChange={(e) => setDraft((d) => ({ ...d, model: e.target.value }))}
@@ -199,15 +200,15 @@ function ModelDialog({ editing, onClose }: { editing: Editing; onClose: () => vo
                   inputMode="decimal"
                   value={draft.numbers[n.key] ?? ''}
                   onChange={(e) => setNum(n.key, e.target.value)}
-                  placeholder="default"
+                  placeholder={t('default')}
                 />
               </FormField>
             ))}
           </div>
           <FieldSeparator />
           <FormField
-            label="Other options (JSON)"
-            description="stop, logit_bias, parallel_tool_calls, provider, reasoning, transforms, anything for extra_body…"
+            label={t('Other options (JSON)')}
+            description={t('stop, logit_bias, parallel_tool_calls, provider, reasoning, transforms, anything for extra_body…')}
           >
             <JsonEditor
               value={draft.rest}
@@ -218,14 +219,14 @@ function ModelDialog({ editing, onClose }: { editing: Editing; onClose: () => vo
           </FormField>
           <Collapsible className="rounded-lg border">
             <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm font-medium">
-              External model settings
+              {t('External model settings')}
               <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-panel-open:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent>
               <FieldGroup className="border-t p-3">
                 <FormField
-                  label="Base URL"
-                  description={`Another OpenAI-compatible server (a local vLLM or Ollama, another provider). Empty: OpenRouter, ${DEFAULT_BASE_URL}.`}
+                  label={t('Base URL')}
+                  description={t('Another OpenAI-compatible server (a local vLLM or Ollama, another provider). Empty: OpenRouter, {url}.', { url: DEFAULT_BASE_URL })}
                 >
                   <Input
                     value={draft.baseUrl}
@@ -234,19 +235,19 @@ function ModelDialog({ editing, onClose }: { editing: Editing; onClose: () => vo
                   />
                 </FormField>
                 <SwitchField
-                  label="Use proxy"
-                  description="Reach the model through the proxy of the service. Off: it is called directly."
+                  label={t('Use proxy')}
+                  description={t('Reach the model through the proxy of the service. Off: it is called directly.')}
                   checked={draft.useProxy}
                   onCheckedChange={(v) => setDraft((d) => ({ ...d, useProxy: v }))}
                 />
                 <FormField
-                  label="API token"
+                  label={t('API token')}
                   description={
                     id !== null && fresh.data?.has_api_token
                       ? draft.clearToken
-                        ? 'The key of this model will be removed: the key of the service is used again.'
-                        : 'This model has a key of its own (it is never shown). Type a new one to replace it.'
-                      : 'The key for this server. Empty: the key of the service is used. Never shown again.'
+                        ? t('The key of this model will be removed: the key of the service is used again.')
+                        : t('This model has a key of its own (it is never shown). Type a new one to replace it.')
+                      : t('The key for this server. Empty: the key of the service is used. Never shown again.')
                   }
                 >
                   <Input
@@ -256,8 +257,8 @@ function ModelDialog({ editing, onClose }: { editing: Editing; onClose: () => vo
                     onChange={(e) => setDraft((d) => ({ ...d, apiToken: e.target.value, clearToken: false }))}
                     placeholder={
                       id !== null && fresh.data?.has_api_token && !draft.clearToken
-                        ? '•••••••• (set)'
-                        : 'the key of the service'
+                        ? t('•••••••• (set)')
+                        : t('the key of the service')
                     }
                   />
                 </FormField>
@@ -269,18 +270,18 @@ function ModelDialog({ editing, onClose }: { editing: Editing; onClose: () => vo
                     className="self-start"
                     onClick={() => setDraft((d) => ({ ...d, clearToken: true }))}
                   >
-                    Remove the key of this model
+                    {t('Remove the key of this model')}
                   </Button>
                 )}
                 {editing && typeof editing === 'object' && 'copyOf' in editing && editing.copyOf.has_api_token && (
-                  <p className="text-xs text-muted-foreground">The key of the original is not copied.</p>
+                  <p className="text-xs text-muted-foreground">{t('The key of the original is not copied.')}</p>
                 )}
               </FieldGroup>
             </CollapsibleContent>
           </Collapsible>
           {id !== null && (
             <p className="text-xs text-muted-foreground">
-              Saving records a new version of every agent that uses this model.
+              {t('Saving records a new version of every agent that uses this model.')}
             </p>
           )}
         </FieldGroup>
@@ -307,7 +308,7 @@ export default function Models() {
   const [deleting, setDeleting] = useState<Model | null>(null)
   const del = useAction((id: number) => api.deleteModel(id), {
     invalidate: ['models'],
-    success: 'Model deleted',
+    success: t('Model deleted'),
     onSuccess: () => setDeleting(null),
   })
   useOpenParam(models.data, setEditing)
@@ -323,34 +324,34 @@ export default function Models() {
       cell: ({ row }) => (
         <span className="flex items-center gap-2">
           <span className="font-medium">{row.original.name}</span>
-          {row.original.id === 0 && <Badge variant="secondary">default</Badge>}
+          {row.original.id === 0 && <Badge variant="secondary">{t('default')}</Badge>}
         </span>
       ),
     },
     {
       id: 'model',
-      meta: { label: 'Model' },
+      meta: { label: t('Model') },
       accessorFn: (m) => modelName(m.request_json),
-      header: ({ column }) => <SortHeader column={column} title="Model" />,
+      header: ({ column }) => <SortHeader column={column} title={t('Model')} />,
       cell: ({ row, getValue }) => (
         <span className="flex flex-wrap items-center gap-2">
           <span className="value-mono">{getValue<string>()}</span>
           {row.original.base_url !== DEFAULT_BASE_URL && (
             <Badge variant="outline">{hostOf(row.original.base_url)}</Badge>
           )}
-          {!row.original.use_proxy && <Badge variant="outline">no proxy</Badge>}
+          {!row.original.use_proxy && <Badge variant="outline">{t('no proxy')}</Badge>}
         </span>
       ),
     },
     {
       id: 'settings',
-      meta: { label: 'Settings' },
+      meta: { label: t('Settings') },
       accessorFn: (m) => {
         const { model: _m, ...rest } = m.request_json
         void _m
         return Object.keys(rest).length ? JSON.stringify(rest) : ''
       },
-      header: 'Settings',
+      header: t('Settings'),
       cell: ({ getValue }) => (
         <span className="value-mono text-muted-foreground" title={getValue<string>() || undefined}>
           {clip(getValue<string>()) || '—'}
@@ -359,8 +360,8 @@ export default function Models() {
     },
     {
       accessorKey: 'agentCount',
-      meta: { label: 'Agents' },
-      header: ({ column }) => <SortHeader column={column} title="Agents" />,
+      meta: { label: t('Agents') },
+      header: ({ column }) => <SortHeader column={column} title={t('Agents')} />,
     },
     createdColumn<Row>(),
     actionsColumn<Row>([
@@ -376,11 +377,11 @@ export default function Models() {
   return (
     <Page>
       <PageHeader
-        title="Models"
-        description="OpenRouter request bodies that agents run on. Model 0 is the default and cannot be deleted."
+        title={t('Models')}
+        description={t('OpenRouter request bodies that agents run on. Model 0 is the default and cannot be deleted.')}
         actions={
           <Button onClick={() => setEditing('new')}>
-            <PlusIcon /> New model
+            <PlusIcon /> {t('New model')}
           </Button>
         }
       />
@@ -390,8 +391,8 @@ export default function Models() {
         loading={models.isLoading}
         error={models.error}
         onRetry={() => models.refetch()}
-        empty={{ icon: CpuIcon, title: 'No models yet' }}
-        searchPlaceholder="Search models…"
+        empty={{ icon: CpuIcon, title: t('No models yet') }}
+        searchPlaceholder={t('Search models…')}
         getRowId={(m) => String(m.id)}
         onRowClick={(m) => setEditing(m)}
       />
@@ -399,8 +400,8 @@ export default function Models() {
       <ConfirmDialog
         open={!!deleting}
         onOpenChange={(o) => !o && setDeleting(null)}
-        title={`Delete model “${deleting?.name}”?`}
-        description="A model that an agent uses cannot be deleted; the service will answer 409."
+        title={t('Delete model “{name}”?', { name: deleting?.name ?? '' })}
+        description={t('A model that an agent uses cannot be deleted; the service will answer 409.')}
         pending={del.isPending}
         onConfirm={() => deleting && del.mutate(deleting.id)}
       />

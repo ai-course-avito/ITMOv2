@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { CheckIcon, CopyIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { highlight, languageOf } from '@/lib/highlight'
+import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 const NAMES: Record<string, string> = { javascript: 'JavaScript', typescript: 'TypeScript', jsx: 'JSX', tsx: 'TSX', json: 'JSON', jsonc: 'JSON', bash: 'Shell', shellscript: 'Shell', sql: 'SQL', yaml: 'YAML', html: 'HTML', css: 'CSS', markdown: 'Markdown', diff: 'Diff', python: 'Python', go: 'Go', rust: 'Rust', java: 'Java', c: 'C', cpp: 'C++', csharp: 'C#', php: 'PHP', ruby: 'Ruby', kotlin: 'Kotlin', swift: 'Swift', toml: 'TOML', dockerfile: 'Dockerfile', xml: 'XML' }
@@ -31,7 +32,7 @@ export function CodeBlock({ code, lang, className }: { code: string; lang?: stri
       setCopied(true)
       setTimeout(() => setCopied(false), 1200)
     } catch {
-      toast.error('Clipboard is not available')
+      toast.error(t('Clipboard is not available'))
     }
   }
 
@@ -43,11 +44,11 @@ export function CodeBlock({ code, lang, className }: { code: string; lang?: stri
         <button
           type="button"
           onClick={copy}
-          aria-label="Copy code"
+          aria-label={t('Copy code')}
           className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 transition-colors hover:bg-background hover:text-foreground"
         >
           {copied ? <CheckIcon className="size-3.5" /> : <CopyIcon className="size-3.5" />}
-          {copied ? 'Copied' : 'Copy'}
+          {copied ? t('Copied') : t('Copy')}
         </button>
       </div>
       <div className="code-body">

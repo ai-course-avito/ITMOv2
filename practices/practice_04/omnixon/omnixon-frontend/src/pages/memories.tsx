@@ -15,6 +15,7 @@ import { EmptyState, LoadingRows, Page, PageHeader, QueryBar } from '@/component
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { useAgents, useCurrentAgentId } from '@/lib/data'
+import { t } from '@/lib/i18n'
 import { useAction } from '@/lib/queries'
 import type { Memory } from '@/lib/types'
 
@@ -33,14 +34,18 @@ function MemoryDialog({ userId, agentId, agentName, editing, onClose }: { userId
 
   const save = useAction(
     () => (id === null ? api.createMemory({ user_id: userId, content: content.trim(), agent_id: agentId }) : api.updateMemory(id, content.trim())),
-    { invalidate: ['memories', 'memory'], success: id === null ? 'Memory saved' : 'Memory updated', onSuccess: onClose },
+    { invalidate: ['memories', 'memory'], success: id === null ? t('Memory saved') : t('Memory updated'), onSuccess: onClose },
   )
   return (
     <FormDialog
       open={open}
       onClose={onClose}
-      title={id === null ? 'New memory' : `Memory ${id}`}
-      description={`A lasting fact about ${userId}${agentName ? ` for agent “${agentName}”` : ''}. It is embedded for search each time it is saved. The user and agent of a memory cannot be changed.`}
+      title={id === null ? t('New memory') : t('Memory {id}', { id })}
+      description={
+        agentName
+          ? t('A lasting fact about {user} for agent “{agent}”. It is embedded for search each time it is saved. The user and agent of a memory cannot be changed.', { user: userId, agent: agentName })
+          : t('A lasting fact about {user}. It is embedded for search each time it is saved. The user and agent of a memory cannot be changed.', { user: userId })
+      }
       size="sm"
       onSubmit={() => save.mutate(undefined)}
       submitDisabled={!content.trim()}
@@ -49,8 +54,8 @@ function MemoryDialog({ userId, agentId, agentName, editing, onClose }: { userId
       {id !== null && fresh.isLoading ? (
         <LoadingRows rows={2} />
       ) : (
-        <FormField label="Fact">
-          <Textarea rows={4} value={content} onChange={(e) => setContent(e.target.value)} placeholder="Prefers short answers" />
+        <FormField label={t('Fact')}>
+          <Textarea rows={4} value={content} onChange={(e) => setContent(e.target.value)} placeholder={t('Prefers short answers')} />
         </FormField>
       )}
     </FormDialog>
@@ -77,10 +82,10 @@ export default function Memories() {
     enabled: user !== '' && agentId !== undefined,
   })
   const rows = useMemo<Row[] | undefined>(
-    () => list.data?.map((m) => ({ ...m, agentName: agents.data?.find((a) => a.id === m.agent_id)?.name ?? `Agent ${m.agent_id}` })),
+    () => list.data?.map((m) => ({ ...m, agentName: agents.data?.find((a) => a.id === m.agent_id)?.name ?? t('Agent {id}', { id: m.agent_id }) })),
     [list.data, agents.data],
   )
-  const del = useAction((id: number) => api.deleteMemory(id), { invalidate: ['memories', 'memory'], success: 'Memory deleted', onSuccess: () => setDeleting(null) })
+  const del = useAction((id: number) => api.deleteMemory(id), { invalidate: ['memories', 'memory'], success: t('Memory deleted'), onSuccess: () => setDeleting(null) })
 
   useEffect(() => {
     const u = params.get('user')
@@ -92,29 +97,29 @@ export default function Memories() {
 
   const columns: ColumnDef<Row>[] = [
     idColumn<Row>(),
-    { accessorKey: 'content', meta: { label: 'Fact' }, header: 'Fact', cell: ({ getValue }) => <span className="block max-w-3xl whitespace-normal">{getValue<string>()}</span> },
+    { accessorKey: 'content', meta: { label: t('Fact') }, header: t('Fact'), cell: ({ getValue }) => <span className="block max-w-3xl whitespace-normal">{getValue<string>()}</span> },
     {
       accessorKey: 'agentName',
-      meta: { label: 'Agent' },
-      header: ({ column }) => <SortHeader column={column} title="Agent" />,
+      meta: { label: t('Agent') },
+      header: ({ column }) => <SortHeader column={column} title={t('Agent')} />,
       cell: ({ row }) => (
         <Link to={`/agents/${row.original.agent_id}`} className="underline-offset-4 hover:underline" onClick={(e) => e.stopPropagation()}>
           {row.original.agentName}
         </Link>
       ),
     },
-    createdColumn<Row>('Saved'),
+    createdColumn<Row>(t('Saved')),
     actionsColumn<Row>([rowAction.edit((m) => setEditing(m)), rowAction.remove((m) => setDeleting(m))]),
   ]
 
   return (
     <Page>
       <PageHeader
-        title="Memories"
-        description="Facts the model remembers per (user, agent). Search is by meaning first, then by words."
+        title={t('Memories')}
+        description={t('Facts the model remembers per (user, agent). Search is by meaning first, then by words.')}
         actions={
           <Button disabled={!user || agentId === undefined} onClick={() => setEditing('new')}>
-            <PlusIcon /> New memory
+            <PlusIcon /> {t('New memory')}
           </Button>
         }
       />
@@ -125,11 +130,11 @@ export default function Memories() {
         }}
         actions={
           <Button type="submit" disabled={!userInput.trim()}>
-            <SearchIcon /> {queryInput.trim() ? 'Search' : 'List'}
+            <SearchIcon /> {queryInput.trim() ? t('Search') : t('List')}
           </Button>
         }
       >
-        <FormField label="User (external id)" className="w-64">
+        <FormField label={t('User (external id)')} className="w-64">
           <UserSuggest value={userInput} onChange={setUserInput} />
         </FormField>
         <AgentField
@@ -142,16 +147,16 @@ export default function Memories() {
             })
           }
         />
-        <FormField label="Search by meaning (optional)" className="min-w-64 flex-1">
-          <Input value={queryInput} onChange={(e) => setQueryInput(e.target.value)} placeholder="what does the user drink?" />
+        <FormField label={t('Search by meaning (optional)')} className="min-w-64 flex-1">
+          <Input value={queryInput} onChange={(e) => setQueryInput(e.target.value)} placeholder={t('what does the user drink?')} />
         </FormField>
-        <FormField label="Limit" className="w-24">
+        <FormField label={t('Limit')} className="w-24">
           <Input type="number" min={1} max={1000} value={limit} onChange={(e) => setLimit(e.target.value)} />
         </FormField>
       </QueryBar>
 
       {!user ? (
-        <EmptyState icon={BrainIcon} title="Enter a user" description="Then you can see, search and edit what the model remembers about them." className="flex-1" />
+        <EmptyState icon={BrainIcon} title={t('Enter a user')} description={t('Then you can see, search and edit what the model remembers about them.')} className="flex-1" />
       ) : (
         <DataTable
           columns={columns}
@@ -159,8 +164,8 @@ export default function Memories() {
           loading={list.isLoading || (list.isFetching && !list.data)}
           error={list.error}
           onRetry={() => list.refetch()}
-          empty={{ icon: BrainIcon, title: query ? 'Nothing remembered for this query' : 'Nothing remembered yet' }}
-          searchPlaceholder="Filter these memories…"
+          empty={{ icon: BrainIcon, title: query ? t('Nothing remembered for this query') : t('Nothing remembered yet') }}
+          searchPlaceholder={t('Filter these memories…')}
           getRowId={(m) => String(m.id)}
           onRowClick={(m) => setEditing(m)}
         />
@@ -169,9 +174,9 @@ export default function Memories() {
       <ConfirmDialog
         open={!!deleting}
         onOpenChange={(o) => !o && setDeleting(null)}
-        title={`Forget memory ${deleting?.id}?`}
+        title={t('Forget memory {id}?', { id: deleting?.id ?? '' })}
         description={deleting?.content}
-        confirmLabel="Forget"
+        confirmLabel={t('Forget')}
         pending={del.isPending}
         onConfirm={() => deleting && del.mutate(deleting.id)}
       />

@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { t } from '@/lib/i18n'
 
 const titles: Record<string, string> = {
   chat: 'Playground',
@@ -42,8 +43,8 @@ function useCrumbs() {
     enabled: agentId !== null && Number.isInteger(agentId),
   })
   const crumbs = [{ label: 'Omnixon', to: '/' }]
-  if (!parts.length) return [{ label: 'Dashboard', to: '/' }]
-  crumbs.push({ label: titles[parts[0]] ?? parts[0], to: `/${parts[0]}` })
+  if (!parts.length) return [{ label: t('Dashboard'), to: '/' }]
+  crumbs.push({ label: titles[parts[0]] ? t(titles[parts[0]]) : parts[0], to: `/${parts[0]}` })
   if (parts[1]) crumbs.push({ label: agent.data?.name ?? parts[1], to: `/${parts[0]}/${parts[1]}` })
   return crumbs
 }

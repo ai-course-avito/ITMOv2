@@ -2,6 +2,7 @@ import { useSearchParams } from 'react-router-dom'
 import { FormField, OptionCard, OptionCombobox } from '@/components/form'
 import { useAgents, useModels, useSelfAgent } from '@/lib/data'
 import { useAuth } from '@/lib/auth'
+import { t } from '@/lib/i18n'
 import { agentOption, withoutLinks } from '@/lib/options'
 
 /**
@@ -33,7 +34,7 @@ export function useActingAgent() {
 
 /** The agent of the page: a picker of cards for an admin, the own agent as a card for everybody else. */
 export function AgentField({
-  label = 'Agent',
+  label = t('Agent'),
   description,
   className,
   agentId,
@@ -56,7 +57,7 @@ export function AgentField({
           value={agentId !== undefined ? String(agentId) : null}
           onChange={onChange}
           options={(agents.data ?? []).map((a) => agentOption(a, models.data))}
-          placeholder="Select an agent"
+          placeholder={t('Select an agent')}
         />
       </FormField>
     )
@@ -65,7 +66,7 @@ export function AgentField({
   return (
     <FormField label={label} description={description} className={className}>
       <div className="min-h-10 rounded-lg border bg-background p-1.5">
-        {own ? <OptionCard compact option={role === 'user' ? agentOption(own, models.data) : withoutLinks(agentOption(own))} /> : <span className="px-1 text-sm text-muted-foreground">Loading…</span>}
+        {own ? <OptionCard compact option={role === 'user' ? agentOption(own, models.data) : withoutLinks(agentOption(own))} /> : <span className="px-1 text-sm text-muted-foreground">{t('Loading…')}</span>}
       </div>
     </FormField>
   )

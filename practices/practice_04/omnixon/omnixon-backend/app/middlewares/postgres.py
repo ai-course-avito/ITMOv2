@@ -21,6 +21,9 @@ PUBLIC_PATHS = (
     "/metrics",
 )
 
+# Public as a whole: the files of the promo videos the landing page plays (`/api/v1/media/omnixon-ad-ru.mp4`, ...)
+PUBLIC_PREFIXES = ("/api/v1/media/",)
+
 
 # An admin sends this to use the service as another agent (users, knowledge, answers; usage is
 # still written on the admin's own token)
@@ -99,7 +102,7 @@ class DatabaseMiddleware:
     async def _handle(
         self, request: Request, scope: Scope, receive: Receive, send: Send, status: dict
     ) -> None:
-        if request.url.path in PUBLIC_PATHS:
+        if request.url.path in PUBLIC_PATHS or request.url.path.startswith(PUBLIC_PREFIXES):
             await self.app(scope, receive, send)
             return
 

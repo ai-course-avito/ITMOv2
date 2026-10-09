@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import { BrainCircuitIcon, CalendarCheckIcon, CpuIcon, Gamepad2Icon, GlobeIcon, HeadphonesIcon, LibraryBigIcon, MessageCircleIcon, SendIcon, ServerIcon, ShoppingBagIcon, SparklesIcon, StoreIcon } from 'lucide-react'
 import { Logo } from '@/components/logo'
+import { t } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 /*
@@ -75,8 +76,8 @@ function Card({ node, left, width, top, className }: { node: Node; left: number;
         Icon && <Icon className="size-4 shrink-0 text-muted-foreground" />
       )}
       <span className="min-w-0">
-        <span className="block truncate text-sm font-medium leading-tight">{node.label}</span>
-        {node.note && <span className="hidden truncate text-xs leading-tight text-muted-foreground lg:block">{node.note}</span>}
+        <span className="block truncate text-sm font-medium leading-tight">{t(node.label)}</span>
+        {node.note && <span className="hidden truncate text-xs leading-tight text-muted-foreground lg:block">{t(node.note)}</span>}
       </span>
     </div>
   )
@@ -95,7 +96,7 @@ export function ConnectionsGraph({ className }: { className?: string }) {
   return (
     <figure className={cn('w-full', className)}>
       <div className="overflow-x-auto pb-2">
-        <div role="img" aria-label="Channels such as Telegram, WhatsApp and a website send their messages to Omnixon, which hands them to agents that run on different language models" className="relative mx-auto h-[28rem] min-w-[40rem] max-w-5xl">
+        <div role="img" aria-label={t('Channels such as Telegram, WhatsApp and a website send their messages to Omnixon, which hands them to agents that run on different language models')}className="relative mx-auto h-[28rem] min-w-[40rem] max-w-5xl">
           <svg className="absolute inset-0 size-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
             {edges.map((e) => (
               <path key={e.key} data-edge={e.key} d={e.d} fill="none" className="stroke-border" strokeWidth={2} vectorEffect="non-scaling-stroke" />
@@ -132,12 +133,12 @@ export function ConnectionsGraph({ className }: { className?: string }) {
             ['Models', COL.models],
           ].map(([label, col]) => (
             <span key={label as string} className="absolute -top-1 -translate-y-full text-xs font-medium uppercase tracking-wide text-muted-foreground" style={{ left: `${(col as readonly number[])[0]}%` }}>
-              {label as string}
+              {t(label as string)}
             </span>
           ))}
         </div>
       </div>
-      <figcaption className="sr-only">Every channel talks to the same Omnixon; every agent can run on any model, including your own server.</figcaption>
+      <figcaption className="sr-only">{t('Every channel talks to the same Omnixon; every agent can run on any model, including your own server.')}</figcaption>
     </figure>
   )
 }

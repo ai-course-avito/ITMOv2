@@ -12,14 +12,16 @@ import { EmptyState, ErrorBox, LoadingRows } from '@/components/page'
 import { api } from '@/lib/api'
 import { useTokens } from '@/lib/data'
 import { fmtDate, pretty } from '@/lib/format'
+import { t } from '@/lib/i18n'
 import { versionOption } from '@/lib/options'
 import type { AgentVersion } from '@/lib/types'
 
 const show = (v: unknown) => (typeof v === 'string' ? v : pretty(v))
+const onOff = (v: boolean | undefined) => (v === undefined ? t('default') : v ? t('on') : t('off'))
 
 export function DiffView({ changes }: { changes: Record<string, { from: unknown; to: unknown }> }) {
   const entries = Object.entries(changes)
-  if (!entries.length) return <EmptyState title="No differences" />
+  if (!entries.length) return <EmptyState title={t('No differences')} />
   return (
     <div className="grid gap-3">
       {entries.map(([key, change]) => (
@@ -52,45 +54,45 @@ function Overview({ version }: { version: AgentVersion }) {
   const servers = (s.mcp_servers ?? []) as Record<string, unknown>[]
   return (
     <div className="grid gap-5">
-      <Section title="System prompt">
+      <Section title={t('System prompt')}>
         <pre className="max-h-64 overflow-auto rounded-lg border bg-muted/30 p-3 text-sm whitespace-pre-wrap">
-          {s.prompt || '(empty)'}
+          {s.prompt || t('(empty)')}
         </pre>
       </Section>
       <Separator />
       <div className="grid gap-5 sm:grid-cols-2">
-        <Section title="Model">
+        <Section title={t('Model')}>
           <div className="text-sm">
             <span className="font-medium">{String(modelId ?? '?')}</span>{' '}
-            <span className="text-muted-foreground">(record {s.model_id})</span>
+            <span className="text-muted-foreground">{t('(record {id})', { id: s.model_id })}</span>
           </div>
           {Object.keys(params).length > 0 && <JsonView value={params} className="max-h-40" />}
         </Section>
-        <Section title="Settings">
+        <Section title={t('Settings')}>
           <div className="flex flex-wrap gap-1">
-            {(cfg.tools ?? []).map((t) => (
-              <Badge key={t} variant="secondary">
-                {t}
+            {(cfg.tools ?? []).map((tool) => (
+              <Badge key={tool} variant="secondary">
+                {tool}
               </Badge>
             ))}
-            {!(cfg.tools ?? []).length && <span className="text-sm text-muted-foreground">no tools</span>}
+            {!(cfg.tools ?? []).length && <span className="text-sm text-muted-foreground">{t('no tools')}</span>}
           </div>
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-            <dt className="text-muted-foreground">Message limit</dt>
-            <dd>{cfg.message_limit ?? 'default'}</dd>
-            <dt className="text-muted-foreground">Memory limit</dt>
-            <dd>{cfg.memo_limit ?? 'default'}</dd>
-            <dt className="text-muted-foreground">Knowledge limit</dt>
-            <dd>{cfg.rag_limit ?? 'default'}</dd>
-            <dt className="text-muted-foreground">Auto memory</dt>
-            <dd>{cfg.auto_memory === undefined ? 'default' : cfg.auto_memory ? 'on' : 'off'}</dd>
-            <dt className="text-muted-foreground">Parallel tool calls</dt>
-            <dd>{cfg.parallel_tool_calls === undefined ? 'default' : cfg.parallel_tool_calls ? 'on' : 'off'}</dd>
+            <dt className="text-muted-foreground">{t('Message limit')}</dt>
+            <dd>{cfg.message_limit ?? t('default')}</dd>
+            <dt className="text-muted-foreground">{t('Memory limit')}</dt>
+            <dd>{cfg.memo_limit ?? t('default')}</dd>
+            <dt className="text-muted-foreground">{t('Knowledge limit')}</dt>
+            <dd>{cfg.rag_limit ?? t('default')}</dd>
+            <dt className="text-muted-foreground">{t('Auto memory')}</dt>
+            <dd>{onOff(cfg.auto_memory)}</dd>
+            <dt className="text-muted-foreground">{t('Parallel tool calls')}</dt>
+            <dd>{onOff(cfg.parallel_tool_calls)}</dd>
           </dl>
         </Section>
       </div>
       <Separator />
-      <Section title={`MCP servers (${servers.length})`}>
+      <Section title={t('MCP servers ({count})', { count: servers.length })}>
         {servers.length ? (
           <ul className="grid gap-1 text-sm">
             {servers.map((m, i) => (
@@ -101,7 +103,7 @@ function Overview({ version }: { version: AgentVersion }) {
             ))}
           </ul>
         ) : (
-          <span className="text-sm text-muted-foreground">None attached</span>
+          <span className="text-sm text-muted-foreground">{t('None attached')}</span>
         )}
       </Section>
     </div>
@@ -121,7 +123,7 @@ function Changes({ agentId, number, versions }: { agentId: number; number: numbe
   })
   return (
     <div className="grid gap-4">
-      <FormField label="Compare with">
+      <FormField label={t('Compare with')}>
         <OptionCombobox
           value={to}
           onChange={setTo}
@@ -132,7 +134,7 @@ function Changes({ agentId, number, versions }: { agentId: number; number: numbe
         />
       </FormField>
       {same ? (
-        <EmptyState title="Nothing to compare" description="Pick another version." />
+        <EmptyState title={t('Nothing to compare')} description={t('Pick another version.')} />
       ) : q.isError ? (
         <ErrorBox error={q.error} />
       ) : !q.data ? (
@@ -140,7 +142,7 @@ function Changes({ agentId, number, versions }: { agentId: number; number: numbe
       ) : (
         <>
           <p className="text-sm text-muted-foreground">
-            Version {q.data.from_version} → {q.data.to_version}. Red is the older value, green the newer.
+            {t('Version {from} → {to}. Red is the older value, green the newer.', { from: q.data.from_version, to: q.data.to_version })}
           </p>
           <DiffView changes={q.data.changes} />
         </>
@@ -185,42 +187,42 @@ export function VersionViewer({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            Version {number} {number === latest && <Badge>current</Badge>}
+            {t('Version {number}', { number })} {number === latest && <Badge>{t('current')}</Badge>}
           </DialogTitle>
           <DialogDescription className="flex flex-wrap items-center gap-2">
             {q.data ? (
               <>
-                <span>{q.data.comment ?? 'no comment'}</span>
+                <span>{q.data.comment ?? t('no comment')}</span>
                 <AttrChip attr={{ text: fmtDate(q.data.timestamp), icon: ClockIcon }} />
                 {q.data.created_by_token_id != null && (
                   <AttrChip
                     attr={{
                       text:
-                        tokens.data?.find((t) => t.id === q.data.created_by_token_id)?.name ??
-                        `Token ${q.data.created_by_token_id}`,
+                        tokens.data?.find((tk) => tk.id === q.data.created_by_token_id)?.name ??
+                        t('Token {id}', { id: q.data.created_by_token_id }),
                       icon: KeyRoundIcon,
                     }}
                   />
                 )}
               </>
             ) : (
-              'Loading…'
+              t('Loading…')
             )}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" disabled={!older} onClick={() => older && onNumberChange(older.number)}>
-            <ChevronLeftIcon /> Older
+            <ChevronLeftIcon /> {t('Older')}
           </Button>
           <Button variant="outline" size="sm" disabled={!newer} onClick={() => newer && onNumberChange(newer.number)}>
-            Newer <ChevronRightIcon />
+            {t('Newer')} <ChevronRightIcon />
           </Button>
           <div className="ml-auto">
             <Button
               disabled={number === null || number === latest}
               onClick={() => number !== null && onRollback(number)}
             >
-              <RotateCcwIcon /> Roll back to this version
+              <RotateCcwIcon /> {t('Roll back to this version')}
             </Button>
           </div>
         </div>
@@ -231,8 +233,8 @@ export function VersionViewer({
         ) : (
           <Tabs value={tab} onValueChange={(v) => v && setTab(String(v))}>
             <TabsList className="mb-3">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="changes">Changes</TabsTrigger>
+              <TabsTrigger value="overview">{t('Overview')}</TabsTrigger>
+              <TabsTrigger value="changes">{t('Changes')}</TabsTrigger>
               <TabsTrigger value="json">JSON</TabsTrigger>
             </TabsList>
             <TabsContent value="overview">

@@ -13,6 +13,7 @@ import { LoadingRows, Page, PageHeader } from '@/components/page'
 import { api } from '@/lib/api'
 import { useMcpServers } from '@/lib/data'
 import { parseJsonObject, pretty } from '@/lib/format'
+import { t } from '@/lib/i18n'
 import { useAction } from '@/lib/queries'
 import { useOpenParam } from '@/lib/use-open-param'
 import { MCP_OPTIONS, NAME_MAX, type MCPServer } from '@/lib/types'
@@ -58,7 +59,7 @@ export function McpDialog({ editing, onClose, agentId }: { editing: Editing; onC
         : api.updateMcpServer(id, { config, ...(name.trim() !== fresh.data?.name ? { name: name.trim() } : {}) }),
     {
       invalidate: ['mcp-servers', 'mcp-server', 'versions', 'agent-mcp'],
-      success: id === null ? 'MCP server created' : 'MCP server updated',
+      success: id === null ? t('MCP server created') : t('MCP server updated'),
       onSuccess: onClose,
     },
   )
@@ -67,8 +68,8 @@ export function McpDialog({ editing, onClose, agentId }: { editing: Editing; onC
     <FormDialog
       open={open}
       onClose={onClose}
-      title={id === null ? 'New MCP server' : `MCP server “${fresh.data?.name ?? id}”`}
-      description="An external tool server that agents can use."
+      title={id === null ? t('New MCP server') : t('MCP server “{name}”', { name: fresh.data?.name ?? String(id) })}
+      description={t('An external tool server that agents can use.')}
       onSubmit={() => parsed.ok && save.mutate({ ...parsed.value, url: url.trim(), transport })}
       submitDisabled={!url.trim() || !name.trim() || !parsed.ok}
       pending={save.isPending}
@@ -77,27 +78,27 @@ export function McpDialog({ editing, onClose, agentId }: { editing: Editing; onC
         <LoadingRows rows={3} />
       ) : (
         <FieldGroup>
-          <FormField label="Name">
-            <Input maxLength={NAME_MAX} value={name} onChange={(e) => setName(e.target.value)} placeholder="Calculator" />
+          <FormField label={t('Name')}>
+            <Input maxLength={NAME_MAX} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('Calculator')} />
           </FormField>
           <FormField label="URL">
             <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="http://mcp-server:8000/mcp" />
           </FormField>
-          <FormField label="Transport">
+          <FormField label={t('Transport')}>
             <OptionSelect
               value={transport}
               onChange={setTransport}
               options={[
-                { value: 'streamable_http', label: 'streamable_http', icon: GlobeIcon, description: 'Plain HTTP requests, the usual choice' },
-                { value: 'sse', label: 'sse', icon: RadioIcon, description: 'A long-lived server-sent-events connection' },
+                { value: 'streamable_http', label: 'streamable_http', icon: GlobeIcon, description: t('Plain HTTP requests, the usual choice') },
+                { value: 'sse', label: 'sse', icon: RadioIcon, description: t('A long-lived server-sent-events connection') },
               ]}
             />
           </FormField>
           <FieldSeparator />
-          <FormField label="Other options (JSON)" description={`Allowed keys: ${MCP_OPTIONS.join(', ')}.`}>
+          <FormField label={t('Other options (JSON)')} description={t('Allowed keys: {keys}.', { keys: MCP_OPTIONS.join(', ') })}>
             <JsonEditor value={rest} onChange={setRest} rows={6} placeholder={'{\n  "headers": {"Authorization": "Bearer …"},\n  "timeout": 5\n}'} />
           </FormField>
-          {id !== null && <p className="text-xs text-muted-foreground">Saving records a new version of every agent that has this server attached.</p>}
+          {id !== null && <p className="text-xs text-muted-foreground">{t('Saving records a new version of every agent that has this server attached.')}</p>}
         </FieldGroup>
       )}
     </FormDialog>
@@ -111,7 +112,7 @@ export default function McpServers() {
   useOpenParam(servers.data, setEditing)
   const del = useAction((id: number) => api.deleteMcpServer(id), {
     invalidate: ['mcp-servers', 'versions', 'agent-mcp'],
-    success: 'MCP server deleted',
+    success: t('MCP server deleted'),
     onSuccess: () => setDeleting(null),
   })
 
@@ -127,16 +128,16 @@ export default function McpServers() {
     },
     {
       id: 'transport',
-      meta: { label: 'Transport' },
+      meta: { label: t('Transport') },
       accessorFn: (s) => String(s.config.transport ?? 'streamable_http'),
-      header: ({ column }) => <SortHeader column={column} title="Transport" />,
+      header: ({ column }) => <SortHeader column={column} title={t('Transport')} />,
       cell: ({ getValue }) => <Badge variant="secondary">{getValue<string>()}</Badge>,
     },
     {
       id: 'options',
-      meta: { label: 'Options' },
+      meta: { label: t('Options') },
       accessorFn: (s) => Object.keys(s.config).filter((k) => k !== 'url' && k !== 'transport').join(', '),
-      header: 'Options',
+      header: t('Options'),
       cell: ({ getValue }) => <span className="text-muted-foreground">{getValue<string>() || '—'}</span>,
     },
     createdColumn<MCPServer>(),
@@ -150,11 +151,11 @@ export default function McpServers() {
   return (
     <Page>
       <PageHeader
-        title="MCP servers"
-        description="External tool servers. Attach them to agents on the agent's page. A dead server is skipped automatically at request time."
+        title={t('MCP servers')}
+        description={t("External tool servers. Attach them to agents on the agent's page. A dead server is skipped automatically at request time.")}
         actions={
           <Button onClick={() => setEditing('new')}>
-            <PlusIcon /> New server
+            <PlusIcon /> {t('New server')}
           </Button>
         }
       />
@@ -164,8 +165,8 @@ export default function McpServers() {
         loading={servers.isLoading}
         error={servers.error}
         onRetry={() => servers.refetch()}
-        empty={{ icon: PlugIcon, title: 'No MCP servers yet', description: 'Tool servers an agent may call.' }}
-        searchPlaceholder="Search servers…"
+        empty={{ icon: PlugIcon, title: t('No MCP servers yet'), description: t('Tool servers an agent may call.') }}
+        searchPlaceholder={t('Search servers…')}
         getRowId={(s) => String(s.id)}
         onRowClick={(s) => setEditing(s)}
       />
@@ -173,8 +174,8 @@ export default function McpServers() {
       <ConfirmDialog
         open={!!deleting}
         onOpenChange={(o) => !o && setDeleting(null)}
-        title={`Delete MCP server “${deleting?.name}”?`}
-        description="It is detached from every agent that uses it (each gets a new version)."
+        title={t('Delete MCP server “{name}”?', { name: deleting?.name ?? '' })}
+        description={t('It is detached from every agent that uses it (each gets a new version).')}
         pending={del.isPending}
         onConfirm={() => deleting && del.mutate(deleting.id)}
       />

@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from ai.interrupts import InterruptRegistry
@@ -20,6 +22,9 @@ from openapi import add_roles
 from repositories.database import Database
 from services.memories import MemoryService
 from services.tokens import TokenService
+
+# the folder of the promo videos, next to app/ (copied into the image with the rest of the backend)
+AD_DIR = str(Path(__file__).resolve().parents[1] / "omnixon-ad" / "out")
 
 
 async def start(app: FastAPI, container: Container) -> None:
@@ -82,6 +87,8 @@ def create_app(settings: Settings) -> FastAPI:
     for controller in controllers(container):
         app.include_router(controller.router)
     add_roles(app)
+    # the promo videos of the landing page (omnixon-ad/out: the RU and EN cuts, and their soundtracks); public, see PUBLIC_PREFIXES
+    app.mount("/api/v1/media", StaticFiles(directory=AD_DIR, check_dir=False), name="media")
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(request: Request, exc: StarletteHTTPException):

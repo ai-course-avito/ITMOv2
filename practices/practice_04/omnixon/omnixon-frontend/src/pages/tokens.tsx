@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { ColumnDef } from '@tanstack/react-table'
 import { AlertTriangleIcon, KeyRoundIcon, PlusIcon } from 'lucide-react'
-import { ROLE_ICON } from '@/lib/roles'
+import { ROLE_ICON, roleName } from '@/lib/roles'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FieldGroup } from '@/components/ui/field'
@@ -17,6 +17,7 @@ import { Page, PageHeader } from '@/components/page'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { useAgents, useTokens } from '@/lib/data'
+import { t } from '@/lib/i18n'
 import { useAction } from '@/lib/queries'
 import { NAME_MAX, ROLES, rankOf, type NewToken, type Role, type Token } from '@/lib/types'
 
@@ -24,10 +25,10 @@ import { NAME_MAX, ROLES, rankOf, type NewToken, type Role, type Token } from '@
 const MAY_HAND_OUT: Record<Role, number> = { regular: 0, user: 2, admin: 2, owner: 4 }
 
 const ROLE_HELP: Record<Role, string> = {
-  regular: 'Requests, users and history of the agent: what a client (a bot, a site) needs.',
-  user: 'Plus everything about the agent: prompt, knowledge base, MCP servers, memories, tokens for it.',
-  admin: 'Plus every agent, models, every token up to user, usage of all, and acting as another agent.',
-  owner: 'Plus tokens of any role, including admin and owner.',
+  regular: t('Requests, users and history of the agent: what a client (a bot, a site) needs.'),
+  user: t('Plus everything about the agent: prompt, knowledge base, MCP servers, memories, tokens for it.'),
+  admin: t('Plus every agent, models, every token up to user, usage of all, and acting as another agent.'),
+  owner: t('Plus tokens of any role, including admin and owner.'),
 }
 
 const roleVariant = (role: Role) => (role === 'owner' ? 'default' : role === 'admin' ? 'secondary' : 'outline')
@@ -40,11 +41,11 @@ function SecretDialog({ made, onClose }: { made: NewToken | null; onClose: () =>
     <FormDialog
       open={made !== null}
       onClose={onClose}
-      title="Copy the token now"
+      title={t('Copy the token now')}
       description={
         <span className="flex items-start gap-2">
           <AlertTriangleIcon className="mt-0.5 size-4 shrink-0 text-warning" />
-          <span>It is shown only here, once. Only a hash of it is kept, so it cannot be shown again; make a new token if it is lost.</span>
+          <span>{t('It is shown only here, once. Only a hash of it is kept, so it cannot be shown again; make a new token if it is lost.')}</span>
         </span>
       }
       size="md"
@@ -52,7 +53,7 @@ function SecretDialog({ made, onClose }: { made: NewToken | null; onClose: () =>
       {made && (
         <div className="grid gap-3">
           <p className="text-sm text-muted-foreground">
-            Token “{made.name}”, role <strong>{made.role}</strong>.
+            {t('Token “{name}”, role', { name: made.name })} <strong>{roleName(made.role)}</strong>.
           </p>
           <div className="flex items-center gap-1 rounded-lg border bg-muted/40 p-2">
             <code className="value-mono min-w-0 flex-1 break-all text-sm">
@@ -64,7 +65,7 @@ function SecretDialog({ made, onClose }: { made: NewToken | null; onClose: () =>
                 {made.token}
               </span>
             </code>
-            <CopyButton text={made.token} label="Copy token" />
+            <CopyButton text={made.token} label={t('Copy token')} />
           </div>
         </div>
       )}
@@ -82,12 +83,12 @@ export default function Tokens() {
   const [made, setMade] = useState<NewToken | null>(null)
 
   const rows = useMemo<Row[] | undefined>(
-    () => tokens.data?.map((t) => ({ ...t, agentName: agents.data?.find((a) => a.id === t.agent_id)?.name ?? `Agent ${t.agent_id}` })),
+    () => tokens.data?.map((tk) => ({ ...tk, agentName: agents.data?.find((a) => a.id === tk.agent_id)?.name ?? t('Agent {id}', { id: tk.agent_id }) })),
     [tokens.data, agents.data],
   )
-  const manageable = (t: Token) => !!me && rankOf(t.role) <= MAY_HAND_OUT[me.role] && (isAdmin || t.agent_id === ownAgent)
+  const manageable = (tk: Token) => !!me && rankOf(tk.role) <= MAY_HAND_OUT[me.role] && (isAdmin || tk.agent_id === ownAgent)
 
-  const del = useAction((t: Token) => api.deleteToken(t.id), { invalidate: ['tokens'], success: 'Token deleted', onSuccess: () => setDeleting(null) })
+  const del = useAction((tk: Token) => api.deleteToken(tk.id), { invalidate: ['tokens'], success: t('Token deleted'), onSuccess: () => setDeleting(null) })
 
   const columns: ColumnDef<Row>[] = [
     { ...idColumn<Row>(), size: 80 },
@@ -96,28 +97,28 @@ export default function Tokens() {
       cell: ({ row }) => (
         <span className="flex items-center gap-2">
           <span className="font-medium">{row.original.name}</span>
-          {row.original.id === me?.id && <Badge variant="outline">you</Badge>}
-          {row.original.is_initial && <Badge variant="outline">initial</Badge>}
+          {row.original.id === me?.id && <Badge variant="outline">{t('you')}</Badge>}
+          {row.original.is_initial && <Badge variant="outline">{t('initial')}</Badge>}
         </span>
       ),
     },
     {
       accessorKey: 'role',
-      meta: { label: 'Role' },
-      header: ({ column }) => <SortHeader column={column} title="Role" />,
+      meta: { label: t('Role') },
+      header: ({ column }) => <SortHeader column={column} title={t('Role')} />,
       cell: ({ row }) => {
         const Icon = ROLE_ICON[row.original.role]
         return (
           <Badge variant={roleVariant(row.original.role)}>
-            <Icon /> {row.original.role}
+            <Icon /> {roleName(row.original.role)}
           </Badge>
         )
       },
     },
     {
       accessorKey: 'agentName',
-      meta: { label: 'Agent' },
-      header: ({ column }) => <SortHeader column={column} title="Agent" />,
+      meta: { label: t('Agent') },
+      header: ({ column }) => <SortHeader column={column} title={t('Agent')} />,
       cell: ({ row }) =>
         me?.role === 'regular' ? (
           row.original.agentName
@@ -129,23 +130,23 @@ export default function Tokens() {
     },
     createdColumn<Row>(),
     actionsColumn<Row>([
-      rowAction.edit((t) => setRenaming(t), (t) => !manageable(t)),
-      rowAction.remove((t) => setDeleting(t), (t) => !manageable(t) || t.id === me?.id || t.is_initial),
+      rowAction.edit((tk) => setRenaming(tk), (tk) => !manageable(tk)),
+      rowAction.remove((tk) => setDeleting(tk), (tk) => !manageable(tk) || tk.id === me?.id || tk.is_initial),
     ]),
   ]
 
   return (
     <Page>
       <PageHeader
-        title="Tokens"
+        title={t('Tokens')}
         description={
           isAdmin
-            ? 'Who may use an agent, and as what. Every token belongs to one agent and has a role; the secret is shown once, when it is made.'
-            : 'Who may use your agent, and as what. The secret of a token is shown once, when it is made.'
+            ? t('Who may use an agent, and as what. Every token belongs to one agent and has a role; the secret is shown once, when it is made.')
+            : t('Who may use your agent, and as what. The secret of a token is shown once, when it is made.')
         }
         actions={
           <Button onClick={() => setCreating(true)}>
-            <PlusIcon /> New token
+            <PlusIcon /> {t('New token')}
           </Button>
         }
       />
@@ -155,19 +156,26 @@ export default function Tokens() {
         loading={tokens.isLoading}
         error={tokens.error}
         onRetry={() => tokens.refetch()}
-        empty={{ icon: KeyRoundIcon, title: 'No tokens', description: 'Make one to give a client access.' }}
-        searchPlaceholder="Search tokens…"
-        getRowId={(t) => String(t.id)}
-        onRowClick={(t) => manageable(t) && setRenaming(t)}
+        empty={{ icon: KeyRoundIcon, title: t('No tokens'), description: t('Make one to give a client access.') }}
+        searchPlaceholder={t('Search tokens…')}
+        getRowId={(tk) => String(tk.id)}
+        onRowClick={(tk) => manageable(tk) && setRenaming(tk)}
       />
-      <NewTokenDialog open={creating} onClose={() => setCreating(false)} onMade={(t) => { setCreating(false); setMade(t) }} />
+      <NewTokenDialog
+        open={creating}
+        onClose={() => setCreating(false)}
+        onMade={(tk) => {
+          setCreating(false)
+          setMade(tk)
+        }}
+      />
       <EditDialog token={renaming} onClose={() => setRenaming(null)} />
       <SecretDialog made={made} onClose={() => setMade(null)} />
       <ConfirmDialog
         open={!!deleting}
         onOpenChange={(o) => !o && setDeleting(null)}
-        title={`Delete token “${deleting?.name}”?`}
-        description="It stops working at once. Its usage statistics stay under its name."
+        title={t('Delete token “{name}”?', { name: deleting?.name ?? '' })}
+        description={t('It stops working at once. Its usage statistics stay under its name.')}
         pending={del.isPending}
         onConfirm={() => deleting && del.mutate(deleting)}
       />
@@ -182,15 +190,15 @@ function NewTokenDialog({ open, onClose, onMade }: { open: boolean; onClose: () 
   const [picked, setPicked] = useState<number | undefined>(undefined)
   const agentId = picked ?? ownAgent
   const allowed = ROLES.filter((r) => me && rankOf(r) <= MAY_HAND_OUT[me.role])
-  const options: Option[] = allowed.map((r) => ({ value: r, label: r, icon: ROLE_ICON[r], description: ROLE_HELP[r] }))
+  const options: Option[] = allowed.map((r) => ({ value: r, label: roleName(r), icon: ROLE_ICON[r], description: ROLE_HELP[r] }))
 
   const save = useAction(() => api.createToken({ name: name.trim(), role, agent_id: agentId }), {
     invalidate: ['tokens'],
-    onSuccess: (t) => {
+    onSuccess: (tk) => {
       setName('')
       setRole('regular')
       setPicked(undefined)
-      onMade(t)
+      onMade(tk)
     },
   })
 
@@ -198,21 +206,21 @@ function NewTokenDialog({ open, onClose, onMade }: { open: boolean; onClose: () 
     <FormDialog
       open={open}
       onClose={onClose}
-      title="New token"
-      description="A token gives access to one agent, as a role."
-      submitLabel="Create"
+      title={t('New token')}
+      description={t('A token gives access to one agent, as a role.')}
+      submitLabel={t('Create')}
       onSubmit={() => save.mutate(undefined)}
       submitDisabled={!name.trim() || agentId === undefined}
       pending={save.isPending}
     >
       <FieldGroup>
-        <FormField label="Name">
-          <Input autoFocus maxLength={NAME_MAX} value={name} onChange={(e) => setName(e.target.value)} placeholder="Telegram bot" />
+        <FormField label={t('Name')}>
+          <Input autoFocus maxLength={NAME_MAX} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('Telegram bot')} />
         </FormField>
-        <FormField label="Role">
+        <FormField label={t('Role')}>
           <OptionSelect value={role} onChange={(v) => setRole(v as Role)} options={options} />
         </FormField>
-        {isAdmin ? <AgentField label="Agent" agentId={agentId} onChange={(v) => setPicked(Number(v))} /> : <AgentField label="Agent" agentId={agentId} onChange={() => undefined} />}
+        {isAdmin ? <AgentField label={t('Agent')} agentId={agentId} onChange={(v) => setPicked(Number(v))} /> : <AgentField label={t('Agent')} agentId={agentId} onChange={() => undefined} />}
       </FieldGroup>
     </FormDialog>
   )
@@ -227,33 +235,42 @@ function EditDialog({ token, onClose }: { token: Token | null; onClose: () => vo
   // the service refuses the role of the token in use and of the initial one; the panel does not offer it
   const roleFixed = !!token && (token.id === me?.id || token.is_initial)
   const allowed = ROLES.filter((r) => me && rankOf(r) <= MAY_HAND_OUT[me.role])
-  const options: Option[] = allowed.map((r) => ({ value: r, label: r, icon: ROLE_ICON[r], description: ROLE_HELP[r] }))
-  const reset = () => { setName(null); setRole(null) }
+  const options: Option[] = allowed.map((r) => ({ value: r, label: roleName(r), icon: ROLE_ICON[r], description: ROLE_HELP[r] }))
+  const reset = () => {
+    setName(null)
+    setRole(null)
+  }
   const changes = { ...(shown.trim() !== token?.name ? { name: shown.trim() } : {}), ...(shownRole !== token?.role ? { role: shownRole } : {}) }
   const save = useAction(() => api.updateToken(token!.id, changes), {
     invalidate: ['tokens'],
-    success: 'Token updated',
-    onSuccess: () => { reset(); onClose() },
+    success: t('Token updated'),
+    onSuccess: () => {
+      reset()
+      onClose()
+    },
   })
   return (
     <FormDialog
       open={token !== null}
-      onClose={() => { reset(); onClose() }}
-      title={`Token “${token?.name ?? ''}”`}
-      description="The name and the role can change; the agent is fixed: make a new token for another agent. The secret stays the same."
+      onClose={() => {
+        reset()
+        onClose()
+      }}
+      title={t('Token “{name}”', { name: token?.name ?? '' })}
+      description={t('The name and the role can change; the agent is fixed: make a new token for another agent. The secret stays the same.')}
       size="sm"
-      submitLabel="Save"
+      submitLabel={t('Save')}
       onSubmit={() => save.mutate(undefined)}
       submitDisabled={!shown.trim() || Object.keys(changes).length === 0}
       pending={save.isPending}
     >
       <FieldGroup>
-        <FormField label="Name">
+        <FormField label={t('Name')}>
           <Input autoFocus maxLength={NAME_MAX} value={shown} onChange={(e) => setName(e.target.value)} />
         </FormField>
         <FormField
-          label="Role"
-          description={roleFixed ? (token?.is_initial ? 'The initial token stays an owner.' : 'A token cannot change its own role.') : undefined}
+          label={t('Role')}
+          description={roleFixed ? (token?.is_initial ? t('The initial token stays an owner.') : t('A token cannot change its own role.')) : undefined}
         >
           <OptionSelect value={shownRole} onChange={(v) => setRole(v as Role)} options={options} disabled={roleFixed} />
         </FormField>
