@@ -1,0 +1,14 @@
+FROM node:24-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# nginx serves the panel and proxies the API (the service itself has no CORS).
+# /etc/nginx/templates/*.template is rendered with the container's env at start.
+FROM nginx:1.27-alpine
+ENV OMNIXON_URL=http://omnixon-api:8000
+COPY docker/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80

@@ -1,0 +1,41 @@
+spec:
+  inputs:
+    registry:
+      type: string
+      default: $CI_REGISTRY_IMAGE
+      description: "Registry URL"
+    api_image_tag:
+      type: string
+      description: "Тег целевого образа api"
+      default: latest
+    deploy_target:
+      type: string
+      default: dev
+      options:
+        - dev
+        - prod
+      description: "Куда деплоить"
+    deploy_mode:
+      type: string
+      default: base
+      options:
+        - base
+        - reload
+        - force_recreate
+
+---
+
+include:
+  - component: $CI_SERVER_FQDN/internal/ci-components/docker-registry-auth@v2.8.2
+  - component: $CI_SERVER_FQDN/internal/ci-components/deploy@v2.8.2
+    inputs:
+      stage_name: dev-deploy
+      job_name: dev-deploy-job
+      environment_name: development
+      compose_name: docker/docker-compose.dev-deploy.yml
+      run_from_web_regex: '/^dev$/'
+      deploy_mode: $[[ inputs.deploy_mode ]]
+      exports: |
+        REGISTRY=$[[ inputs.registry ]]
+        API_IMAGE_TAG=$[[ inputs.api_image_tag ]]
+      registry_login_job_name: .registry-login
