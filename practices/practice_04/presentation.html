@@ -217,9 +217,9 @@
           </div>
           <div class="info-box">
             <h3>Метрики верификации:</h3>
-            <p>• Автоматические тесты: <span class="metric-badge badge-pass">25 из 25 пройдены (100%)</span></p>
-            <p>• Время полного прогона: <strong>0.04 секунды</strong></p>
-            <p>• Модули проверки: <strong>Синтаксис, Каталог, Фича A, Фича B, MCP сервер</strong></p>
+            <p>• Автоматические тесты: <span class="metric-badge badge-pass">27 из 27 пройдены (100%)</span></p>
+            <p>• Время полного прогона: <strong>1.9 секунды</strong></p>
+            <p>• Модули проверки: <strong>Синтаксис, Каталог, Фича A, Фича B, Собственный MCP, ВкусВилл MCP</strong></p>
             <p>• Поддержка ОС: <strong>Windows, macOS, Linux (кроссплатформенный runner)</strong></p>
           </div>
         </div>
@@ -237,8 +237,8 @@
             <h3>Обоснование подключений:</h3>
             <p><strong>1. AGENTS.md</strong> — предотвращает деградацию контрактов и запрещает ослабление проверок runner ради галочки.</p>
             <p><strong>2. Hook check-after-edit.js</strong> — перехватывает сохранение файлов (`execute.after`) и сразу запускает доверенный runner, не позволяя агенту накапливать скрытые синтаксические или логические ошибки.</p>
-            <p><strong>3. opencode.json</strong> — объявляет локальный MCP сервер `vkusmart-mcp` (stdio) и удаленный `context7` для документации библиотек.</p>
-            <p><strong>4. Runner scripts/check.py</strong> — единый авторитет качества кода. Завершается с кодом 0 только если синтаксис, структура каталога и все 25 тестов зеленые.</p>
+            <p><strong>3. opencode.json</strong> — объявляет собственный локальный MCP сервер `vkusmart-mcp` (stdio), официальный удаленный `vkusvill` и сервер документации `context7`.</p>
+            <p><strong>4. Runner scripts/check.py</strong> — единый авторитет качества кода. Завершается с кодом 0 только если синтаксис, структура каталога и все 27 тестов зеленые.</p>
           </div>
           <div>
             <h3>Код Hook: .opencode/plugins/check-after-edit.js</h3>
@@ -292,53 +292,48 @@
     <!-- Слайд 3: Собственный MCP -->
     <section id="slide-mcp" class="slide">
       <div class="card">
-        <h2>3. Подключение и работа с MCP сервером ВкусВилл (2 балла)</h2>
-        <p>В проекте настроена прямая интеграция с официальным удаленным сервером <code>https://mcp.vkusvill.ru/mcp</code>, а также локальным сервисом подборок.</p>
+        <h2>3. Собственный MCP сервер VkusMart и интеграция с ВкусВилл (2 балла)</h2>
+        <p>В проекте реализован собственный локальный сервер <code>mcp_server/server.py</code> (JSON-RPC 2.0 stdio), а также настроена интеграция с официальным удаленным сервером <code>https://mcp.vkusvill.ru/mcp</code>.</p>
         
         <div class="grid-2">
           <div class="info-box">
-            <h3>Инструменты официального MCP ВкусВилл:</h3>
-            <p>1. <code>vkusvill_products_search</code>: поиск реальных товаров каталога ВкусВилл (параметры: `q`, `limit`, `page`).</p>
-            <p>2. <code>vkusvill_products_discount</code>: актуальные скидки и акции розничной сети ВкусВилл.</p>
-            <p>3. <code>vkusvill_recipes</code>: база проверенных кулинарных рецептов ВкусВилл с ингредиентами.</p>
-            <p>4. <code>vkusvill_cart_link_create</code>: генерация прямой ссылки на корзину с товарами.</p>
+            <h3>Инструменты собственного MCP сервера VkusMart:</h3>
+            <p>1. <code>get_theme_bundles</code>: получение тематических рационов с фильтрацией по бюджету и аллергенам.</p>
+            <p>2. <code>search_products</code>: умный поиск товаров со стеммингом корней слов и проверкой категорий.</p>
+            <p>3. <code>calculate_cart_nutrition</code>: детерминированный расчет скидок (7% / 12%) и суммарного БЖУ.</p>
+            <h4 style="color:#38bdf8; margin-top:10px;">Внешний сервер ВкусВилл:</h4>
+            <p>• <code>vkusvill_products_search</code>, <code>vkusvill_products_discount</code>, <code>vkusvill_recipes</code>.</p>
           </div>
           <div class="info-box">
-            <h3>Успешный вызов ВкусВилл MCP (200 OK):</h3>
-            <pre><code>// POST https://mcp.vkusvill.ru/mcp
-// Tool: vkusvill_products_search, args: { "q": "гречка", "limit": 5 }
+            <h3>Успешный вызов собственного MCP (200 OK):</h3>
+            <pre><code>// Tool: get_theme_bundles, args: {"theme_id": "theme-student", "max_budget": 500}
 {
-  "ok": true,
-  "data": {
-    "items": [
-      {
-        "id": 17699,
-        "name": "Крупа гречневая ядрица, 900 г",
-        "price": { "current": 85, "currency": "RUB" }
-      }
-    ]
-  }
+  "bundles": [{
+    "id": "theme-student",
+    "name": "Быстрый студенческий ужин",
+    "total_price": 355.0,
+    "is_within_budget": true,
+    "products_count": 3
+  }]
 }</code></pre>
           </div>
         </div>
 
-        <h3>Обработка ошибочного входа (ВкусВилл MCP Handled Error):</h3>
+        <h3>Обработка ошибочного входа (MCP Handled Errors):</h3>
         <div class="grid-2">
           <div>
-            <p><strong>Сценарий: Пустой поисковый запрос (q: "")</strong></p>
-            <pre><code>// Tool: vkusvill_products_search, args: { "q": "" }
+            <p><strong>Сценарий: Пустой поисковый запрос (Собственный MCP)</strong></p>
+            <pre><code>// Tool: search_products, args: { "query": "  " }
 {
-  "jsonrpc": "2.0",
-  "id": 100,
-  "error": {
-    "code": -32602,
-    "message": "Invalid parameters for tool 'vkusvill_products_search': String is too short (0 chars), minimum 1"
-  }
+  "isError": true,
+  "content": [{
+    "text": "{\n  \"error\": true,\n  \"code\": \"EMPTY_QUERY\",\n  \"message\": \"Поисковый запрос не может быть пустым\"\n}"
+  }]
 }</code></pre>
           </div>
           <div>
-            <p><strong>Сценарий: Отрицательный бюджет в подборках</strong></p>
-            <pre><code>// Tool: get_theme_bundles, args: { "max_budget": -100 }
+            <p><strong>Сценарий: Отрицательный бюджет в подборках (Собственный MCP)</strong></p>
+            <pre><code>// Tool: get_theme_bundles, args: { "max_budget": -200 }
 {
   "isError": true,
   "content": [{
