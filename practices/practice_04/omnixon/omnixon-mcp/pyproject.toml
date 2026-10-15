@@ -1,0 +1,36 @@
+[project]
+name = "omnixon-mcp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "lixelv", email = "simeongfremenko@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.28.1",
+    "jsonschema>=4.26.0",
+    "mcp==1.30.0",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+omnixon-mcp = "omnixon_mcp:main"
+
+[build-system]
+requires = ["uv_build>=0.8.22,<0.9.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+test = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]  # not the editable install: macOS marks its .pth hidden and Python 3.11.15+ skips it
+
+[tool.ruff]
+line-length = 110

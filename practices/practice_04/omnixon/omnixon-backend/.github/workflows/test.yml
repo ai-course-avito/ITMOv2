@@ -1,0 +1,56 @@
+name: Run Tests
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev"]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create .env file for testing
+        run: |
+          echo "APP_NAME=omnixon_test" >> .env
+          echo "INITIAL_API_KEY=D2F_hwJgq9mdd4xd1CbE8nTIBYPljpDnEPAzcTzmBX0XvjjF0z28VEwjuOTr9vX1" >> .env
+          echo "OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}" >> .env
+          echo "POSTGRES_USER=user" >> .env
+          echo "POSTGRES_PASSWORD=password" >> .env
+          echo "POSTGRES_DB=omnixon" >> .env
+          echo "POSTGRES_HOST=db" >> .env
+          echo "UPSTREAM_PORT=8000" >> .env
+          cp .env docker/.env
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and cache Docker services
+        uses: docker/bake-action@v6
+        with:
+          workdir: docker
+          files: docker/docker-compose.test.yaml
+          load: true
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
+
+      - name: Run docker-compose tests
+        working-directory: docker
+        run: |
+          docker compose -f docker-compose.test.yaml --env-file .env up --abort-on-container-exit --exit-code-from tests
+
+      - name: Cleanup
+        if: always()
+        working-directory: docker
+        run: docker compose -f docker-compose.test.yaml down -v
