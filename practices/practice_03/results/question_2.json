@@ -1,0 +1,27 @@
+{
+  "question_number": 2,
+  "question": "Что будет при пустом имени подписчика? Подтверди кодом.",
+  "model": "ollama/itmo-agent",
+  "opencode_session_id": "ses_ee88c7c47ffessI184MT9vwXJV",
+  "working_directory": "practices/practice_03/lab/demo",
+  "answer": "При пустом имени подписчика будет выброшено исключение `ValueError(\"empty name\")`.\n\nПодтверждённый фрагмент из `service.py`:\n```python\ndef subscribe(name):\n    if not name.strip():\n        raise ValueError(\"empty name\")\n    subscribers.add(name.strip())\n    return {\"subscribed\": True}\n```",
+  "tool_calls": [
+    {
+      "name": "glob",
+      "arguments": {
+        "pattern": "service.py"
+      },
+      "status": "completed",
+      "result": "practices/practice_03/lab/demo/service.py"
+    },
+    {
+      "name": "read",
+      "arguments": {
+        "filePath": "practices/practice_03/lab/demo/service.py"
+      },
+      "status": "completed",
+      "result": "<path>practices/practice_03/lab/demo/service.py</path>\n<type>file</type>\n<content>\n1: subscribers = set()\n2: \n3: \n4: def subscribe(name):\n5:     if not name.strip():\n6:         raise ValueError(\"empty name\")\n7:     subscribers.add(name.strip())\n8:     return {\"subscribed\": True}\n9: \n\n(End of file - total 9 lines)\n</content>"
+    }
+  ],
+  "note": "Ответ и вызовы инструментов извлечены из экспорта сессии OpenCode; абсолютные пути заменены путями относительно корня репозитория."
+}

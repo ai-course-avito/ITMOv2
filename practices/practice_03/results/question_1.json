@@ -1,0 +1,19 @@
+{
+  "question_number": 1,
+  "question": "Как запустить тесты? Укажи файл-источник.",
+  "model": "ollama/itmo-agent",
+  "opencode_session_id": "ses_ee88e0d83ffeaNuDNo5zlOeYJd",
+  "working_directory": "practices/practice_03/lab/demo",
+  "answer": "Тесты запускаются командой `make test`, которая выполняет `python3 -m unittest -v`.\n\nИсточник: `Makefile`.",
+  "tool_calls": [
+    {
+      "name": "read",
+      "arguments": {
+        "filePath": "practices/practice_03/lab/demo/Makefile"
+      },
+      "status": "completed",
+      "result": "<path>practices/practice_03/lab/demo/Makefile</path>\n<type>file</type>\n<content>\n1: .PHONY: test\n2: test:\n3: \tpython3 -m unittest -v\n4: \n\n(End of file - total 4 lines)\n</content>"
+    }
+  ],
+  "note": "Ответ и вызовы инструментов извлечены из экспорта сессии OpenCode; абсолютные пути заменены путями относительно корня репозитория."
+}
