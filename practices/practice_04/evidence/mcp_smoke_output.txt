@@ -1,0 +1,158 @@
+Processing request of type ListToolsRequest
+Processing request of type CallToolRequest
+Processing request of type CallToolRequest
+Processing request of type CallToolRequest
+Processing request of type CallToolRequest
+Processing request of type CallToolRequest
+Processing request of type CallToolRequest
+Processing request of type CallToolRequest
+Processing request of type CallToolRequest
+server: diff-inspector 1.30.0, protocol 2025-11-25
+
+=== list_tools: 1 tool(s) ===
+name: inspect_diff
+description: Разобрать unified diff (вывод git diff) и вернуть сводку.
+
+Возвращает JSON: files (path, status, added, removed, binary), total_files,
+total_added, total_removed, size_bytes (utf-8), too_large (size_bytes > max_bytes)
+и would_be_accepted (diff годится для ai-review-api). Пустой diff, текст без признаков
+diff и max_bytes <= 0 дают ошибку tool (isError=true) с пояснением.
+
+inputSchema: {'properties': {'diff': {'title': 'Diff', 'type': 'string'}, 'max_bytes': {'default': 100000, 'title': 'Max Bytes', 'type': 'integer'}}, 'required': ['diff'], 'title': 'inspect_diffArguments', 'type': 'object'}
+
+=== 1. OK: нормальный diff (5 файлов: изменен, новый, удален, переименован, бинарный) ===
+arguments: {'diff': '<716 chars>'}
+isError: False
+content[text]: {
+  "files": [
+    {
+      "path": "app/main.py",
+      "status": "modified",
+      "added": 2,
+      "removed": 1,
+      "binary": false
+    },
+    {
+      "path": "docs/new.md",
+      "status": "added",
+      "added": 2,
+      "removed": 0,
+      "binary": false
+    },
+    {
+      "path": "old.txt",
+      "status": "deleted",
+      "added": 0,
+      "removed": 2,
+      "binary": false
+    },
+    {
+      "path": "src/b.py",
+      "status": "renamed",
+      "added": 1,
+      "removed": 1,
+      "binary": false,
+      "old_path": "src/a.py"
+    },
+    {
+      "path": "img/logo.png",
+      "status": "added",
+      "added": 0,
+      "removed": 0,
+      "binary": true
+    }
+  ],
+  "total_files": 5,
+  "total_added": 5,
+  "total_removed": 4,
+  "size_bytes": 716,
+  "max_bytes": 100000,
+  "too_large": false,
+  "would_be_accepted": true
+}
+
+=== 2. OK: тот же diff, но max_bytes=100 -> too_large=true, would_be_accepted=false ===
+arguments: {'diff': '<716 chars>', 'max_bytes': 100}
+isError: False
+content[text]: {
+  "files": [
+    {
+      "path": "app/main.py",
+      "status": "modified",
+      "added": 2,
+      "removed": 1,
+      "binary": false
+    },
+    {
+      "path": "docs/new.md",
+      "status": "added",
+      "added": 2,
+      "removed": 0,
+      "binary": false
+    },
+    {
+      "path": "old.txt",
+      "status": "deleted",
+      "added": 0,
+      "removed": 2,
+      "binary": false
+    },
+    {
+      "path": "src/b.py",
+      "status": "renamed",
+      "added": 1,
+      "removed": 1,
+      "binary": false,
+      "old_path": "src/a.py"
+    },
+    {
+      "path": "img/logo.png",
+      "status": "added",
+      "added": 0,
+      "removed": 0,
+      "binary": true
+    }
+  ],
+  "total_files": 5,
+  "total_added": 5,
+  "total_removed": 4,
+  "size_bytes": 716,
+  "max_bytes": 100,
+  "too_large": true,
+  "would_be_accepted": false
+}
+
+=== 3. ERROR: пустая строка ===
+arguments: {'diff': ''}
+isError: True
+content[text]: Error executing tool inspect_diff: diff пустой (пустая строка): нечего разбирать.
+
+=== 4. ERROR: только пробелы и переводы строк ===
+arguments: {'diff': '   \n\t\n'}
+isError: True
+content[text]: Error executing tool inspect_diff: diff состоит только из пробелов/переводов строк: нечего разбирать.
+
+=== 5. ERROR: мусорный текст без признаков diff ===
+arguments: {'diff': 'привет, это просто текст, а не diff'}
+isError: True
+content[text]: Error executing tool inspect_diff: Не нашел ни одного признака unified diff: нет строк 'diff --git', '--- ' / '+++ ' и заголовков ханков '@@ -a,b +c,d @@'. Передай вывод 'git diff' как есть.
+
+=== 6. ERROR: max_bytes = 0 ===
+arguments: {'diff': '<716 chars>', 'max_bytes': 0}
+isError: True
+content[text]: Error executing tool inspect_diff: max_bytes должен быть больше 0, получено: 0.
+
+=== 7. ERROR: max_bytes < 0 ===
+arguments: {'diff': '<716 chars>', 'max_bytes': -5}
+isError: True
+content[text]: Error executing tool inspect_diff: max_bytes должен быть больше 0, получено: -5.
+
+=== 8. ERROR: diff не строка (число 123) ===
+arguments: {'diff': 123}
+isError: True
+content[text]: Error executing tool inspect_diff: 1 validation error for inspect_diffArguments
+diff
+  Input should be a valid string [type=string_type, input_value=123, input_type=int]
+    For further information visit https://errors.pydantic.dev/2.13/v/string_type
+
+ИТОГ: OK, все ожидания по isError совпали

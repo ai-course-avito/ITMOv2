@@ -1,0 +1,13 @@
+Выжимка handoff_run.jsonl (headless claude -p, --permission-mode acceptEdits, без --dangerously-skip-permissions)
+Скрипт разбора: scratchpad/summ.py (не в репозитории).
+
+Сессия: модель claude-sonnet-5-5, 14 ходов, 75 с (по логу), код 0, handoff_run.err содержит только предупреждение "no stdin data received in 3s".
+
+Что прочитал: AGENTS.md (cat в первой Bash-команде), git log --oneline --stat, git ls-files, docs/requirements.md, docs/style-guide.md,
+  app/main.py, .claude/settings.json, .mcp.json, .claude/skills/tdd-feature/SKILL.md, .claude/hooks/check-after-edit.sh, app/llm.py,
+  mcp_server/server.py, git diff 09bb973 HEAD --stat, tests/test_review_llm_failure.py (Read).
+check.sh: запускал сам (3-я Bash-команда, sh scripts/check.sh | tail), в итоговом тексте: 56 passed, CHECK PASS.
+HANDOFF.md: создан Write-ом в docs/HANDOFF.md, потом один Edit. Hook PostToolUse:Write и PostToolUse:Edit сработали (success), файл вне app/tests/mcp_server, поэтому check.sh hook не запускал.
+Отказы прав (6 permission_denied): попытки pytest --co с heredoc, запись probe.py в %TEMP%, PowerShell, голый python -m pytest --co. Модель обошла их Grep/Read и сама сказала об этом в финальном тексте:
+  вывод "пробельный diff больше лимита даёт 422" она сделала из кода и не запускала (я потом проверил сам: 422).
+Контракт docs/requirements.md и scripts/check.sh не менялись, коммита нет (git status: только ?? docs/HANDOFF.md внутри проекта).

@@ -1,0 +1,14 @@
+### 1. PASS: правка tests/test_health.py (путь Windows с обратными слэшами), исходное состояние
+{"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": "check.sh: CHECK PASS"}}
+exit=0
+
+### 2. Правка вне app/tests/mcp_server (README.md): hook ничего не делает
+exit=0 (вывод пустой)
+
+### 3. FAIL: временно ломаю assertion в tests/test_health.py
+{"decision": "block", "reason": "check.sh: CHECK FAIL \u043f\u043e\u0441\u043b\u0435 \u043f\u0440\u0430\u0432\u043a\u0438 tests/test_health.py. \u0425\u0432\u043e\u0441\u0442 \u0432\u044b\u0432\u043e\u0434\u0430 pytest:\n================================== FAILURES ===================================\n___________________________ test_health_returns_ok ____________________________\n\n    def test_health_returns_ok():\n        response = TestClient(app).get(\"/health\")\n    \n        assert response.status_code == 200\n>       assert response.json() == {\"status\": \"BROKEN\"}\nE       AssertionError: assert {'status': 'ok'} == {'status': 'BROKEN'}\nE         \nE         Differing items:\nE         {'status': 'ok'} != {'status': 'BROKEN'}\nE         Use -v to get more diff\n\ntests\\test_health.py:10: AssertionError\n============================== warnings summary ===============================\n.venv\\Lib\\site-packages\\fastapi\\testclient.py:1\n  C:\\Users\\zawh\\ITMO\\Avito\\ITMOv2\\practices\\practice_04\\ai-review-api\\.venv\\Lib\\site-packages\\fastapi\\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ===========================\nFAILED tests/test_health.py::test_health_returns_ok - AssertionError: assert ...\n1 failed, 4 passed, 1 warning in 0.75s\nCHECK FAIL\n"}
+exit=0
+
+### лог hook (.claude/hooks/check-after-edit.log)
+2026-10-07 20:09:23 tests/test_health.py CHECK PASS
+2026-10-07 20:09:26 tests/test_health.py CHECK FAIL

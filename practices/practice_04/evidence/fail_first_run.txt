@@ -1,0 +1,20 @@
+##### fail_first.sh tests/test_tmp_ff.py::test_missing_feature_returns_422
+1 failed, 1 warning in 0.73s
+-----
+FAIL-FIRST OK: тест упал внутри теста. Причина: AssertionError: assert 200 == 422
+Проверь глазами: причина должна быть 'нет нужного поведения' (например 404 вместо 422), а не опечатка в тесте.
+##### fail_first.sh tests/test_tmp_ff.py::test_passes_already
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1 passed, 1 warning in 0.57s
+-----
+FAIL-FIRST BAD: тест прошел сразу. Либо фича уже есть, либо тест ничего не проверяет.
+##### fail_first.sh tests/test_tmp_bad.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.19s
+-----
+FAIL-FIRST BAD: ошибка сбора тестов (SyntaxError/ImportError/прерывание). ModuleNotFoundError: No module named 'app.nothing'
+##### fail_first.sh nonexist.py
+
+no tests ran in 0.00s
+-----
+FAIL-FIRST BAD: pytest завершился с кодом 4 (неверные аргументы или внутренняя ошибка). 

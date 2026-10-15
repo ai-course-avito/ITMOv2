@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "diff-inspector": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["mcp_server/server.py"]
+    }
+  }
+}
