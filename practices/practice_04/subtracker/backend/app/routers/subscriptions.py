@@ -8,7 +8,11 @@ from app.db import get_db_session
 from app.dependencies import get_today
 from app.models import Subscription, User
 from app.schemas.subscriptions import (
+    BillingCycle,
+    SortField,
+    SortOrder,
     SubscriptionCreate,
+    SubscriptionListItem,
     SubscriptionRead,
     SubscriptionUpdate,
     UpcomingCharge,
@@ -34,15 +38,29 @@ async def create_subscription(
     return await service.create_subscription(session, user, body, today)
 
 
-@router.get("", response_model=list[SubscriptionRead])
+@router.get("", response_model=list[SubscriptionListItem])
 async def list_subscriptions(
     is_active: bool | None = None,
+    billing_cycle: BillingCycle | None = None,
+    q: str | None = Query(None, max_length=100),
+    sort: SortField = SortField.id,
+    order: SortOrder = SortOrder.asc,
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
-) -> list[Subscription]:
-    return await service.list_subscriptions(session, user, is_active, limit, offset)
+    today: date = Depends(get_today),
+) -> list[SubscriptionListItem]:
+    query = service.SubscriptionListQuery(
+        is_active=is_active,
+        billing_cycle=billing_cycle,
+        q=q,
+        sort=sort,
+        order=order,
+        limit=limit,
+        offset=offset,
+    )
+    return await service.list_subscriptions(session, user, query, today)
 
 
 # Declared before "/{subscription_id}" so "upcoming" is not parsed as an id.

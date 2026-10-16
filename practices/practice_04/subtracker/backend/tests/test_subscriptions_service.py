@@ -68,11 +68,17 @@ async def test_list_filters_paging_and_owner(session):
     )
     await service.create_subscription(session, other, payload(name="C"), TODAY)
 
-    everything = await service.list_subscriptions(session, owner, None, 100, 0)
+    everything = await service.list_subscriptions(
+        session, owner, service.SubscriptionListQuery(), TODAY
+    )
     assert [s.name for s in everything] == ["A", "B"]
-    active = await service.list_subscriptions(session, owner, True, 100, 0)
+    active = await service.list_subscriptions(
+        session, owner, service.SubscriptionListQuery(is_active=True), TODAY
+    )
     assert [s.id for s in active] == [first.id]
-    paged = await service.list_subscriptions(session, owner, None, 1, 1)
+    paged = await service.list_subscriptions(
+        session, owner, service.SubscriptionListQuery(limit=1, offset=1), TODAY
+    )
     assert [s.name for s in paged] == ["B"]
 
 

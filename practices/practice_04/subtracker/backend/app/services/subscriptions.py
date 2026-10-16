@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Any
 
@@ -9,11 +10,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Subscription, User
 from app.schemas.subscriptions import (
     BillingCycle,
+    SortField,
+    SortOrder,
     SubscriptionCreate,
+    SubscriptionListItem,
+    SubscriptionRead,
     SubscriptionUpdate,
     UpcomingCharge,
 )
-from app.services.billing import default_next_billing_date, first_on_or_after
+from app.services.billing import (
+    default_next_billing_date,
+    first_on_or_after,
+    monthly_cost,
+)
 
 FIELDS = (
     "name",
@@ -54,18 +63,74 @@ async def create_subscription(
     return subscription
 
 
+@dataclass(frozen=True)
+class SubscriptionListQuery:
+    is_active: bool | None = None
+    billing_cycle: BillingCycle | None = None
+    q: str | None = None
+    sort: SortField = SortField.id
+    order: SortOrder = SortOrder.asc
+    limit: int = 100
+    offset: int = 0
+
+
+def to_list_item(sub: Subscription, today: date) -> SubscriptionListItem:
+    charge_date = days_until = None
+    if sub.is_active:
+        charge_date = first_on_or_after(
+            sub.next_billing_date, sub.billing_cycle, sub.custom_interval_days, today
+        )
+        days_until = (charge_date - today).days
+    return SubscriptionListItem(
+        **SubscriptionRead.model_validate(sub).model_dump(),
+        monthly_cost=monthly_cost(
+            sub.amount, sub.billing_cycle, sub.custom_interval_days
+        ),
+        charge_date=charge_date,
+        days_until=days_until,
+    )
+
+
+def _matches(sub: Subscription, needle: str) -> bool:
+    return needle in sub.name.casefold() or needle in (sub.note or "").casefold()
+
+
+_SORT_KEYS = {
+    SortField.id: lambda item: item.id,
+    SortField.name: lambda item: item.name.casefold(),
+    SortField.amount: lambda item: item.amount,
+    SortField.monthly_cost: lambda item: item.monthly_cost,
+    SortField.charge_date: lambda item: item.charge_date,
+}
+
+
 async def list_subscriptions(
-    session: AsyncSession,
-    user: User,
-    is_active: bool | None,
-    limit: int,
-    offset: int,
-) -> list[Subscription]:
+    session: AsyncSession, user: User, query: SubscriptionListQuery, today: date
+) -> list[SubscriptionListItem]:
+    """The caller's subscriptions, filtered, searched, sorted, then paged.
+
+    The owner and simple filters run in SQL. Search, sorting and paging run in
+    Python so Cyrillic casefolding and the computed sort keys behave the same on
+    SQLite and PostgreSQL (fine for a personal list of up to a few hundred rows).
+    """
     stmt = select(Subscription).where(Subscription.owner_id == user.id)
-    if is_active is not None:
-        stmt = stmt.where(Subscription.is_active.is_(is_active))
-    stmt = stmt.order_by(Subscription.id).limit(limit).offset(offset)
-    return list((await session.execute(stmt)).scalars().all())
+    if query.is_active is not None:
+        stmt = stmt.where(Subscription.is_active.is_(query.is_active))
+    if query.billing_cycle is not None:
+        stmt = stmt.where(Subscription.billing_cycle == query.billing_cycle.value)
+    rows = (await session.execute(stmt)).scalars().all()
+
+    needle = (query.q or "").strip().casefold()
+    if needle:
+        rows = [sub for sub in rows if _matches(sub, needle)]
+
+    items = [to_list_item(sub, today) for sub in rows]
+    key = _SORT_KEYS[query.sort]
+    keyed = sorted((i for i in items if key(i) is not None), key=lambda i: i.id)
+    keyed.sort(key=key, reverse=query.order == SortOrder.desc)  # stable: ties by id
+    unkeyed = sorted((i for i in items if key(i) is None), key=lambda i: i.id)
+
+    return (keyed + unkeyed)[query.offset : query.offset + query.limit]
 
 
 async def get_owned_subscription(

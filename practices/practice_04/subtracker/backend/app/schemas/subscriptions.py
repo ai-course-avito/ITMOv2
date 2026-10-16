@@ -12,6 +12,8 @@ from pydantic import (
     model_validator,
 )
 
+from app.schemas.types import MoneyStr
+
 TWO_PLACES = Decimal("0.01")
 
 
@@ -101,3 +103,24 @@ class UpcomingCharge(BaseModel):
     @field_serializer("amount")
     def serialize_amount(self, value: Decimal) -> str:
         return format(value.quantize(TWO_PLACES), "f")
+
+
+class SortField(StrEnum):
+    id = "id"
+    name = "name"
+    amount = "amount"
+    monthly_cost = "monthly_cost"
+    charge_date = "charge_date"
+
+
+class SortOrder(StrEnum):
+    asc = "asc"
+    desc = "desc"
+
+
+class SubscriptionListItem(SubscriptionRead):
+    """A subscription as shown in the list, with read-only computed fields."""
+
+    monthly_cost: MoneyStr
+    charge_date: date | None
+    days_until: int | None
