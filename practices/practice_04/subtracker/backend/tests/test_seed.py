@@ -53,3 +53,24 @@ async def test_demo_user_can_log_in_after_seed(session, monkeypatch):
         session, seed_module.DEMO_EMAIL, seed_module.DEMO_PASSWORD
     )
     assert user.email == seed_module.DEMO_EMAIL
+
+
+async def test_demo_user_has_upcoming_charges_within_30_days(session, monkeypatch):
+    class _Ctx:
+        async def __aenter__(self):
+            return session
+
+        async def __aexit__(self, *exc):
+            return False
+
+    monkeypatch.setattr(seed_module, "SessionLocal", lambda: _Ctx())
+    await seed_module.seed()
+
+    from app.services import auth as auth_service
+    from app.services import subscriptions as subscription_service
+
+    user = await auth_service.get_user_by_email(session, seed_module.DEMO_EMAIL)
+    charges = await subscription_service.upcoming_charges(
+        session, user, 30, seed_module.get_today()
+    )
+    assert len(charges) >= 2

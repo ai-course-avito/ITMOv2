@@ -4,21 +4,24 @@ Run from backend/:  uv run python -m scripts.seed
 """
 
 import asyncio
+from datetime import timedelta
 from decimal import Decimal
 
 from app.db import SessionLocal
+from app.dependencies import get_today
 from app.models import Subscription
 from app.services import auth as auth_service
 
 DEMO_EMAIL = "demo@example.com"
 DEMO_PASSWORD = "demo-password"
 
+# (name, amount, cycle, custom interval, days until the next charge)
 DEMO_SUBSCRIPTIONS = [
-    ("Netflix", Decimal("15.49"), "monthly", None),
-    ("Spotify", Decimal("10.99"), "monthly", None),
-    ("iCloud+ (annual)", Decimal("35.88"), "yearly", None),
-    ("Gym pass", Decimal("6.00"), "weekly", None),
-    ("VPN (every 90 days)", Decimal("19.90"), "custom_days", 90),
+    ("Netflix", Decimal("15.49"), "monthly", None, 2),
+    ("Spotify", Decimal("10.99"), "monthly", None, 9),
+    ("iCloud+ (annual)", Decimal("35.88"), "yearly", None, 120),
+    ("Gym pass", Decimal("6.00"), "weekly", None, 1),
+    ("VPN (every 90 days)", Decimal("19.90"), "custom_days", 90, 25),
 ]
 
 
@@ -28,14 +31,17 @@ async def seed() -> bool:
         if await auth_service.get_user_by_email(session, DEMO_EMAIL) is not None:
             return False
         user = await auth_service.register_user(session, DEMO_EMAIL, DEMO_PASSWORD)
-        for name, amount, cycle, days in DEMO_SUBSCRIPTIONS:
+        today = get_today()
+        for name, amount, cycle, interval, days_until in DEMO_SUBSCRIPTIONS:
             session.add(
                 Subscription(
                     owner_id=user.id,
                     name=name,
                     amount=amount,
                     billing_cycle=cycle,
-                    custom_interval_days=days,
+                    custom_interval_days=interval,
+                    start_date=today - timedelta(days=200),
+                    next_billing_date=today + timedelta(days=days_until),
                 )
             )
         await session.commit()

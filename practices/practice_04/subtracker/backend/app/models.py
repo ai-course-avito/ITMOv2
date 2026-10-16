@@ -1,8 +1,10 @@
+from datetime import date
 from decimal import Decimal
 
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
+    Date,
     ForeignKey,
     Integer,
     Numeric,
@@ -28,13 +30,29 @@ class User(Base):
 
 class Subscription(Base):
     __tablename__ = "subscriptions"
+    __table_args__ = (
+        CheckConstraint("amount > 0", name="ck_subscriptions_amount_positive"),
+        CheckConstraint(
+            "billing_cycle IN ('monthly', 'yearly', 'weekly', 'custom_days')",
+            name="ck_subscriptions_billing_cycle",
+        ),
+        CheckConstraint(
+            "(billing_cycle = 'custom_days' AND custom_interval_days IS NOT NULL "
+            "AND custom_interval_days > 0) "
+            "OR (billing_cycle <> 'custom_days' AND custom_interval_days IS NULL)",
+            name="ck_subscriptions_custom_interval",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     name: Mapped[str] = mapped_column(String(255))
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     billing_cycle: Mapped[str] = mapped_column(String(20))
     custom_interval_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    start_date: Mapped[date] = mapped_column(Date, default=date.today)
+    next_billing_date: Mapped[date] = mapped_column(Date, default=date.today)
+    note: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     owner: Mapped["User"] = relationship(back_populates="subscriptions")

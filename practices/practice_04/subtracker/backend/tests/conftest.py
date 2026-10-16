@@ -1,5 +1,6 @@
 import os
 from collections.abc import AsyncGenerator
+from datetime import date
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -9,6 +10,7 @@ os.environ.setdefault("SECRET_KEY", "test-secret-key-with-sufficient-length-32b"
 
 from app.auth import get_current_user
 from app.db import Base, get_db_session
+from app.dependencies import get_today
 from app.main import app
 
 
@@ -39,6 +41,29 @@ async def client(session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
 
     app.dependency_overrides.pop(get_db_session, None)
     app.dependency_overrides.pop(get_current_user, None)
+    app.dependency_overrides.pop(get_today, None)
+
+
+PINNED_TODAY = date(2026, 10, 16)
+
+
+@pytest.fixture
+def pinned_today() -> date:
+    app.dependency_overrides[get_today] = lambda: PINNED_TODAY
+    return PINNED_TODAY
+
+
+@pytest.fixture
+def make_headers(client: AsyncClient):
+    """Register a user through the real API and return Bearer headers."""
+
+    async def _make(email: str) -> dict[str, str]:
+        creds = {"email": email, "password": "password123"}
+        assert (await client.post("/api/auth/register", json=creds)).status_code == 201
+        resp = await client.post("/api/auth/login", json=creds)
+        return {"Authorization": f"Bearer {resp.json()['access_token']}"}
+
+    return _make
 
 
 def authenticate_as(user) -> None:

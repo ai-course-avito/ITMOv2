@@ -52,3 +52,66 @@ async def test_upgrade_check_downgrade():
     alembic("downgrade", "base")
     tables = await table_names()
     assert not {"users", "subscriptions"} & tables
+
+
+async def test_subscription_constraints_migration_keeps_data_and_enforces_rules():
+    from sqlalchemy import text
+    from sqlalchemy.exc import IntegrityError
+
+    alembic("downgrade", "base")
+    alembic("upgrade", "c42cf1c11196")  # schema before the constraints revision
+
+    engine = create_async_engine(POSTGRES_URL)
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(
+                text(
+                    "INSERT INTO users (email, hashed_password, default_currency, plan)"
+                    " VALUES ('m@example.com', 'x', 'USD', 'free')"
+                )
+            )
+            await conn.execute(
+                text(
+                    "INSERT INTO subscriptions (owner_id, name, amount, billing_cycle,"
+                    " custom_interval_days, is_active)"
+                    " SELECT id, 'Old', 9.99, 'monthly', NULL, true FROM users"
+                )
+            )
+
+        alembic("upgrade", "head")
+        async with engine.connect() as conn:
+            row = (
+                await conn.execute(
+                    text("SELECT start_date, next_billing_date FROM subscriptions")
+                )
+            ).one()
+        assert row.start_date is not None and row.next_billing_date is not None
+
+        bad_rows = [
+            "0, 'monthly', NULL",
+            "5, 'daily', NULL",
+            "5, 'monthly', 30",
+            "5, 'custom_days', NULL",
+        ]
+        for values in bad_rows:
+            with pytest.raises(IntegrityError):
+                async with engine.begin() as conn:
+                    await conn.execute(
+                        text(
+                            "INSERT INTO subscriptions (owner_id, name, amount,"
+                            " billing_cycle, custom_interval_days, is_active,"
+                            " start_date, next_billing_date)"
+                            f" SELECT id, 'Bad', {values}, true, CURRENT_DATE,"
+                            " CURRENT_DATE FROM users"
+                        )
+                    )
+
+        alembic("downgrade", "-1")  # reversible, data stays
+        async with engine.connect() as conn:
+            count = (
+                await conn.execute(text("SELECT count(*) FROM subscriptions"))
+            ).scalar()
+        assert count == 1
+    finally:
+        await engine.dispose()
+        alembic("downgrade", "base")
