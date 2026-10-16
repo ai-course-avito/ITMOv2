@@ -7,7 +7,7 @@ Lets a person create an account, sign in, and keep a session via short-lived acc
 ## ADDED Requirements
 
 ### Requirement: User registration
-The system SHALL allow registering with an email and a password via `POST /api/auth/register`, storing only a hash of the password. Emails MUST be unique case-insensitively and passwords MUST be at least 8 characters.
+The system SHALL allow registering with an email and a password via `POST /api/auth/register`, storing only a hash of the password. Emails MUST be unique case-insensitively and passwords MUST be 8 to 128 characters.
 
 #### Scenario: Successful registration
 - **WHEN** a client posts a valid new email and a password of 8+ characters
@@ -18,7 +18,7 @@ The system SHALL allow registering with an email and a password via `POST /api/a
 - **THEN** the system responds 409
 
 #### Scenario: Invalid input
-- **WHEN** the email is malformed or the password is shorter than 8 characters
+- **WHEN** the email is malformed or the password is shorter than 8 or longer than 128 characters
 - **THEN** the system responds 422
 
 ### Requirement: User login
@@ -27,6 +27,10 @@ The system SHALL issue an access token and a refresh token via `POST /api/auth/l
 #### Scenario: Successful login
 - **WHEN** a client posts a registered email and the correct password
 - **THEN** the system responds 200 with `access_token`, `refresh_token`, and `token_type` equal to `bearer`
+
+#### Scenario: Email is matched case-insensitively
+- **WHEN** a client logs in with the registered email in different letter case or with surrounding spaces and the correct password
+- **THEN** the system responds 200 with tokens
 
 #### Scenario: Wrong credentials
 - **WHEN** the password is wrong or the email is unknown

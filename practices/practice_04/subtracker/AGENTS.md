@@ -8,7 +8,7 @@
 - **Frontend:** React + Vite + TypeScript, Tailwind CSS
 - **Auth:** JWT (access + refresh), хеш паролей — argon2
 - **Планировщик:** APScheduler (проверка предстоящих списаний) — см. примечание ниже
-- **Инфра:** Docker + docker-compose (backend, frontend, postgres)
+- **Инфра:** локальный запуск без Docker (`backend/scripts/dev.sh`); Docker + docker-compose — запланированы, **пока не созданы**
 - **Пакеты:** backend — `uv`; frontend — `npm`
 - **Тесты:** pytest (+ pytest-asyncio), httpx для тестового клиента
 - **Качество:** ruff (линт + формат)
@@ -17,8 +17,9 @@
 ```
 subtracker/
 ├── backend/        # FastAPI-приложение
-├── frontend/       # React + Vite
-├── docker-compose.yml
+├── frontend/       # React + Vite (пока нет)
+├── openspec/       # change-ы и спеки (OpenSpec)
+├── docker-compose.yml  # планируется, пока нет
 ├── SPEC.md         # что строим (фичи, модель, API)
 └── AGENTS.md       # этот файл
 ```
@@ -46,11 +47,12 @@ cp .env.example .env
 
 ## Команды
 **Разработка (быстрая итерация, без Docker):**
-- Backend dev-сервер: `cd backend && uv run uvicorn app.main:app --reload`
+- Backend одной командой (проверка БД, миграции, uvicorn): `cd backend && ./scripts/dev.sh` (`--seed` — демо-данные)
+- Backend dev-сервер вручную: `cd backend && uv run uvicorn app.main:app --reload`
 - Frontend dev-сервер: `cd frontend && npm run dev`
 
-**Через Docker (всё разом):**
-- Поднять всё: `docker compose up --build`
+**Через Docker (всё разом) — пока недоступно, файлов compose нет:**
+- Когда появится: `docker compose up --build`
 
 **Тесты:**
 - Все тесты бэкенда: `cd backend && uv run pytest`
@@ -71,7 +73,7 @@ cp .env.example .env
 - Бизнес-логику не держать в роутах: роут принимает запрос, валидирует, делегирует в сервис-слой, возвращает ответ.
 - Ошибки — осмысленные HTTP-коды (401 / 403 / 404 / 422), не голый 500.
 - **Изоляция пользователей:** пользователь видит и меняет только свои подписки — проверять владельца в каждом запросе.
-- Именование: snake_case в Python, camelCase во фронте.
+- Именование: snake_case в Python, camelCase во фронте. Поля JSON API остаются в snake_case (`access_token`, `default_currency`); фронт преобразует их в camelCase в одном месте — API-клиенте, а не по всему коду.
 - Каждый новый эндпоинт сопровождается тестом.
 
 ## Чего НЕ делать

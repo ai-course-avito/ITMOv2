@@ -34,3 +34,22 @@ async def test_seed_is_idempotent(session, monkeypatch):
         "custom_days",
     }
     assert len(subs) == len(seed_module.DEMO_SUBSCRIPTIONS)
+
+
+async def test_demo_user_can_log_in_after_seed(session, monkeypatch):
+    class _Ctx:
+        async def __aenter__(self):
+            return session
+
+        async def __aexit__(self, *exc):
+            return False
+
+    monkeypatch.setattr(seed_module, "SessionLocal", lambda: _Ctx())
+    await seed_module.seed()
+
+    from app.services import auth as auth_service
+
+    user = await auth_service.authenticate(
+        session, seed_module.DEMO_EMAIL, seed_module.DEMO_PASSWORD
+    )
+    assert user.email == seed_module.DEMO_EMAIL

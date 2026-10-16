@@ -137,3 +137,20 @@ async def test_me_free_and_pro(client, session):
 async def test_me_requires_authentication(client):
     resp = await client.get("/api/auth/me")
     assert resp.status_code == 401
+
+
+async def test_register_password_over_128_chars_is_422(client):
+    resp = await client.post(
+        "/api/auth/register",
+        json={"email": "long@example.com", "password": "x" * 129},
+    )
+    assert resp.status_code == 422
+
+
+async def test_login_email_case_and_spaces_insensitive(client):
+    await client.post("/api/auth/register", json=CREDS)
+    resp = await client.post(
+        "/api/auth/login",
+        json={"email": "  USER@Example.com ", "password": CREDS["password"]},
+    )
+    assert resp.status_code == 200
