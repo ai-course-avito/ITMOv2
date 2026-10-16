@@ -1,6 +1,13 @@
 from decimal import Decimal
 
-from sqlalchemy import Boolean, ForeignKey, Integer, Numeric, String
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -8,11 +15,13 @@ from app.db import Base
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = (CheckConstraint("plan IN ('free', 'pro')", name="ck_users_plan"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
     default_currency: Mapped[str] = mapped_column(String(3), default="USD")
+    plan: Mapped[str] = mapped_column(String(10), default="free", server_default="free")
 
     subscriptions: Mapped[list["Subscription"]] = relationship(back_populates="owner")
 

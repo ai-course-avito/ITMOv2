@@ -1,8 +1,11 @@
+import os
 from collections.abc import AsyncGenerator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+os.environ.setdefault("SECRET_KEY", "test-secret-key-with-sufficient-length-32b")
 
 from app.auth import get_current_user
 from app.db import Base, get_db_session
