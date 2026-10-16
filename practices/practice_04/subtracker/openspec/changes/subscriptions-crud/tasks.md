@@ -30,3 +30,10 @@
 - [x] 5.2 Update `SPEC.md`: model fields, new endpoints with examples, upcoming semantics, UTC-today limitation, roadmap without the APScheduler stage; verify every endpoint in `/openapi.json` for subscriptions appears in the document
 - [x] 5.3 Run `uv run ruff check .`, `uv run ruff format --check .` and `uv run pytest`, then the Postgres migration test; verify all green
 - [x] 5.4 End-to-end on local Postgres via `./scripts/dev.sh --seed`: log in as the demo user, create, patch and delete a subscription, call upcoming and stats; verify expected status codes and values
+
+## 6. Hardening from security review
+
+- [x] 6.1 Add interval (<= 3650) and date-range (2000-2100) bounds to the schemas and model CHECKs; verify schema tests reject 3651, 1999-12-31 and 2101-01-01 and accept the boundary values
+- [x] 6.2 Add Alembic revision recreating the interval CHECK and adding the date-range CHECK; verify `upgrade head`, `downgrade -1`, `alembic check` on a scratch Postgres database and the extended migration test
+- [x] 6.3 Verify extreme accepted values (interval 3650, start_date 2100-12-31) create fine and `/upcoming` returns 200 for every cycle
+- [x] 6.4 Add `APP_ENV` setting and make `scripts/seed.py` refuse in production; verify tests for production (exit non-zero, nothing created) and development; document in `.env.example` and `SPEC.md`

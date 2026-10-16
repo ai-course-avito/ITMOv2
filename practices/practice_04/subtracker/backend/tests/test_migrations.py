@@ -92,6 +92,7 @@ async def test_subscription_constraints_migration_keeps_data_and_enforces_rules(
             "5, 'daily', NULL",
             "5, 'monthly', 30",
             "5, 'custom_days', NULL",
+            "5, 'custom_days', 3651",
         ]
         for values in bad_rows:
             with pytest.raises(IntegrityError):
@@ -106,7 +107,18 @@ async def test_subscription_constraints_migration_keeps_data_and_enforces_rules(
                         )
                     )
 
-        alembic("downgrade", "-1")  # reversible, data stays
+        async with engine.begin() as conn:  # date bounds (revision d3f5a9b2c6e1)
+            with_bad_date = (
+                "INSERT INTO subscriptions (owner_id, name, amount, billing_cycle,"
+                " is_active, start_date, next_billing_date)"
+                " SELECT id, 'Bad', 5, 'monthly', true, DATE '1999-12-31', CURRENT_DATE"
+                " FROM users"
+            )
+        with pytest.raises(IntegrityError):
+            async with engine.begin() as conn:
+                await conn.execute(text(with_bad_date))
+
+        alembic("downgrade", "-2")  # reversible, data stays
         async with engine.connect() as conn:
             count = (
                 await conn.execute(text("SELECT count(*) FROM subscriptions"))

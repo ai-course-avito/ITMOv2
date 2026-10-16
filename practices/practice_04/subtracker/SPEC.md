@@ -26,8 +26,8 @@
 ## 3. Модель данных
 
 - **User**: `id`, `email` (уникален, хранится в нижнем регистре), `hashed_password` (argon2), `default_currency` (3 буквы; одна валюта на пользователя), `plan` (`free` | `pro`, по умолчанию `free`).
-- **Subscription**: `id`, `owner_id` → User, `name` (1–255), `amount` (`Decimal`, > 0, 2 знака, до 99 999 999.99), `billing_cycle` (`monthly` | `yearly` | `weekly` | `custom_days`), `custom_interval_days` (обязателен и > 0 только для `custom_days`, иначе запрещён), `is_active`, `start_date`, `next_billing_date`, `note` (до 500, необязательно).
-- Правила на `amount`, `billing_cycle` и `custom_interval_days` дублируются CHECK-ограничениями в БД. Категорий нет.
+- **Subscription**: `id`, `owner_id` → User, `name` (1–255), `amount` (`Decimal`, > 0, 2 знака, до 99 999 999.99), `billing_cycle` (`monthly` | `yearly` | `weekly` | `custom_days`), `custom_interval_days` (обязателен только для `custom_days`, от 1 до 3650, иначе запрещён), `is_active`, `start_date`, `next_billing_date` (обе даты в диапазоне 2000-01-01…2100-12-31), `note` (до 500, необязательно).
+- Правила на `amount`, `billing_cycle`, `custom_interval_days` и диапазон дат дублируются CHECK-ограничениями в БД; в этих границах расчёт дат не может переполниться. Категорий нет.
 
 Следующие этапы добавят поля для Pro-фич (порядок, оценка необходимости).
 
@@ -84,6 +84,7 @@ cp .env.example .env          # один раз; задайте SECRET_KEY (об
 ```
 
 - Swagger: http://localhost:8000/docs, проверка живости: http://localhost:8000/health
+- `--seed` отказывается работать при `APP_ENV=production` (демо-пароль публичный), и тогда сервер не запускается.
 - Демо-пользователь после `--seed`: `demo@example.com` / `demo-password` (план `free`, 5 подписок). Повторный запуск не создаёт дубликатов.
 - Без демо-данных: `./scripts/dev.sh`.
 - Перевести пользователя на Pro вручную: `UPDATE users SET plan = 'pro' WHERE email = '...';`

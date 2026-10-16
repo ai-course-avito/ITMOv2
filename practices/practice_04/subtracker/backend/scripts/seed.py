@@ -7,6 +7,7 @@ import asyncio
 from datetime import timedelta
 from decimal import Decimal
 
+from app.config import settings
 from app.db import SessionLocal
 from app.dependencies import get_today
 from app.models import Subscription
@@ -25,8 +26,16 @@ DEMO_SUBSCRIPTIONS = [
 ]
 
 
+class SeedRefusedError(Exception):
+    pass
+
+
 async def seed() -> bool:
     """Create the demo user and subscriptions. Returns False if already seeded."""
+    if settings.app_env.lower() == "production":
+        raise SeedRefusedError(
+            "Refusing to seed: APP_ENV=production (the demo account has a public password)"
+        )
     async with SessionLocal() as session:
         if await auth_service.get_user_by_email(session, DEMO_EMAIL) is not None:
             return False
@@ -49,7 +58,10 @@ async def seed() -> bool:
 
 
 if __name__ == "__main__":
-    created = asyncio.run(seed())
+    try:
+        created = asyncio.run(seed())
+    except SeedRefusedError as exc:
+        raise SystemExit(str(exc)) from exc
     if created:
         print(f"Seeded demo user {DEMO_EMAIL} / {DEMO_PASSWORD}")
     else:

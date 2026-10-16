@@ -51,6 +51,21 @@ For `billing_cycle` equal to `custom_days` the system SHALL require `custom_inte
 - **WHEN** a `monthly` subscription includes `custom_interval_days`
 - **THEN** the system responds 422
 
+### Requirement: Bounds on intervals and dates
+The system SHALL reject `custom_interval_days` greater than 3650, and `start_date` or `next_billing_date` outside 2000-01-01 to 2100-12-31, with 422. Date arithmetic for any accepted subscription MUST complete without error.
+
+#### Scenario: Interval too large
+- **WHEN** `custom_interval_days` is 3651 or larger
+- **THEN** the system responds 422
+
+#### Scenario: Date out of range
+- **WHEN** `start_date` is 1999-12-31 or `next_billing_date` is 2101-01-01
+- **THEN** the system responds 422
+
+#### Scenario: Extreme accepted values
+- **WHEN** a subscription has the maximum interval and the latest allowed `start_date`
+- **THEN** it is created and the upcoming list responds 200
+
 ### Requirement: Money precision
 Amounts SHALL be stored and returned without floating-point error. Responses MUST serialize `amount` as a decimal string with two decimal places.
 

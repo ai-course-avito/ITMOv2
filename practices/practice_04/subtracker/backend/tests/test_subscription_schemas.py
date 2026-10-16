@@ -40,6 +40,10 @@ def test_valid_subscription_parses_decimal():
         {"billing_cycle": "custom_days", "custom_interval_days": 0},
         {"billing_cycle": "monthly", "custom_interval_days": 30},
         {"next_billing_date": "2025-12-31"},
+        {"billing_cycle": "custom_days", "custom_interval_days": 3651},
+        {"start_date": "1999-12-31"},
+        {"start_date": "2101-01-01"},
+        {"next_billing_date": "2101-01-01"},
     ],
 )
 def test_invalid_subscription_is_rejected(overrides):
@@ -73,3 +77,15 @@ def test_read_serializes_amount_with_two_decimals():
         note=None,
     )
     assert read.model_dump(mode="json")["amount"] == "10.10"
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"billing_cycle": "custom_days", "custom_interval_days": 3650},
+        {"start_date": "2000-01-01"},
+        {"start_date": "2100-12-31", "next_billing_date": "2100-12-31"},
+    ],
+)
+def test_boundary_values_are_accepted(overrides):
+    build(**overrides)

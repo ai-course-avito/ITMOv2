@@ -38,9 +38,14 @@ class Subscription(Base):
         ),
         CheckConstraint(
             "(billing_cycle = 'custom_days' AND custom_interval_days IS NOT NULL "
-            "AND custom_interval_days > 0) "
+            "AND custom_interval_days BETWEEN 1 AND 3650) "
             "OR (billing_cycle <> 'custom_days' AND custom_interval_days IS NULL)",
             name="ck_subscriptions_custom_interval",
+        ),
+        CheckConstraint(
+            "start_date BETWEEN '2000-01-01' AND '2100-12-31' "
+            "AND next_billing_date BETWEEN '2000-01-01' AND '2100-12-31'",
+            name="ck_subscriptions_dates_range",
         ),
     )
 

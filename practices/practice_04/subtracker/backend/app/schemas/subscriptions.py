@@ -26,6 +26,10 @@ Name = Annotated[
     str, StringConstraints(strip_whitespace=True, min_length=1, max_length=255)
 ]
 Amount = Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)]
+MIN_DATE = date(2000, 1, 1)
+MAX_DATE = date(2100, 12, 31)
+MAX_INTERVAL_DAYS = 3650
+BoundedDate = Annotated[date, Field(ge=MIN_DATE, le=MAX_DATE)]
 
 
 class SubscriptionCreate(BaseModel):
@@ -34,9 +38,9 @@ class SubscriptionCreate(BaseModel):
     name: Name
     amount: Amount
     billing_cycle: BillingCycle
-    custom_interval_days: int | None = Field(default=None, gt=0)
-    start_date: date
-    next_billing_date: date | None = None
+    custom_interval_days: int | None = Field(default=None, gt=0, le=MAX_INTERVAL_DAYS)
+    start_date: BoundedDate
+    next_billing_date: BoundedDate | None = None
     note: str | None = Field(default=None, max_length=500)
     is_active: bool = True
 

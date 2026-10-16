@@ -74,3 +74,46 @@ async def test_demo_user_has_upcoming_charges_within_30_days(session, monkeypatc
         session, user, 30, seed_module.get_today()
     )
     assert len(charges) >= 2
+
+
+async def test_seed_refuses_in_production(session, monkeypatch):
+    import pytest
+    from sqlalchemy import select
+
+    from app.models import User
+
+    class _Ctx:
+        async def __aenter__(self):
+            return session
+
+        async def __aexit__(self, *exc):
+            return False
+
+    monkeypatch.setattr(seed_module, "SessionLocal", lambda: _Ctx())
+    monkeypatch.setattr(seed_module.settings, "app_env", "production")
+
+    with pytest.raises(seed_module.SeedRefusedError):
+        await seed_module.seed()
+    assert (await session.execute(select(User))).scalars().all() == []
+
+
+def test_seed_script_exits_nonzero_in_production():
+    import os
+    import subprocess
+    import sys
+
+    result = subprocess.run(
+        [sys.executable, "-m", "scripts.seed"],
+        check=False,
+        cwd=seed_module.__file__.rsplit("/scripts/", 1)[0],
+        env={
+            **os.environ,
+            "APP_ENV": "production",
+            "SECRET_KEY": "test-secret-key-with-sufficient-length-32b",
+            "DATABASE_URL": "postgresql+asyncpg://u:p@127.0.0.1:1/none",
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "Refusing to seed" in result.stderr

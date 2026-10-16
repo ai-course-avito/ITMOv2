@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -60,6 +62,9 @@ async def test_valid_subscriptions_are_accepted(session):
         {"billing_cycle": "monthly", "custom_interval_days": 30},
         {"billing_cycle": "custom_days"},
         {"billing_cycle": "custom_days", "custom_interval_days": 0},
+        {"billing_cycle": "custom_days", "custom_interval_days": 3651},
+        {"start_date": date(1999, 12, 31)},
+        {"next_billing_date": date(2101, 1, 1)},
     ],
 )
 async def test_invalid_subscription_rows_are_rejected(session, overrides):

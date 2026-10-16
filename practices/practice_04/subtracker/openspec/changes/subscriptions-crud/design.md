@@ -31,6 +31,9 @@ Current state (observed): `Subscription` has `name`, `amount` (`Numeric(10,2)`),
 12. **Migration**: one new Alembic revision adds `start_date` and `next_billing_date` (NOT NULL; backfilled with the current date via a temporary server default that is then dropped), `note` (nullable, 500), an index on `owner_id`, and the CHECK constraints; downgrade reverses. Autogenerate output is reviewed by hand because CHECK and server defaults are not detected reliably.
 13. **Seed** is updated to set dates relative to today so the demo user has visible upcoming charges.
 
+14. **Bounds** (hardening found in review): `custom_interval_days` 1..3650 and dates 2000-01-01..2100-12-31 in the schema (`Field(le=...)`, `Field(ge/le)`), mirrored by CHECKs in a second migration revision (the interval CHECK is dropped and recreated). With these limits `anchor + n * interval` and month arithmetic cannot overflow `date`, and the integer column cannot overflow.
+15. **Seed guard**: a new `APP_ENV` setting (default `development`); `seed.py` exits non-zero when it equals `production`, and `dev.sh` runs the seed under `set -e`, so the server does not start. Alternative: random demo password printed once - rejected to keep the documented demo login simple.
+
 ## Risks / Trade-offs
 
 - [Backfilled dates on existing rows are all "today"] -> Acceptable: only demo data exists; the roll-forward logic keeps the list sensible; documented in SPEC.md.

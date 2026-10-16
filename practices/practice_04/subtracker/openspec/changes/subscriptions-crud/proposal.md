@@ -11,6 +11,8 @@ The product is a subscription tracker, but a user cannot yet add a subscription:
 - Validate subscriptions strictly: `amount > 0`; `billing_cycle` one of `monthly|yearly|weekly|custom_days`; `custom_interval_days` required and positive for `custom_days`, forbidden otherwise. Invalid input returns 422 (today an unknown cycle would surface as a 500 in the stats calculation).
 - Add `GET /api/subscriptions/upcoming?days=N`: simple reminders, computed on request from `next_billing_date` and the billing cycle. No e-mail, no background scheduler.
 - Enforce the same rules in the database with CHECK constraints via a new Alembic migration, and update the seed script to the new fields.
+- Bound `custom_interval_days` (at most 3650) and subscription dates (2000-01-01 to 2100-12-31) in the API and the database, so no accepted value can break date arithmetic.
+- Make the demo seed refuse to run when `APP_ENV=production`.
 - Update `SPEC.md` (model, API, roadmap: the APScheduler stage is dropped because reminders are computed on request).
 
 Out of scope: Pro features, payments, ads, categories, multi-currency per subscription, e-mail/push reminders, frontend. Free accounts have no limit on the number of subscriptions.
@@ -22,7 +24,8 @@ Out of scope: Pro features, payments, ads, categories, multi-currency per subscr
 - `upcoming-charges`: listing a user's upcoming charges within a time window, computed from billing cycle and next billing date.
 
 ### Modified Capabilities
-- `database-migrations`: adds a requirement that subscription data rules are enforced by the database schema, not only by the API.
+- `database-migrations`: adds a requirement that subscription data rules (including interval and date bounds) are enforced by the database schema, not only by the API.
+- `local-dev-environment`: the demo seed refuses to run in a production environment.
 
 ## Impact
 
