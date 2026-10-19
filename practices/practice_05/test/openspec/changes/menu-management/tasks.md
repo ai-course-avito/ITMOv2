@@ -1,0 +1,5 @@
+- [ ] 1.1 Define Pydantic models for MenuItem (in/out)
+- [ ] 1.2 Implement in-memory repository with auto-increment id
+- [ ] 1.3 Implement CRUD routes under /api/v1/menu
+- [ ] 1.4 Add pytest tests for CRUD and edge cases
+- [ ] 1.5 Hook frontend to GET /api/v1/menu

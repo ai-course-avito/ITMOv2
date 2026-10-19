@@ -23,22 +23,26 @@ async function loadStatus() {
   }
 }
 
-function loadMenuSample() {
-  const items = [
-    { name: 'Espresso', price: 3, size: 'single' },
-    { name: 'Cappuccino', price: 4, size: 'medium' },
-    { name: 'Latte', price: 4.5, size: 'large' },
-  ];
+async function loadMenu() {
   const ul = document.getElementById('menu-list');
   ul.innerHTML = '';
-  for (const it of items) {
-    const li = document.createElement('li');
-    li.textContent = `${it.name} — ${it.price} CoffeeCoin (${it.size})`;
-    ul.appendChild(li);
+  try {
+    const items = await fetchJSON('/api/v1/menu/');
+    if (items.length === 0) {
+      ul.innerHTML = '<li><em>No items yet</em></li>';
+      return;
+    }
+    for (const it of items) {
+      const li = document.createElement('li');
+      li.textContent = `${it.name} — ${it.priceCoffeeCoin} CoffeeCoin (${(it.sizes||[]).join(', ') || 'n/a'})`;
+      ul.appendChild(li);
+    }
+  } catch (e) {
+    ul.innerHTML = '<li class="warn">Failed to load menu</li>';
   }
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
   await loadStatus();
-  loadMenuSample();
+  await loadMenu();
 });
