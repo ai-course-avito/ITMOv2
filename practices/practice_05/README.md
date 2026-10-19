@@ -26,3 +26,9 @@ Run:
 bash practices/practice_05/scripts/check.sh
 ```
 It runs OpenSpec validation and fails on errors.
+
+Feature Plan (Coffee Backend)
+- Change: coffee-backend-foundation
+  - Why: minimal foundation to iterate safely.
+  - How: health endpoints, /api namespace, user stub routes.
+  - Implications: enables later real auth, menu, orders, payments.

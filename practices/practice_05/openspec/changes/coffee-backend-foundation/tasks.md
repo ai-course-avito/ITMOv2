@@ -1,0 +1,4 @@
+- [ ] 1.1 Create project skeleton (Python or Node) with /health and /ready
+- [ ] 1.2 Add /api namespace and v1 router
+- [ ] 1.3 Add user register/login stubs (no real auth yet)
+- [ ] 1.4 Add local run instructions and basic tests
