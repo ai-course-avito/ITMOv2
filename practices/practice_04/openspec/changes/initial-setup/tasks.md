@@ -1,0 +1,3 @@
+- [x] 1.1 Create openspec/config.yaml via openspec init
+- [x] 1.2 Create initial proposal and spec delta
+- [ ] 1.3 Validate OpenSpec structure with openspec validate --all
