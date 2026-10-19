@@ -7,6 +7,7 @@ What runs on localhost
 - API base (reserved): http://localhost:8000/api
 - API v1 root: GET http://localhost:8000/api/v1/ → { "service": "coffee-backend", "version": "v1" }
 - OpenAPI docs: http://localhost:8000/docs
+ - Frontend UI: http://localhost:8000/ui/ (автоматический редирект с "/")
 
 Run locally
 - Create venv: `python -m venv .venv && . .venv/bin/activate`

@@ -1,0 +1,3 @@
+- [ ] 1.1 Mount StaticFiles at /ui and redirect / → /ui/
+- [ ] 1.2 Add index.html, style.css, main.js (health/ready + sample menu)
+- [ ] 1.3 Document localhost routes and UI behavior in README
