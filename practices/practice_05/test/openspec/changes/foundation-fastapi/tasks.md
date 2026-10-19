@@ -1,0 +1,3 @@
+- [ ] 1.1 Create FastAPI app with /health and /ready
+- [ ] 1.2 Add /api base and /api/v1 router
+- [ ] 1.3 Add run instructions and basic pytest tests
