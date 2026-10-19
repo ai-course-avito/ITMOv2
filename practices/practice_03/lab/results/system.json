@@ -1,0 +1,44 @@
+{
+  "request": {
+    "model": "itmo-guide",
+    "messages": [
+      {
+        "role": "system",
+        "content": "Ты помощник по учебному проекту. Используй только переданный контекст.\nНе выдумывай CI, зависимости, функции или настройки.\nЕсли данных нет, напиши «В предоставленных материалах нет ответа».\nФормат: короткий ответ, затем основание из контекста.\n\n"
+      },
+      {
+        "role": "user",
+        "content": "# Notify Mini\nУчебный сервис подписки. Подписчики хранятся в памяти процесса.\nВ service.py функция subscribe добавляет непустое имя в множество.\nПовторное добавление имени не создаёт дубликат.\n\nПроверка: make test.\nЗависимости: стандартная библиотека Python 3.10+.\n\n\nКакая CI-система запускает тесты проекта?"
+      }
+    ],
+    "stream": false,
+    "think": false,
+    "options": {
+      "temperature": 0.2,
+      "seed": 42,
+      "num_ctx": 4096,
+      "num_predict": 512
+    }
+  },
+  "response": {
+    "model": "itmo-guide",
+    "created_at": "2026-10-07T10:15:59.188402Z",
+    "message": {
+      "role": "assistant",
+      "content": "В предоставленных материалах нет ответа."
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 241229792,
+    "load_duration": 5567084,
+    "prompt_eval_count": 167,
+    "prompt_eval_cached_count": 0,
+    "prompt_eval_duration": 124185000,
+    "eval_count": 9,
+    "eval_duration": 93327000
+  },
+  "wall_seconds": 0.2542542499722913,
+  "load_seconds": 0.005567084,
+  "total_seconds": 0.241229792,
+  "decode_tokens_per_second": 96.43511523996271
+}
