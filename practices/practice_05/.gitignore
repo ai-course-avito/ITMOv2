@@ -1,0 +1,8 @@
+# Локальная история и кеши этой копии приложения
+backend/price_history.sqlite3*
+frontend/.vite/
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+backend/.venv/
+backend/.env
