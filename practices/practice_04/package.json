@@ -1,0 +1,10 @@
+{
+  "name": "practice-4-agent-environment",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node scripts/check.js"
+  }
+}
