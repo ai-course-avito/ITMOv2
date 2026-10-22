@@ -1,0 +1,99 @@
+# End-to-end tests of the panel against a real stack:
+#   playwright -> nginx (panel) -> Omnixon API -> Postgres (pgvector)
+#
+#   docker compose -f docker/docker-compose.e2e.yaml up --build --abort-on-container-exit --exit-code-from e2e
+#   docker compose -f docker/docker-compose.e2e.yaml down -v
+#
+# The API is built from the sibling repository ../omnixon-backend (override with OMNIXON_REPO).
+# Paths below are relative to this file; the build context of the panel images is the repository root.
+# Nothing is published on the host and the database lives in tmpfs, so a run leaves nothing behind
+# and cannot collide with your own containers or volumes. The project has its own name below.
+#
+# The stack has no real OpenRouter key. Tests never need a model answer; where the service would
+# call a provider they expect its 502 (the fake key is refused by OpenRouter, so this needs internet).
+name: omnixon_admin_e2e
+
+x-token: &token e2e-admin-token
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: omnixon
+      POSTGRES_PASSWORD: e2e
+      POSTGRES_DB: omnixon
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d:ro
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U omnixon -d omnixon"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
+  # Shared state of the api replicas (who streams to whom, which MCP servers are down). Nothing to keep: no persistence.
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ${OMNIXON_REPO:-../../omnixon-backend}
+      dockerfile: docker/Dockerfile.api
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: omnixon
+      POSTGRES_PASSWORD: e2e
+      POSTGRES_DB: omnixon
+      INITIAL_API_KEY: *token
+      OPENROUTER_API_KEY: e2e-fake-key
+      DEFAULT_MODEL: openai/gpt-4o-mini
+      UPSTREAM_PORT: "80"
+      UPSTREAM_RETRIES: "0"
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: error  # upstream failures (expected here) are logged as warnings
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # An OpenAI-compatible server without a provider (from the service repository): models with their own base_url
+  # point at it, so a stream can be run, slowly, and cut, without a real key. `fake/slow*` says 40 words, 0.25 s apart.
+  fake-llm:
+    build:
+      context: ${OMNIXON_REPO:-../../omnixon-backend}
+      dockerfile: docker/Dockerfile.fake-llm
+
+  panel:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.panel
+    environment:
+      OMNIXON_URL: http://api:80
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  e2e:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.e2e
+    environment:
+      BASE_URL: http://panel
+      OMNIXON_TOKEN: *token
+      CI: "1"
+    volumes:
+      - ../playwright-report:/app/playwright-report
+      - ../test-results:/app/test-results
+    depends_on:
+      panel:
+        condition: service_healthy

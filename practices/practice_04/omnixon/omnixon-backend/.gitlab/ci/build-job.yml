@@ -1,0 +1,13 @@
+include:
+  - component: $CI_SERVER_FQDN/internal/ci-components/buildkit-registry-auth@v2.7.0
+    inputs:
+      job_name: .buildkit-registry-login
+  - component: $CI_SERVER_FQDN/internal/ci-components/buildkit-build@v2.7.0
+    inputs:
+      registry_login_job_name: .buildkit-registry-login
+      image_name: api
+      dockerfile_name: Dockerfile.api
+      dockerfile_dir: ./docker
+      runner_tag: [ "buildkit" ]
+      run_on_merge_regex: "/^dev$/"
+      watch: [ app/**/*, pyproject.toml, uv.lock ]
