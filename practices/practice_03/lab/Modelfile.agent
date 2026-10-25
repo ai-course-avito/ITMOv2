@@ -1,4 +1,10 @@
+# Агентный режим для OpenCode: большой контекст под системный промпт, схемы инструментов и прочитанные файлы.
+# Системный промпт задаёт OpenCode (demo/repo-system.txt), поэтому SYSTEM здесь не указан.
 FROM qwen3.5:4b
 PARAMETER num_ctx 65536
+PARAMETER num_predict 4096
 PARAMETER temperature 0.2
-
+PARAMETER top_p 0.9
+PARAMETER top_k 20
+PARAMETER presence_penalty 0
+PARAMETER seed 42
