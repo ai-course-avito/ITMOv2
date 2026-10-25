@@ -1,16 +1,23 @@
 # Журнал экспериментов Практики 2
 
-Файл ведёт OpenCode по вашим запросам. Агент записывает фактические результаты экспериментов и вносит изменения в связанные файлы. Свою оценку сообщайте ему в чате; вручную заполнять шаблон не нужно.
-
-- Выбранный слабый артефакт Практики 1:
-- Что в нём нужно улучшить:
-- Как поймём, что изменение полезно:
+- Выбранный слабый артефакт Практики 1: [`../practice_01/adr.md`](../practice_01/adr.md) — «Архитектурное решение и взаимодействие сервисов»
+- Что в нём нужно улучшить: нет критериев выбора альтернатив и trade-offs; нет NFR с порогами; падение LLM не закрыто fallback (риск HTTP 500); не выбран вариант интеграции; Mermaid-схема не отражает fallback и rate limit.
+- Как поймём, что изменение полезно: в ADR появятся проверяемые NFR (порог + способ проверки), fallback `degraded=true` и rate limit в «Решении» и схеме, выбранный вариант интеграции (ToT); у каждого пункта — evidence-ссылка на источник (context.md / tests_*.md).
 
 | Техника | Файл эксперимента | Изменённый файл Практики 1 | Конкретное изменение | Проверка | Что отклонили |
 |---|---|---|---|---|---|
-| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) |  |  |  |  |
-| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) |  |  |  |  |
-| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) |  |  |  |  |
-| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) |  |  |  |  |
-| RAG | [`rag/experiment.md`](rag/experiment.md) |  |  |  |  |
-| ReAct | [`react/experiment.md`](react/experiment.md) |  |  |  |  |
+| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) | [`../practice_01/adr.md`](../practice_01/adr.md) | ADR перестроен по «хорошему» примеру: критерии выбора альтернатив, trade-offs и раздел NFR | заголовок «Нефункциональные требования (NFR)» присутствует, у каждого NFR порог + способ проверки, Mermaid валиден | «Простое» решение без критериев и NFR (плохой пример) |
+| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) | `../practice_01/adr.md` | Роль архитектора безопасности → секция NFR: отказоустойчивость, безопасность, производительность, доступность, наблюдаемость | у каждого NFR порог и ссылка на `tests_unit.md` / `tests_integration.md` / `tests_load.md` | NFR без порога («высокая надёжность», «быстрая скорость») |
+| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) | `../practice_01/adr.md` | Fallback `degraded=true` при падении/таймауте LLM; rate limit 429 вместо бесконечных ретраев | мок LLM `sleep 15 с` → не 500 (`tests_integration.md`) | бесконечные ретраи; fallback без флага `degraded` |
+| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) | `../practice_01/adr.md` | Выбран вариант C (локальный прокси-микросервис); B отложен до >10 000 ревью/день | E2E `tests_e2e.md`; схема и «Решение» зафиксировали выбор C | вариант A (прямой вызов LLM из CI) |
+| RAG | [`rag/experiment.md`](rag/experiment.md) | `../practice_01/adr.md` | NFR и ограничения снабжены цитатами-ссылками на context.md / CASE.md / tests_*.md (REL-1, API-1, OBS-1) | все ссылки реальны; grep ключевых фраз («timeout 10», «OBS-1», «Медленный LLM») | SLA-цифры без источника («доступность 99,9%») |
+| ReAct | [`react/experiment.md`](react/experiment.md) | `../practice_01/adr.md` | Аномалия «500 при таймауте LLM» переведена в требования: fallback и rate limit в «Решении» и NFR | воспроизведение «мок LLM sleep 15 с» = шаг 3 из наблюдений | изменение продакшн-кода; действия, нарушающие OBS-1 |
+
+## Независимое ревью
+
+| Замечание другой команды | Где исправили | Evidence |
+|---|---|---|
+| Двусмысленность | «контролируемый ответ» не уточнял, что это degraded-ответ, а не полное ревью | `adr.md` «Решение» п.6: fallback помечен `degraded=true`, `risks: []`, ручные checks |
+| Непроверяемое требование | «обеспечить высокую надёжность» без порога | `adr.md` «Нефункциональные требования (NFR)»: 0% HTTP 500 из-за LLM, p95 ≤ 10 с, порог и способ проверки у каждого пункта |
+| Пропущенный риск или источник | не был зафиксирован rate limit при падении LLM и ссылка на источник | `adr.md` п.7 + NFR «Доступность»: 429; источник — `../practice_01/tests_load.md` сценарий «Медленный LLM» |
+
