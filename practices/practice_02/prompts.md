@@ -2,15 +2,15 @@
 
 Файл ведёт OpenCode по вашим запросам. Агент записывает фактические результаты экспериментов и вносит изменения в связанные файлы. Свою оценку сообщайте ему в чате; вручную заполнять шаблон не нужно.
 
-- Выбранный слабый артефакт Практики 1:
-- Что в нём нужно улучшить:
-- Как поймём, что изменение полезно:
+- Выбранный слабый артефакт Практики 1: `practices/practice_01/tests_load.md` — раздел «Нагрузочные проверки».
+- Что в нём нужно улучшить: заменить расплывчатые формулировки нагрузки и метрик на конкретные: формат `llm: … gateway: … duration: …`, именованные метрики с единицами (мс, %, RPS, коды), допустимые пределы с обоснованием (характер распределения), конкретный Evidence; зафиксировать определение «время ответа» и критерии запуска нагрузочного тестирования.
+- Как поймём, что изменение полезно: сценарии становятся воспроизводимыми без догадок; пороги трассируемы к `context/problem.md` и CASE (API‑1/REL‑1); grep-проверка подтверждает наличие `llm:/gateway:/duration:` и единиц измерения; таблица покрывает 3 ключевых сценария (P95/лимит/таймаут); ревью не требует доработок; прогон генератора нагрузки и артефакты Evidence позволяют однозначно подтвердить выполнение порогов.
 
 | Техника | Файл эксперимента | Изменённый файл Практики 1 | Конкретное изменение | Проверка | Что отклонили |
 |---|---|---|---|---|---|
-| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) |  |  |  |  |
-| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) |  |  |  |  |
-| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) |  |  |  |  |
-| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) |  |  |  |  |
-| RAG | [`rag/experiment.md`](rag/experiment.md) |  |  |  |  |
-| ReAct | [`react/experiment.md`](react/experiment.md) |  |  |  |  |
+| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) | `practices/practice_01/tests_load.md` | Переписана таблица на формат `llm:/gateway:/duration:`, метрики c именами и единицами, пороги с «— так как … распределение …», конкретизирован Evidence; синхронизирован блок «Как использовали AI» (P2-FS-01) | Сверка порогов с `problem.md`; grep на `llm:/gateway:/duration:` и единицы; `make step2`; ручная вычитка | Общие evidence «Метрики APM/клиента»; 4‑й сценарий «burst 20 RPS»; голые пороги без обоснования |
+| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) | `practices/practice_01/tests_load.md` | Уточнены профили нагрузки и критерии: P95 по server‑side 2xx, разбиение ошибок 4xx/5xx, прогрев, источники Evidence; добавлено «как измеряем время ответа» и «когда запускать» | Синхронизация с `context.md`; проверяемо по access‑логам и отчётам hey/vegeta без новых зависимостей | Добавление новых инструментов; расплывчатые «ошибки» без кодов; опора только на клиентскую латентность |
+| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) | `practices/practice_01/tests_load.md` | По результатам вопросов уточнены: warm‑up/плато, единица размера и граничные случаи, content‑type, определение «время ответа», маппинг 503/504, отмена апстримов, количественный триггер запуска | Чек‑лист вопросов/ответов в experiment.md; правки отражены в таблице tests_load.md | Добавление внешних зависимостей/инструментов, не требующихся для evidence |
+| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) | `practices/practice_01/tests_load.md` | Конкретизация сценариев через SLO‑ориентированную альтернативу: численные пороги p95/p99, коды 413/503/504, явные RPS/длительности; Evidence через vegeta/hey и Uvicorn logs, минимальная зависимость от APM | Запуск vegeta/hey и сопоставление с Uvicorn access logs; сверка с `context/problem.md` | Зависимость от APM/OTel как основной источник метрик |
+| RAG | [`rag/experiment.md`](rag/experiment.md) | `practices/practice_01/tests_load.md` | Синхронизация требований с источниками: лимит размеров и 413 по CASE (API‑1), поведение таймаута 503/504 ≤11 с (REL‑1), определение client E2E latency; проверка отсутствия вызовов LLM при 413 | Кросс‑проверка `CASE.md`, `problem.md`, `context.md`, `TRAINING_PR.diff`; актуализация сценариев в таблице | «P95 при 256 КБ diff» как неподтверждённое CASE‑ом; принудительный выбор конкретного инструмента нагрузки |
+| ReAct | [`react/experiment.md`](react/experiment.md) | `practices/practice_01/tests_load.md` | Замена абстракций на p50/p95/p99/avg, разбивку ошибок (500/502/503/504, 4xx), явные источники Evidence; без изменения структуры таблиц | Сверка с `context/problem.md`; пошаговый лог действий; проверяемость по отчётам и логам | Добавление новых сценариев и изменение структуры таблицы |
