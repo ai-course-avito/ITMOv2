@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Практика 4: среда агента, skill и свой MCP</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --text: #1d2330;
+    --muted: #5b6475;
+    --line: #dde1e8;
+    --accent: #2457c5;
+    --accent-soft: #e6edfb;
+    --ok: #17713a;
+    --ok-soft: #e1f3e8;
+    --bad: #a3261f;
+    --bad-soft: #fbe7e5;
+    --warn: #8a5a00;
+    --warn-soft: #fcf1d6;
+    --code-bg: #f0f2f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171d;
+      --surface: #1c2029;
+      --text: #e6e9ef;
+      --muted: #9aa3b5;
+      --line: #2e3442;
+      --accent: #8fb0ff;
+      --accent-soft: #232c45;
+      --ok: #6fd391;
+      --ok-soft: #1a2f23;
+      --bad: #ff8d84;
+      --bad-soft: #3a1f1d;
+      --warn: #f0c462;
+      --warn-soft: #35290f;
+      --code-bg: #12151b;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 16px 64px; }
+  header { padding: 32px 0 8px; }
+  h1 { font-size: 1.7rem; line-height: 1.25; margin: 0 0 8px; }
+  h2 { font-size: 1.3rem; margin: 0 0 4px; line-height: 1.3; }
+  h3 { font-size: 1rem; margin: 20px 0 6px; }
+  p { margin: 8px 0; }
+  .lead { color: var(--muted); margin: 0; }
+  a { color: var(--accent); }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px; }
+  nav a {
+    text-decoration: none; font-size: 0.9rem;
+    padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px;
+    background: var(--surface);
+  }
+  section {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+  .badge {
+    display: inline-block; font-size: 0.78rem; font-weight: 600;
+    padding: 2px 10px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .tag-ok { background: var(--ok-soft); color: var(--ok); }
+  .tag-bad { background: var(--bad-soft); color: var(--bad); }
+  .tag-warn { background: var(--warn-soft); color: var(--warn); }
+  .tag {
+    display: inline-block; font-size: 0.75rem; font-weight: 600;
+    padding: 1px 8px; border-radius: 6px; vertical-align: 1px;
+  }
+  .note {
+    border-left: 4px solid var(--warn); background: var(--warn-soft);
+    padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0;
+  }
+  .grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .grid.two { grid-template-columns: 1fr 1fr; } }
+  .item {
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    background: var(--bg);
+  }
+  .item h3 { margin-top: 0; }
+  .tablewrap { overflow-x: auto; margin: 12px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; white-space: nowrap; }
+  code, pre { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 0.85rem; }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px 12px; overflow-x: auto; margin: 8px 0; line-height: 1.45;
+  }
+  pre code { background: none; padding: 0; }
+  .files { list-style: none; padding: 0; margin: 8px 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .files li a {
+    display: inline-block; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 0.8rem; text-decoration: none; padding: 3px 8px;
+    border: 1px solid var(--line); border-radius: 6px; background: var(--bg);
+    overflow-wrap: anywhere;
+  }
+  .files li a:hover { border-color: var(--accent); }
+  .src { color: var(--muted); font-size: 0.85rem; margin: 2px 0 8px; }
+  ul.plain { padding-left: 20px; margin: 8px 0; }
+  ul.plain li { margin: 4px 0; }
+  footer { color: var(--muted); font-size: 0.85rem; padding: 8px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Практика 4: среда агента, skill и свой MCP</h1>
+  <p class="lead">Проект: учебный FastAPI-сервис <code>ai-review-api</code> (принимает diff, отдает ревью от заглушки LLM). Фича A: входная валидация diff. Фича B: ошибка LLM как 502. Ветка <code>practice_4</code>.</p>
+  <nav>
+    <a href="#deviation">Отступление</a>
+    <a href="#env">Среда</a>
+    <a href="#skill">Skill</a>
+    <a href="#mcp">Свой MCP</a>
+    <a href="#reflection">Рефлексия</a>
+    <a href="#bonus">Бонус</a>
+    <a href="#files">Все файлы</a>
+  </nav>
+</header>
+
+<section id="deviation">
+  <span class="badge tag-warn">Отступление от слайдов</span>
+  <h2>Вместо OpenCode использован Claude Code</h2>
+  <p>В слайдах и README команды рассчитаны на OpenCode 2.0.20. На старте его не было, в npm версии 2.0.20 нет (последняя 1.18.35), а ключа <code>VSELLM_API_KEY</code> нет. Я остановил установку и решил OpenCode не запускать вообще. Всё из слайдов переведено на Claude Code 2.1.292, смысл каждого шага тот же.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>В слайдах (OpenCode)</th><th>У меня (Claude Code)</th></tr></thead>
+    <tbody>
+      <tr><td><code>AGENTS.md</code></td><td><code>AGENTS.md</code> плюс <code>CLAUDE.md</code> с единственной строкой <code>@AGENTS.md</code></td></tr>
+      <tr><td><code>.opencode/skills/&lt;name&gt;/SKILL.md</code></td><td><code>.claude/skills/tdd-feature/SKILL.md</code> и файлы рядом</td></tr>
+      <tr><td><code>opencode.json</code>, секция <code>mcp</code></td><td><code>.mcp.json</code> (context7 remote и свой stdio MCP)</td></tr>
+      <tr><td>плагин <code>.opencode/plugins/check-after-edit.js</code> (<code>execute.after</code>)</td><td>hook <code>PostToolUse</code> в <code>.claude/settings.json</code>, запускает <code>scripts/check.sh</code></td></tr>
+      <tr><td><code>.opencode/agents/tester.md</code></td><td><code>.claude/agents/tester.md</code></td></tr>
+      <tr><td><code>opencode run</code></td><td><code>claude -p ... --output-format stream-json --verbose --include-hook-events</code>, сырой лог сохранен как доказательство</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="src">Источник: WORKLOG, шаг 1. Подробности и промпты: <a href="WORKLOG.md">WORKLOG.md</a>, короткие доказательства: <a href="EVIDENCE.md">EVIDENCE.md</a>.</p>
+</section>
+
+<section id="env">
+  <span class="badge">Критерий 1 из 4 · 5 баллов</span>
+  <h2>Настроенная среда: AGENTS.md, skill, MCP, hook и зачем они</h2>
+  <p>Работа шла headless-сессиями <code>claude -p</code> без <code>--dangerously-skip-permissions</code>, с <code>--mcp-config .mcp.json</code> и <code>--include-hook-events</code>. Фичу A сделала сессия на 156 с и 30 ходов, фичу B на 294 с и 22 хода (код 0, файлы ошибок пустые).</p>
+
+  <div class="grid two">
+    <div class="item">
+      <h3>1. AGENTS.md</h3>
+      <p><b>Зачем:</b> короткая карта проекта: где контракт, где пример теста, какая команда проверки, что нельзя менять без поручения.</p>
+      <p><b>Применение, этап B:</b> <span class="tag tag-ok">Read AGENTS.md</span> первым действием, строка 2 лога <code>B_run.jsonl</code>.</p>
+      <p><b>Применение, этап A:</b> <span class="tag tag-warn">без Read</span> агент написал, что содержимое уже в контексте через <code>@AGENTS.md</code> в <code>CLAUDE.md</code>, и пересказал правила (контракт, пример теста, <code>sh scripts/check.sh</code>). Формально вызова Read нет, поэтому в этапе B я попросил читать файл явно.</p>
+      <ul class="files">
+        <li><a href="ai-review-api/AGENTS.md">ai-review-api/AGENTS.md</a></li>
+        <li><a href="ai-review-api/CLAUDE.md">ai-review-api/CLAUDE.md</a></li>
+        <li><a href="ai-review-api/docs/style-guide.md">ai-review-api/docs/style-guide.md</a></li>
+      </ul>
+    </div>
+    <div class="item">
+      <h3>2. Skill tdd-feature</h3>
+      <p><b>Зачем:</b> чтобы агент делал фичу по TDD и не писал тест, который проходит сразу или падает из-за опечатки.</p>
+      <p><b>Применение:</b> <code>Skill tdd-feature</code> вызван в этапе A (строка 6) и в этапе B (строка 41), затем <code>Read writing-good-tests.md</code>. Подробнее в разделе ниже.</p>
+      <ul class="files">
+        <li><a href="ai-review-api/.claude/skills/tdd-feature/SKILL.md">SKILL.md</a></li>
+        <li><a href="ai-review-api/.claude/skills/tdd-feature/writing-good-tests.md">writing-good-tests.md</a></li>
+      </ul>
+    </div>
+    <div class="item">
+      <h3>3. MCP: context7 и diff-inspector</h3>
+      <p><b>Зачем context7:</b> актуальная документация FastAPI, чтобы не писать по памяти. <b>Зачем diff-inspector:</b> агент получает на вход diff и должен знать его размер именно в байтах.</p>
+      <p><b>Применение, этап A:</b> <code>inspect_diff</code> вернул <code>size_bytes: 90</code>, агент сверил через <code>wc -c</code> (тоже 90). context7: <code>resolve-library-id</code> по FastAPI и два <code>query-docs</code> (JSONResponse с кодом и телом ошибки; невалидное тело). Все четыре вызова <code>is_error=False</code>.</p>
+      <p><b>Честно:</b> <code>claude mcp list</code> показывает оба сервера как <span class="tag tag-warn">Pending approval</span>, пока проектный <code>.mcp.json</code> не подтвержден в интерактивном режиме. Я его не подтверждал и передавал <code>--mcp-config .mcp.json</code>, с ним в init оба сервера <code>connected</code>.</p>
+      <ul class="files">
+        <li><a href="ai-review-api/.mcp.json">ai-review-api/.mcp.json</a></li>
+        <li><a href="evidence/claude_mcp_list.txt">evidence/claude_mcp_list.txt</a></li>
+        <li><a href="evidence/claude_code_tool_call.jsonl">evidence/claude_code_tool_call.jsonl</a></li>
+      </ul>
+    </div>
+    <div class="item">
+      <h3>4. Hook после правки</h3>
+      <p><b>Зачем:</b> результат проверки возвращается агенту сразу после <code>Edit|Write|MultiEdit</code> в <code>app/</code>, <code>tests/</code>, <code>mcp_server/</code>, без напоминаний в промпте.</p>
+      <p><b>Применение:</b> в этапе A hook сработал 8 раз (FAIL, PASS, PASS, FAIL, FAIL, PASS, FAIL, PASS), в этапе B 5 раз (FAIL, FAIL, FAIL, PASS, PASS). Красная фаза видна в логе: первый <code>PostToolUse:Write</code> нового файла с тестами дал <code>CHECK FAIL</code>.</p>
+      <ul class="files">
+        <li><a href="ai-review-api/.claude/settings.json">.claude/settings.json</a></li>
+        <li><a href="ai-review-api/.claude/hooks/check-after-edit.sh">.claude/hooks/check-after-edit.sh</a></li>
+        <li><a href="ai-review-api/scripts/check.sh">scripts/check.sh</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Доказательство: hook вернул результат агенту</h3>
+  <p>Отдельный прогон <code>claude -p</code>: агент сам сломал assertion в <code>tests/test_health.py</code>, hook вернул <code>block</code> с хвостом pytest, после возврата строки пришел <code>CHECK PASS</code>.</p>
+<pre><code>[строка 5]  Edit: '{"status": "ok"}' -> '{"status": "BROKEN"}'
+[строка 8]  hook_response PostToolUse:Edit outcome=success exit_code=0
+    -> decision='block'
+       E  AssertionError: assert {'status': 'ok'} == {'status': 'BROKEN'}
+       1 failed, 4 passed, 1 warning in 0.79s | CHECK FAIL
+[строка 28] Edit: '{"status": "BROKEN"}' -> '{"status": "ok"}'
+[строка 31] hook_response PostToolUse:Edit outcome=success exit_code=0
+    -> check.sh: CHECK PASS</code></pre>
+  <p class="src">Источник: <a href="evidence/hook_run_summary.txt">evidence/hook_run_summary.txt</a> (выжимка), <a href="evidence/hook_run.jsonl">evidence/hook_run.jsonl</a> (сырой лог), <a href="evidence/hook_manual_run.txt">evidence/hook_manual_run.txt</a> (ручной прогон), <a href="evidence/hook_log_after_headless.txt">evidence/hook_log_after_headless.txt</a> (лог hook).</p>
+  <div class="note">Hook сначала молчал: Git Bash отдавал корень как <code>/c/Users/...</code>, Windows-python превращал его в <code>C:\c\Users\...</code>. Починено через <code>cygpath -m</code>, проверено на заведомо сломанном тесте.</div>
+  <p class="src">Применение в этапе A: <a href="evidence/A_run_summary.txt">A_run_summary.txt</a>, <a href="evidence/A_run.jsonl">A_run.jsonl</a>, <a href="evidence/A_manual_check.txt">A_manual_check.txt</a>. Этап B: <a href="evidence/B_run_summary.txt">B_run_summary.txt</a>, <a href="evidence/B_run.jsonl">B_run.jsonl</a>, <a href="evidence/B_worktree_setup.txt">B_worktree_setup.txt</a>.</p>
+</section>
+
+<section id="skill">
+  <span class="badge">Критерий 2 из 4 · 2 балла</span>
+  <h2>Skill tdd-feature: устройство, запуск и проверенный результат</h2>
+
+  <h3>Устройство (созданный мной skill)</h3>
+  <p>Процедура из шести шагов: прочитать контракт, пример теста и style guide; написать один падающий тест (перед этим прочитать <code>writing-good-tests.md</code>); запустить <code>fail_first.sh</code>; написать минимальный код; <code>sh scripts/check.sh</code>; посмотреть <code>git diff</code>. Содержательная автоматизация это <code>scripts/fail_first.sh</code>: он запускает один тест и печатает <code>FAIL-FIRST OK</code> только если тест упал по assertion. Если тест прошел сразу, нет тестов, ошибка импорта или сломана фикстура, печатает <code>FAIL-FIRST BAD</code> с причиной.</p>
+  <ul class="files">
+    <li><a href="ai-review-api/.claude/skills/tdd-feature/SKILL.md">ai-review-api/.claude/skills/tdd-feature/SKILL.md</a></li>
+    <li><a href="ai-review-api/.claude/skills/tdd-feature/writing-good-tests.md">ai-review-api/.claude/skills/tdd-feature/writing-good-tests.md</a></li>
+    <li><a href="ai-review-api/.claude/skills/tdd-feature/scripts/fail_first.sh">ai-review-api/.claude/skills/tdd-feature/scripts/fail_first.sh</a></li>
+  </ul>
+
+  <h3>Проверка скрипта на четырех случаях</h3>
+<pre><code>fail_first.sh tests/test_tmp_ff.py::test_missing_feature_returns_422
+  -> FAIL-FIRST OK: ... AssertionError: assert 200 == 422
+fail_first.sh tests/test_tmp_ff.py::test_passes_already
+  -> FAIL-FIRST BAD: тест прошел сразу
+fail_first.sh tests/test_tmp_bad.py
+  -> FAIL-FIRST BAD: ошибка сбора тестов ... No module named 'app.nothing'
+fail_first.sh nonexist.py
+  -> FAIL-FIRST BAD: pytest завершился с кодом 4</code></pre>
+  <p class="src">Источник: <a href="evidence/fail_first_run.txt">evidence/fail_first_run.txt</a></p>
+
+  <h3>Запуск агентом и результат</h3>
+  <ul class="plain">
+    <li><b>Фича A (50 тестов, <code>CHECK PASS</code>).</b> <code>fail_first.sh</code> дал <code>FAIL-FIRST OK</code> на <code>assert 200 == 422</code>, <code>assert 200 == 413</code> и <code>KeyError: 'error'</code>. Тест «ровно 100000 байт» прошел сразу, <code>FAIL-FIRST BAD</code>. Агент проверил, что тест что-то проверяет: временно заменил <code>&gt;</code> на <code>&gt;=</code>, hook дал <code>CHECK FAIL</code>, после возврата <code>CHECK PASS</code>.</li>
+    <li><b>Фича B (54 теста).</b> Тест на таймаут сначала дал <code>FAIL-FIRST BAD</code>: в <code>app.main</code> не было константы <code>LLM_TIMEOUT_SECONDS</code>, тест падал на <code>AttributeError</code>. После добавления константы <code>FAIL-FIRST OK</code>, <code>assert 200 == 502</code>.</li>
+    <li><b>Исправление замечаний (56 тестов).</b> Тест времени переписан, при временном <code>wait=True</code> <code>FAIL-FIRST OK</code> с <code>assert 5.026 &lt; 2.5</code>, потом <code>wait=False</code> возвращен.</li>
+  </ul>
+  <p><b>Что проверил я как ревьюер:</b> <code>sh scripts/check.sh</code> дал <code>50 passed</code> после A и <code>56 passed</code> после исправлений B, <code>git diff --check</code> без ошибок, контракт и <code>check.sh</code> не тронуты. Через TestClient и настоящий uvicorn с curl прогнаны границы 100000 и 100001 байт (ASCII, кириллица, эмодзи), везде ожидаемый статус, LLM при отказах не вызывался.</p>
+  <p class="src">Источники: <a href="evidence/A_run_summary.txt">A_run_summary.txt</a> (пункты по skill и fail-first), <a href="evidence/B_run_summary.txt">B_run_summary.txt</a>, <a href="evidence/B_fix_summary.txt">B_fix_summary.txt</a>, <a href="evidence/A_manual_check.txt">A_manual_check.txt</a>, <a href="evidence/B_manual_check.txt">B_manual_check.txt</a>.</p>
+</section>
+
+<section id="mcp">
+  <span class="badge">Критерий 3 из 4 · 2 балла</span>
+  <h2>Свой MCP diff-inspector: полезный tool, успех и ошибочный вход</h2>
+  <p><b>Зачем:</b> агент работает с git diff, а лимит фичи A считается в байтах UTF-8. Tool <code>inspect_diff(diff, max_bytes=100000)</code> разбирает unified diff и возвращает файлы (путь, статус, added, removed, binary), суммы, размер в байтах, <code>too_large</code> и <code>would_be_accepted</code>. Ошибки разбора превращаются в <code>ToolError</code>, клиент получает <code>isError=true</code> с понятным текстом. Разбор вынесен в чистый Python и покрыт 38 тестами (<code>sh scripts/check.sh</code>: 43 passed на тот момент).</p>
+  <ul class="files">
+    <li><a href="ai-review-api/mcp_server/server.py">ai-review-api/mcp_server/server.py</a></li>
+    <li><a href="ai-review-api/mcp_server/diff_parser.py">ai-review-api/mcp_server/diff_parser.py</a></li>
+    <li><a href="ai-review-api/mcp_server/smoke_client.py">ai-review-api/mcp_server/smoke_client.py</a></li>
+    <li><a href="ai-review-api/tests/test_diff_parser.py">ai-review-api/tests/test_diff_parser.py</a></li>
+    <li><a href="ai-review-api/.mcp.json">ai-review-api/.mcp.json</a></li>
+  </ul>
+
+  <div class="grid two">
+    <div class="item">
+      <h3><span class="tag tag-ok">успех</span> diff на 5 файлов</h3>
+<pre><code>isError: False
+total_files: 5   total_added: 5   total_removed: 4
+size_bytes: 716  max_bytes: 100000
+too_large: false  would_be_accepted: true
+статусы: modified, added, deleted,
+         renamed (src/a.py -> src/b.py),
+         binary=true (img/logo.png)</code></pre>
+      <p>Тот же diff при <code>max_bytes=100</code>: <code>too_large: true</code>, <code>would_be_accepted: false</code>, это не ошибка (<code>isError: False</code>).</p>
+    </div>
+    <div class="item">
+      <h3><span class="tag tag-bad">ошибка</span> шесть плохих входов</h3>
+<pre><code>diff=''            isError: True
+  diff пустой (пустая строка)...
+diff='   \n\t\n'   isError: True
+  только пробелы/переводы строк...
+diff='привет...'   isError: True
+  Не нашел ни одного признака unified diff...
+max_bytes=0        isError: True
+  max_bytes должен быть больше 0, получено: 0.
+max_bytes=-5       isError: True
+  ... получено: -5.
+diff=123           isError: True
+  Input should be a valid string
+ИТОГ: OK</code></pre>
+    </div>
+  </div>
+  <p class="src">Источник: <a href="evidence/mcp_smoke_output.txt">evidence/mcp_smoke_output.txt</a> (вызовы 1-8, <code>list_tools</code> возвращает один tool; сервер diff-inspector 1.30.0, протокол 2025-11-25).</p>
+
+  <h3>Вызов из настоящего Claude Code</h3>
+  <p>Через <code>claude -p --mcp-config .mcp.json</code> оба сервера в init были <code>connected</code>, агент сам вызвал tool: на пустой diff <code>is_error=true</code>, на нормальный вернулся JSON с <code>would_be_accepted=true</code>. В работе над фичей A tool посчитал diff с кириллицей в <code>size_bytes: 90</code>, <code>wc -c</code> дал то же число.</p>
+  <p class="src">Источники: <a href="evidence/claude_code_tool_call.jsonl">evidence/claude_code_tool_call.jsonl</a>, <a href="evidence/A_run_summary.txt">evidence/A_run_summary.txt</a>.</p>
+  <div class="note">Версия <code>mcp</code> закреплена как <code>mcp&lt;2</code>: в 2.3.0 класс <code>FastMCP</code> переименован в <code>MCPServer</code> и импорт падает, на 1.30.0 все работает (<a href="ai-review-api/requirements.txt">requirements.txt</a>).</div>
+</section>
+
+<section id="reflection">
+  <span class="badge">Критерий 4 из 4 · 1 балл</span>
+  <h2>Рефлексия</h2>
+  <p>Файл <a href="reflection.md">reflection.md</a>: что помогло (hook, <code>fail_first.sh</code>, context7, свой MCP, ревью tester, worktree), что мешало (нет OpenCode и ключа, <code>Pending approval</code> у <code>.mcp.json</code>, пути Windows в hook, <code>mcp 2.x</code>, права для tester), где пришлось вмешаться (остановил установку OpenCode, потребовал явный Read AGENTS.md, подтвердил замечания ревью мутацией и отправил их третьей сессии, решения про <code>mcp&lt;2</code> и <code>--mcp-config</code>) и выводы.</p>
+  <p>Ход работы по шагам с дословными промптами: <a href="WORKLOG.md">WORKLOG.md</a>. Таблица доказательств с номерами: <a href="EVIDENCE.md">EVIDENCE.md</a>.</p>
+</section>
+
+<section id="bonus">
+  <span class="badge tag-ok">Бонус, на оценку не влияет</span>
+  <h2>Свой субагент tester</h2>
+  <p>Файл <a href="ai-review-api/.claude/agents/tester.md">ai-review-api/.claude/agents/tester.md</a>: независимая проверка фичи по контракту, инструменты Read, Grep, Glob, Bash, ничего не правит. В этапе B основная сессия вызвала его через <code>Agent</code> с <code>subagent_type: "tester"</code> (строка 8 лога). Он сделал 4 Read и 12 Bash: выполнились 2 (<code>git diff</code>, <code>sh scripts/check.sh</code> с 54 passed), 10 отклонила проверка прав, потому что python не был в <code>--allowedTools</code>. Отчет честно помечает непроверенное.</p>
+  <p>Что нашли tester и ревью: тест «не ждет LLM» остается зеленым при <code>shutdown(wait=True)</code> (подтверждено моей мутацией в копии: 4 passed, по 5 с на тест таймаута), и нет теста «падающий LLM плюс пустой/большой diff дает 422/413 без вызова LLM». Исправлено третьей сессией, после чего мутации роняют нужные тесты, итого 56 passed.</p>
+  <p class="src">Источники: <a href="evidence/B_review_summary.txt">B_review_summary.txt</a>, <a href="evidence/B_review_run.jsonl">B_review_run.jsonl</a>, <a href="evidence/B_manual_check.txt">B_manual_check.txt</a>, <a href="evidence/B_fix_summary.txt">B_fix_summary.txt</a>, <a href="evidence/B_fix_run.jsonl">B_fix_run.jsonl</a>.</p>
+</section>
+
+<section id="files">
+  <span class="badge">Что сдаю</span>
+  <h2>Все файлы одним списком</h2>
+
+  <h3>Среда агента</h3>
+  <ul class="files">
+    <li><a href="ai-review-api/AGENTS.md">ai-review-api/AGENTS.md</a></li>
+    <li><a href="ai-review-api/docs/style-guide.md">ai-review-api/docs/style-guide.md</a></li>
+    <li><a href="ai-review-api/.claude/skills/tdd-feature/SKILL.md">ai-review-api/.claude/skills/tdd-feature/SKILL.md</a></li>
+    <li><a href="ai-review-api/.claude/skills/tdd-feature/writing-good-tests.md">ai-review-api/.claude/skills/tdd-feature/writing-good-tests.md</a></li>
+    <li><a href="ai-review-api/.claude/settings.json">ai-review-api/.claude/settings.json</a></li>
+    <li><a href="ai-review-api/.claude/hooks/check-after-edit.sh">ai-review-api/.claude/hooks/check-after-edit.sh</a></li>
+    <li><a href="ai-review-api/scripts/check.sh">ai-review-api/scripts/check.sh</a></li>
+    <li><a href="ai-review-api/.mcp.json">ai-review-api/.mcp.json</a></li>
+    <li><a href="ai-review-api/mcp_server/server.py">ai-review-api/mcp_server/server.py</a></li>
+    <li><a href="ai-review-api/.claude/agents/tester.md">ai-review-api/.claude/agents/tester.md</a></li>
+  </ul>
+
+  <h3>Журналы и рефлексия</h3>
+  <ul class="files">
+    <li><a href="WORKLOG.md">WORKLOG.md</a></li>
+    <li><a href="EVIDENCE.md">EVIDENCE.md</a></li>
+    <li><a href="reflection.md">reflection.md</a></li>
+    <li><a href="ai-review-api/docs/HANDOFF.md">ai-review-api/docs/HANDOFF.md (состояние после слияния A и B)</a></li>
+    <li><a href="README.md">README.md (задание)</a></li>
+  </ul>
+
+  <h3>Выжимки и сырые логи в evidence/</h3>
+  <ul class="files">
+    <li><a href="evidence/02a_check_pass.txt">02a_check_pass.txt</a></li>
+    <li><a href="evidence/02a_check_fail.txt">02a_check_fail.txt</a></li>
+    <li><a href="evidence/hook_manual_run.txt">hook_manual_run.txt</a></li>
+    <li><a href="evidence/hook_run_summary.txt">hook_run_summary.txt</a></li>
+    <li><a href="evidence/hook_run.jsonl">hook_run.jsonl</a></li>
+    <li><a href="evidence/hook_log_after_headless.txt">hook_log_after_headless.txt</a></li>
+    <li><a href="evidence/fail_first_run.txt">fail_first_run.txt</a></li>
+    <li><a href="evidence/mcp_smoke_output.txt">mcp_smoke_output.txt</a></li>
+    <li><a href="evidence/claude_code_tool_call.jsonl">claude_code_tool_call.jsonl</a></li>
+    <li><a href="evidence/claude_mcp_list.txt">claude_mcp_list.txt</a></li>
+    <li><a href="evidence/A_run_summary.txt">A_run_summary.txt</a></li>
+    <li><a href="evidence/A_run.jsonl">A_run.jsonl</a></li>
+    <li><a href="evidence/A_manual_check.txt">A_manual_check.txt</a></li>
+    <li><a href="evidence/B_worktree_setup.txt">B_worktree_setup.txt</a></li>
+    <li><a href="evidence/B_run_summary.txt">B_run_summary.txt</a></li>
+    <li><a href="evidence/B_run.jsonl">B_run.jsonl</a></li>
+    <li><a href="evidence/B_review_summary.txt">B_review_summary.txt</a></li>
+    <li><a href="evidence/B_review_run.jsonl">B_review_run.jsonl</a></li>
+    <li><a href="evidence/B_fix_summary.txt">B_fix_summary.txt</a></li>
+    <li><a href="evidence/B_fix_run.jsonl">B_fix_run.jsonl</a></li>
+    <li><a href="evidence/B_manual_check.txt">B_manual_check.txt</a></li>
+  </ul>
+</section>
+
+<footer>
+  Все цифры взяты из <a href="EVIDENCE.md">EVIDENCE.md</a> и файлов в <a href="evidence/B_manual_check.txt">evidence/</a>. Страница статическая, без внешних скриптов; ссылки относительные и рассчитаны на открытие из папки <code>practices/practice_04</code>.
+</footer>
+
+</div>
+</body>
+</html>

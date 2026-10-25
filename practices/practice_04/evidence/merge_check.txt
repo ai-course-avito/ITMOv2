@@ -1,0 +1,51 @@
+$ git status --short
+?? practices/practice_04/EVIDENCE.md
+?? practices/practice_04/WORKLOG.md
+?? practices/practice_04/evidence/
+$ git worktree list
+C:/Users/zawh/ITMO/Avito/ITMOv2      121675b [practice_4]
+C:/Users/zawh/ITMO/Avito/ITMOv2-p4-b c00ccea [practice-04-b]
+$ git merge --ff-only practice-04-b
+Updating 121675b..c00ccea
+Fast-forward
+ practices/practice_04/ai-review-api/app/main.py    |  15 ++-
+ .../ai-review-api/tests/test_review_llm_failure.py | 109 +++++++++++++++++++++
+ 2 files changed, 123 insertions(+), 1 deletion(-)
+ create mode 100644 practices/practice_04/ai-review-api/tests/test_review_llm_failure.py
+exit=0
+
+$ sh scripts/check.sh
+........................................................                 [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\zawh\ITMO\Avito\ITMOv2\practices\practice_04\ai-review-api\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+56 passed, 1 warning in 1.28s
+CHECK PASS
+check exit=0
+
+$ git log --oneline --graph -6
+* c00ccea feat(practice-04): feature B, LLM dependency error
+* 121675b feat(practice-04): feature A, input validation for /review
+* 5ff4dc1 chore(practice-04): agent environment (AGENTS, skill, MCP, hook, style guide, tester)
+* 09bb973 chore(practice-04): scaffold ai-review-api baseline
+* 8713316 Update from https://github.com/ai-course-avito/ITMO/commit/1a331c9dbf4f3e343dd02cfa90731a8823dcff8e
+* f12e6fd Update from https://github.com/ai-course-avito/ITMO/commit/a4ad6a2c1452a5c4f1c9e9952a495c5caf8448d5
+
+$ git status --short
+?? ../EVIDENCE.md
+?? ../WORKLOG.md
+?? ../evidence/
+
+$ git worktree list (до удаления)
+C:/Users/zawh/ITMO/Avito/ITMOv2      f4be238 [practice_4]
+C:/Users/zawh/ITMO/Avito/ITMOv2-p4-b c00ccea [practice-04-b]
+
+$ git worktree remove ../ITMOv2-p4-b  (в worktree были только игнорируемые файлы: __pycache__, .pytest_cache, hook log; hook log сохранен в evidence/hook_log_worktree_b.txt)
+$ git worktree list (после)
+C:/Users/zawh/ITMO/Avito/ITMOv2 f4be238 [practice_4]
+
+$ git branch --list practice-04-b
+  practice-04-b

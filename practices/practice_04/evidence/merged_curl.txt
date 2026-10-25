@@ -1,0 +1,30 @@
+# Живой сервер: uvicorn app.main:app --port 55524 (python из .venv), ветка practice_4 после ff-merge, HEAD c00ccea
+
+$ curl -s -w "\nHTTP %{http_code}\n" http://127.0.0.1:55524/health
+{"status":"ok"}
+HTTP 200
+
+# POST /review, нормальный diff (ожидаем 200)
+$ curl -s -w "\nHTTP %{http_code}\n" -X POST -H "Content-Type: application/json" --data-binary @ok.json http://127.0.0.1:55524/review
+{"summary":"Файлов в diff: 0","comments":[{"file":"unknown","line":1,"text":"Заглушка: проверьте изменения вручную."}]}
+HTTP 200
+
+# POST /review, пустой diff (ожидаем 422)
+$ curl -s -w "\nHTTP %{http_code}\n" -X POST -H "Content-Type: application/json" --data-binary @empty.json http://127.0.0.1:55524/review
+{"detail":[{"type":"value_error","loc":["body","diff"],"msg":"Value error, diff must not be blank","input":"","ctx":{"error":{}}}]}
+HTTP 422
+
+# POST /review, diff 100001 байт (ожидаем 413; тело запроса не печатаем)
+$ curl -s -w "\nHTTP %{http_code}\n" -X POST -H "Content-Type: application/json" --data-binary @big.json http://127.0.0.1:55524/review
+{"error":"diff_too_large","detail":"diff is larger than 100000 bytes","max_bytes":100000}
+HTTP 413
+
+# POST /review, diff ровно 100000 байт (ожидаем 200; тело запроса не печатаем)
+$ curl -s -w "\nHTTP %{http_code}\n" -X POST -H "Content-Type: application/json" --data-binary @edge.json http://127.0.0.1:55524/review
+{"summary":"Файлов в diff: 0","comments":[{"file":"unknown","line":1,"text":"Заглушка: проверьте изменения вручную."}]}
+HTTP 200
+
+# Фича B (502 при падении/зависании LLM) через живой сервер не проверена: заглушка LLM без сети не падает, подменить зависимость можно только через dependency_overrides в тестах. Фича B покрыта тестами tests/test_review_llm_failure.py.
+# Сервер остановлен (после остановки /health не отвечает).
+ИТОГ check.sh: 56 passed (тесты A и B вместе), CHECK PASS
+# Разбивка 56: diff_parser 38, example 1, health 1, review_basic 3, review_validation (A) 7, review_llm_failure (B) 6

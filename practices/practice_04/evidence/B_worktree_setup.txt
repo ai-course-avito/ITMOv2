@@ -1,0 +1,38 @@
+$ git worktree add -b practice-04-b ../ITMOv2-p4-b HEAD
+Preparing worktree (new branch 'practice-04-b')
+HEAD is now at 121675b feat(practice-04): feature A, input validation for /review
+
+$ pwd
+/c/Users/zawh/ITMO/Avito/ITMOv2-p4-b/practices/practice_04/ai-review-api
+
+$ git status --short
+
+$ git worktree list
+C:/Users/zawh/ITMO/Avito/ITMOv2      121675b [practice_4]
+C:/Users/zawh/ITMO/Avito/ITMOv2-p4-b 121675b [practice-04-b]
+
+$ ls -a
+.
+..
+.claude
+.gitattributes
+.gitignore
+.mcp.json
+AGENTS.md
+app
+CLAUDE.md
+docs
+mcp_server
+requirements.txt
+scripts
+tests
+
+PYTHON=/c/Users/zawh/ITMO/Avito/ITMOv2/practices/practice_04/ai-review-api/.venv/Scripts/python.exe
+
+$ sh scripts/check.sh
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+50 passed, 1 warning in 1.23s
+CHECK PASS
+exit=0

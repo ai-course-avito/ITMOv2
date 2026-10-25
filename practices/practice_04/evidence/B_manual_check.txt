@@ -1,0 +1,114 @@
+$ sh scripts/check.sh
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+54 passed, 1 warning in 0.99s
+CHECK PASS
+
+$ git diff --check
+exit=0
+
+$ git status --short
+ M app/main.py
+?? tests/test_review_llm_failure.py
+
+$ git diff --stat -- docs/requirements.md scripts/check.sh tests/test_review_validation.py (пусто = не менялись)
+
+$ python manual_check_B.py (TestClient, dependency_overrides)
+== B: исключение LLM -> 502
+[OK ] LLM бросает RuntimeError: status=502 (ждали 502) llm_calls=1 t=0.23s check=True
+      body={"error":"llm_unavailable","detail":"LLM is unavailable or timed out"}
+[OK ] LLM бросает ValueError: status=502 (ждали 502) llm_calls=1 t=0.01s check=True
+      body={"error":"llm_unavailable","detail":"LLM is unavailable or timed out"}
+[OK ] LLM бросает KeyError: status=502 (ждали 502) llm_calls=1 t=0.01s check=True
+      body={"error":"llm_unavailable","detail":"LLM is unavailable or timed out"}
+[OK ] LLM бросает ConnectionError: status=502 (ждали 502) llm_calls=1 t=0.01s check=True
+      body={"error":"llm_unavailable","detail":"LLM is unavailable or timed out"}
+[OK ] LLM бросает TimeoutError: status=502 (ждали 502) llm_calls=1 t=0.00s check=True
+      body={"error":"llm_unavailable","detail":"LLM is unavailable or timed out"}
+[OK ] LLM бросает HTTPException: status=502 (ждали 502) llm_calls=1 t=0.00s check=True
+      body={"error":"llm_unavailable","detail":"LLM is unavailable or timed out"}
+== B: таймаут -> 502 быстро (LLM_TIMEOUT_SECONDS подменён на 0.3 с, LLM висит до 3 с)
+      значение константы по умолчанию: LLM_TIMEOUT_SECONDS=10
+[OK ] LLM висит дольше таймаута: status=502 (ждали 502) llm_calls=1 t=0.32s check=True
+      body={"error":"llm_unavailable","detail":"LLM is unavailable or timed out"}
+== A сохранена, LLM падает, но валидация раньше -> LLM не вызывается
+[OK ] пустой diff: status=422 (ждали 422) llm_calls=0 t=0.01s
+      body={"detail":[{"type":"value_error","loc":["body","diff"],"msg":"Value error, diff must not be blank","input":"","ctx":{"error":{}}}]}
+[OK ] только пробелы/переводы строк: status=422 (ждали 422) llm_calls=0 t=0.01s
+      body={"detail":[{"type":"value_error","loc":["body","diff"],"msg":"Value error, diff must not be blank","input":"  \n\t ","ctx":{"error":{}}}]}
+[OK ] нет поля diff: status=422 (ждали 422) llm_calls=0 t=0.01s
+      body={"detail":[{"type":"missing","loc":["body","diff"],"msg":"Field required","input":{}}]}
+[OK ] 100001 байт: status=413 (ждали 413) llm_calls=0 t=0.01s check=True
+      body={"error":"diff_too_large","detail":"diff is larger than 100000 bytes","max_bytes":100000}
+[OK ] кириллица 50001 символ = 100002 байта: status=413 (ждали 413) llm_calls=0 t=0.01s
+      body={"error":"diff_too_large","detail":"diff is larger than 100000 bytes","max_bytes":100000}
+== граница ровно 100000 байт: валидация пройдена
+[OK ] 100000 байт, LLM падает: status=502 (ждали 502) llm_calls=1 t=0.01s check=True
+      body={"error":"llm_unavailable","detail":"LLM is unavailable or timed out"}
+[OK ] 100000 байт, LLM ок: status=200 (ждали 200) llm_calls=1 t=0.01s
+      body={"summary":"ok","comments":[]}
+== нормальный diff
+[OK ] нормальный diff, фейк-LLM: status=200 (ждали 200) llm_calls=1 t=0.01s
+      body={"summary":"ok","comments":[]}
+[OK ] нормальный diff, настоящая заглушка LLMClient без override: 200 {"summary":"Файлов в diff: 1","comments":[{"file":"unknown","line":1,"text":"Заглушка: проверьте изменения вручную."}]}
+[OK ] /health: 200 {"status":"ok"}
+
+ИТОГ: проблем 0 
+
+######## ПОСЛЕ ИСПРАВЛЕНИЯ ЗАМЕЧАНИЙ (третья сессия) ########
+$ sh scripts/check.sh
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+56 passed, 1 warning in 1.06s
+CHECK PASS
+
+$ git diff --check
+warning: in the working copy of 'practices/practice_04/ai-review-api/app/main.py', LF will be replaced by CRLF the next time Git touches it
+exit=0
+
+$ git status --short
+ M app/main.py
+?? tests/test_review_llm_failure.py
+
+$ git diff --stat -- docs scripts tests/test_review_validation.py tests/test_example.py (пусто = не менялись)
+
+$ git diff -- app/main.py | git hash-object: проверка что app/main.py не изменился третьей сессией
+warning: in the working copy of 'practices/practice_04/ai-review-api/app/main.py', LF will be replaced by CRLF the next time Git touches it
+14
+
+$ python manual_check_B.py (повтор)
+[OK ] LLM бросает RuntimeError: status=502 (ждали 502) llm_calls=1 t=0.24s check=True
+[OK ] LLM бросает ValueError: status=502 (ждали 502) llm_calls=1 t=0.01s check=True
+[OK ] LLM бросает KeyError: status=502 (ждали 502) llm_calls=1 t=0.01s check=True
+[OK ] LLM бросает ConnectionError: status=502 (ждали 502) llm_calls=1 t=0.01s check=True
+[OK ] LLM бросает TimeoutError: status=502 (ждали 502) llm_calls=1 t=0.00s check=True
+[OK ] LLM бросает HTTPException: status=502 (ждали 502) llm_calls=1 t=0.01s check=True
+[OK ] LLM висит дольше таймаута: status=502 (ждали 502) llm_calls=1 t=0.32s check=True
+[OK ] пустой diff: status=422 (ждали 422) llm_calls=0 t=0.02s
+[OK ] только пробелы/переводы строк: status=422 (ждали 422) llm_calls=0 t=0.02s
+[OK ] нет поля diff: status=422 (ждали 422) llm_calls=0 t=0.01s
+[OK ] 100001 байт: status=413 (ждали 413) llm_calls=0 t=0.01s check=True
+[OK ] кириллица 50001 символ = 100002 байта: status=413 (ждали 413) llm_calls=0 t=0.0
+[OK ] 100000 байт, LLM падает: status=502 (ждали 502) llm_calls=1 t=0.01s check=True
+[OK ] 100000 байт, LLM ок: status=200 (ждали 200) llm_calls=1 t=0.01s
+[OK ] нормальный diff, фейк-LLM: status=200 (ждали 200) llm_calls=1 t=0.01s
+[OK ] нормальный diff, настоящая заглушка LLMClient без override: 200 {"summary"
+[OK ] /health: 200 {"status":"ok"}
+ИТОГ: проблем 0 
+
+== Мутация 1 (копия в scratchpad): shutdown(wait=True), ожидаем падение теста времени ответа
+        assert response.status_code == 502
+>       assert elapsed < MAX_RESPONSE_SECONDS
+E       assert 5.02349239999603 < 2.5
+FAILED tests/test_review_llm_failure.py::test_review_when_llm_times_out_responds_without_waiting_for_llm
+1 failed, 5 passed in 10.91s
+
+== Мутация 2 (копия): убрать проверку 413 и пустого diff (валидация после/без LLM), ожидаем падение двух новых тестов
+21:        if False:
+33:    if len(body.diff.encode("utf-8")) > 10**9:
+FAILED tests/test_review_llm_failure.py::test_review_with_empty_diff_when_llm_fails_returns_422_without_calling_llm
+FAILED tests/test_review_llm_failure.py::test_review_with_oversized_diff_when_llm_fails_returns_413_without_calling_llm
+2 failed, 4 passed in 0.53s
+
+== Контроль: немутированная копия
+6 passed in 0.82s
