@@ -1,16 +1,14 @@
 # Журнал экспериментов Практики 2
 
-Файл ведёт OpenCode по вашим запросам. Агент записывает фактические результаты экспериментов и вносит изменения в связанные файлы. Свою оценку сообщайте ему в чате; вручную заполнять шаблон не нужно.
+- Выбранный слабый артефакт Практики 1: project_management.md
+- Что в нём нужно улучшить: Заменить шаблонные блоки на конкретику, добавить явные риски, актуализировать зависимые работы и владельца. Обновить диаграмму Гантта - она некорректна
+- Как поймём, что изменение полезно: Отсутствие плейсхолдеров, все даты/ответствености/задачи конкретизированы. Связка с метриками. Консистентность ссылок и терминов.
 
-- Выбранный слабый артефакт Практики 1:
-- Что в нём нужно улучшить:
-- Как поймём, что изменение полезно:
-
-| Техника | Файл эксперимента | Изменённый файл Практики 1 | Конкретное изменение | Проверка | Что отклонили |
-|---|---|---|---|---|---|
-| Few-shot | [`few_shot/experiment.md`](few_shot/experiment.md) |  |  |  |  |
-| R.C.T.F. | [`rctf/experiment.md`](rctf/experiment.md) |  |  |  |  |
-| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) |  |  |  |  |
-| Tree of Thoughts | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md) |  |  |  |  |
-| RAG | [`rag/experiment.md`](rag/experiment.md) |  |  |  |  |
-| ReAct | [`react/experiment.md`](react/experiment.md) |  |  |  |  |
+| Техника               | Файл эксперимента                                                            | Изменённый файл Практики 1                                                                 | Конкретное изменение | Проверка | Что отклонили |
+| --------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------------------- | -------- | ------------- |
+| Few-shot              | [`few_shot/experiment.md`](few_shot/experiment.md)                           | [`few_shot/project_management.md`](few_shot/project_management.md) (копия `project_management.md`) | DoD+tests_*+метрики; Гант без плейсх.; 4 пункта; PROMPT_ID | Сверка ссылок/порогов (CASE/problem); прогонов не делали | Владельцы/сроки; новые риски; «тесты пройдены» |
+| R.C.T.F.              | [`rctf/experiment.md`](rctf/experiment.md)                                   | [`rctf/project_management.md`](rctf/project_management.md) (копия `project_management.md`) | Колонка «Риски и меры» с evidence file:line; DoD+ссылки; Гант after/id; тип R.C.T.F. | file:line сверены с P1-02; числа из CASE/problem; ссылки ок | Владельцы/сроки; факт прогонов; OBS-1 |
+| Chain of Verification | [`chain_of_verification/experiment.md`](chain_of_verification/experiment.md) | [`chain_of_verification/project_management.md`](chain_of_verification/project_management.md) (копия `project_management.md`) | Убраны плейсх.; DoD+ссылки; Гант с зависим.; CoV-тип | Чек-вопросы+evidence; 20k/10s/≥95%/100%/≥99% подтверждены | Отд. колонку «Риски и меры»; владельцы/сроки; факт прогонов |
+| Tree of Thoughts      | [`tree_of_thoughts/experiment.md`](tree_of_thoughts/experiment.md)           | [`tree_of_thoughts/project_management.md`](tree_of_thoughts/project_management.md) (копия `project_management.md`) | Линейная структура; DoD+ссылки; Гант без плейсх.; ToT-тип | Оценка альтернатив; ссылки/mermaid ок | OUT-1||API-1 параллель; SEC-1 первым |
+| RAG                   | [`rag/experiment.md`](rag/experiment.md)                                     | [`rag/project_management.md`](rag/project_management.md) (копия `project_management.md`)   | DoD с цитированием источников; Гант after; RAG-тип | Числа/ссылки дословно из CASE/problem; по шаблону | Владельцы/сроки; факт прогонов; доп. метрики вне источников |
+| ReAct                 | [`react/experiment.md`](react/experiment.md)                                 | [`react/project_management.md`](react/project_management.md) (копия `project_management.md`) | DoD+ссылки; Гант after; ReAct-тип | Ссылки/числа проверены; mermaid ок; вопрос про владельцев | Владельцы/сроки; «тесты зелёные» как факт; новые правила |
