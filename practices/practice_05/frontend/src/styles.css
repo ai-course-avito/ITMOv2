@@ -113,6 +113,9 @@ button, select { font: inherit; }
 .results { width: min(100%, 625px); margin: 15px auto 0; text-align: left; }
 .results h1 { margin: 0 0 5px; font-size: 19px; font-weight: normal; }
 .results-note { margin: 0 0 15px; color: #777; font-size: 12px; }
+.price-sort { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin: 0 0 12px; color: #555; font-size: 13px; }
+.price-sort select { min-height: 34px; padding: 0 8px; border: 1px solid #a9a9a9; background: #fff; color: #222; }
+.price-sort select:focus-visible { outline: 2px solid #1a73e8; outline-offset: 2px; }
 .flights { border-top: 1px solid #ddd; }
 .flight { display: flex; align-items: center; gap: 10px; min-height: 43px; border-bottom: 1px solid #eee; font-size: 13px; }
 .flight strong { margin-left: auto; color: #1a0dab; font-weight: normal; font-size: 15px; }
@@ -148,6 +151,7 @@ button, select { font: inherit; }
   .options-row { flex-direction: column; }
   .flight { flex-direction: column; }
   .flight strong { margin-left: 0; }
+  .price-sort { justify-content: flex-start; flex-wrap: wrap; }
 }
 
 .comparison {

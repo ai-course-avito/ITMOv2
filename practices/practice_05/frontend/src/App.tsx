@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 
 type Segment = {
   marketing_carrier_code: string | null
@@ -28,6 +28,7 @@ type PriceComparison = {
   current_search_at: string
 }
 type SearchResult = { itineraries: Itinerary[]; observed_at: string | null; cache_hit: boolean; comparison: PriceComparison }
+type PriceOrder = 'ascending' | 'descending'
 
 function money(amount: number, currency: string) {
   return new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(amount)
@@ -66,6 +67,15 @@ function App() {
   const [error, setError] = useState('')
   const [result, setResult] = useState<SearchResult | null>(null)
   const [searchedRoute, setSearchedRoute] = useState('')
+  const [priceOrder, setPriceOrder] = useState<PriceOrder>('ascending')
+  const sortedItineraries = useMemo(() => {
+    if (!result) return []
+    const direction = priceOrder === 'ascending' ? 1 : -1
+    return result.itineraries
+      .map((itinerary, index) => ({ itinerary, index }))
+      .sort((a, b) => direction * (a.itinerary.price.amount - b.itinerary.price.amount) || a.index - b.index)
+      .map(({ itinerary }) => itinerary)
+  }, [result, priceOrder])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -101,6 +111,7 @@ function App() {
         throw new Error(typeof detail === 'string' ? detail : 'Проверьте маршрут и даты поиска.')
       }
       setSearchedRoute(`${body.origin} → ${body.destination}`)
+      setPriceOrder('ascending')
       setResult(data as SearchResult)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Не удалось выполнить поиск.')
@@ -142,10 +153,18 @@ function App() {
             {result.comparison.previous_price !== null && result.comparison.previous_currency && <span>Прошлый поиск: {money(result.comparison.previous_price, result.comparison.previous_currency)}</span>}
             {result.cache_hit && <small>Тарифы получены из кеша и могут не отражать новое изменение цены.</small>}
           </div>}
-          {result.itineraries.length === 0 ? <p>По вашему запросу билеты не найдены. Попробуйте другие даты или фильтры.</p> : <div className="flights">{result.itineraries.map(itinerary => <article className="flight" key={itinerary.ignav_id}>
+          {result.itineraries.length === 0 ? <p>По вашему запросу билеты не найдены. Попробуйте другие даты или фильтры.</p> : <>
+            <label className="price-sort">Порядок по цене
+              <select value={priceOrder} onChange={event => setPriceOrder(event.target.value as PriceOrder)}>
+                <option value="ascending">Сначала дешёвые</option>
+                <option value="descending">Сначала дорогие</option>
+              </select>
+            </label>
+            <div className="flights">{sortedItineraries.map(itinerary => <article className="flight" key={itinerary.ignav_id}>
             <div className="flight-details"><div>Туда: {legText(itinerary.outbound)}</div>{itinerary.inbound && <div>Обратно: {legText(itinerary.inbound)}</div>}{itinerary.requires_self_transfer && <div>Может потребоваться самостоятельная пересадка</div>}</div>
             <strong>от {money(itinerary.price.amount, itinerary.price.currency)}</strong>
-          </article>)}</div>}
+          </article>)}</div>
+          </>}
         </section>}
       </main>
       <footer className="footer">Учебный проект · Поиск авиабилетов</footer>
