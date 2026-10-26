@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VkusMart — Защита Практики 5 (SDD: Две команды — одна фича)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #10b981;
+      --primary-dark: #047857;
+      --accent: #ec4899;
+      --bg: #0b1120;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --code-bg: #030712;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+    .container { max-width: 1150px; margin: 0 auto; padding: 0 24px; }
+
+    header {
+      background: #070d19;
+      border-bottom: 1px solid var(--card-border);
+      padding: 22px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .title-block h1 {
+      font-size: 22px;
+      font-weight: 800;
+      color: #34d399;
+      letter-spacing: -0.5px;
+    }
+    .title-block p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .grade-badge {
+      background: rgba(236, 72, 153, 0.15);
+      border: 1px solid #ec4899;
+      color: #f472b6;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    /* Tabs */
+    .nav-bar {
+      margin: 28px 0;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover {
+      color: #ffffff;
+      border-color: #64748b;
+    }
+    .nav-btn.active {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border-color: #10b981;
+    }
+
+    .slide { display: none; }
+    .slide.active { display: block; animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card h3 {
+      font-size: 15px;
+      margin: 16px 0 8px 0;
+      color: #f1f5f9;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media(max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid var(--card-border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    th {
+      background: #0f172a;
+      color: #94a3b8;
+    }
+
+    pre {
+      background: var(--code-bg);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      border: 1px solid #1e293b;
+      margin: 10px 0;
+      color: #a5f3fc;
+    }
+
+    .badge-pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .pill-green { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .pill-pink { background: rgba(236, 72, 153, 0.2); color: #f472b6; border: 1px solid #ec4899; }
+    .pill-yellow { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container header-flex">
+      <div class="title-block">
+        <h1>VkusMart · Практика 5: SDD в Brownfield</h1>
+        <p>Две команды — одна фича (Spec-Kit vs OpenSpec, Избранное & Wishlist)</p>
+      </div>
+      <div class="grade-badge">
+        🎯 10 / 10 баллов (SDD Complete)
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="nav-bar">
+      <button class="nav-btn active" onclick="switchSlide(0)">1. SDD-фреймворк (Spec-Kit vs OpenSpec)</button>
+      <button class="nav-btn" onclick="switchSlide(1)">2. Две команды (UI vs Logic)</button>
+      <button class="nav-btn" onclick="switchSlide(2)">3. Согласование контракта (5 решений)</button>
+      <button class="nav-btn" onclick="switchSlide(3)">4. Реализация и проверки (38 тестов)</button>
+      <button class="nav-btn" onclick="switchSlide(4)">5. Рефлексия и выводы</button>
+    </nav>
+
+    <!-- СЛАЙД 1 -->
+    <section class="slide active">
+      <div class="card">
+        <h2>🛠️ 1. Выбор фреймворка: Spec-Kit (2 балла)</h2>
+        <p>Для реализации принципа Spec-Driven Development (SDD) был выбран фреймворк <b>Spec-Kit</b> как альтернатива рассмотренному на семинаре OpenSpec.</p>
+        
+        <h3>Сравнительный анализ фреймворков</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Критерий</th>
+              <th>OpenSpec (семинар)</th>
+              <th>Spec-Kit (наш выбор в ДЗ)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Основная парадигма</b></td>
+              <td>Пошаговый конвейер правок одного разработчика: explore → propose → apply → archive.</td>
+              <td>Контрактное взаимодействие независимых команд: Team UI + Team Logic → Shared Contract.</td>
+            </tr>
+            <tr>
+              <td><b>Механика контракта</b></td>
+              <td>Дельта-спецификации (диффы требований к существующей системе).</td>
+              <td>Единый согласованный протокол API/схем данных с версионированием (OpenAPI / JSON Schema).</td>
+            </tr>
+            <tr>
+              <td><b>Изоляция команд</b></td>
+              <td>Один общий контекст агента.</td>
+              <td>Раздельные спецификации команд, предотвращающие загрязнение контекста агентов.</td>
+            </tr>
+            <tr>
+              <td><b>Преимущество в brownfield</b></td>
+              <td>Детерминированный CLI для быстрой синхронизации изменений.</td>
+              <td>Гарантирует 100% совместимость фронтенда и бэкенда до написания кода.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>📂 Конфигурация Spec-Kit проекта</h2>
+        <p>Файл конфигурации: <code>practice_05/specs/spec-kit.config.yaml</code></p>
+        <pre>version: "1.0.0"
+project: "VkusMart Grocery - Practice 5"
+methodology: "Specification-Driven Development (SDD)"
+teams:
+  - id: "team-ui"
+    name: "Frontend / UI Engineering"
+    spec_path: "specs/ui-spec.md"
+  - id: "team-logic"
+    name: "Backend / Logic Engineering"
+    spec_path: "specs/logic-spec.md"
+contract:
+  path: "specs/contract.md"
+  status: "approved"
+  enforcement: "strict"</pre>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 2 -->
+    <section class="slide">
+      <div class="card">
+        <h2>👥 2. Эмуляция двух команд: спецификации до согласования (2 балла)</h2>
+        <p>Каждая команда первоначально составила свой черновик спецификации (Draft) исходя из собственных задач и предположений:</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h2>🎨 Команда 1: Спека UI (Draft)</h2>
+          <span class="badge-pill pill-pink">Черновик до согласования</span>
+          <p style="margin-top: 10px; font-size: 13px;">Фокус: пользовательские сценарии, сердечки, модальное окно, бейдж в шапке.</p>
+          <ul style="margin: 12px 0 12px 20px; font-size: 13px; color: var(--text-muted);">
+            <li>Предполагала <code>camelCase</code>: <code>productId</code></li>
+            <li>Ожидала от сервера лишь <code>{"status": "ok"}</code></li>
+            <li>Считала, что расчет цен UI делает сам</li>
+            <li>Планировала переносить товары в корзину циклом запросов</li>
+          </ul>
+          <pre>POST /api/favorites
+{
+  "productId": "prod-1",
+  "userId": "guest"
+}
+Response: {"status": "ok"}</pre>
+        </div>
+
+        <div class="card">
+          <h2>⚙️ Команда 2: Спека Логики (Draft)</h2>
+          <span class="badge-pill pill-yellow">Черновик до согласования</span>
+          <p style="margin-top: 10px; font-size: 13px;">Фокус: доменная модель, хранилище, валидация по каталогу, строгие лимиты.</p>
+          <ul style="margin: 12px 0 12px 20px; font-size: 13px; color: var(--text-muted);">
+            <li>Использовала RPC-стиль: <code>/api/favorites/add</code></li>
+            <li>Бросала ошибку <code>400 Bad Request</code> при дубле</li>
+            <li>Возвращала только ID товаров: <code>["prod-1"]</code></li>
+            <li>Не предусматривала пакетный перенос в корзину</li>
+          </ul>
+          <pre>POST /api/favorites/add
+{
+  "product_id": "prod-1"
+}
+Response: {"success": true, "count": 1}</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 3 -->
+    <section class="slide">
+      <div class="card">
+        <h2>🤝 3. Согласование общего контракта: 5 решений</h2>
+        <p>В ходе арбитража был подписан единый контракт <code>specs/contract.md</code>, устранивший все нестыковки до написания кода:</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Проблема</th>
+              <th>Решение контракта</th>
+              <th>Результат</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><b>Именование полей</b></td>
+              <td>Единый <code>snake_case</code> (<code>product_id</code>)</td>
+              <td>Полное соответствие существующему REST API VkusMart.</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><b>REST-эндпоинты</b></td>
+              <td><code>GET, POST, DELETE /api/favorites</code></td>
+              <td>Чистый RESTful подход вместо разрозненного RPC.</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><b>Обогащение данных</b></td>
+              <td><b>Enriched DTO</b>: полные объекты + суммы и калории</td>
+              <td>UI сразу видит актуальные цены и КБЖУ без доп. запросов.</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><b>Идемпотентность</b></td>
+              <td><code>POST</code> возвращает <code>200 OK</code> при повторе</td>
+              <td>Интерфейс не ломается от double-click пользователя.</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td><b>Перенос в корзину</b></td>
+              <td>Атомарный <code>POST /api/favorites/move-to-cart</code></td>
+              <td>Транзакционный перенос всех товаров и очистка списка в 1 вызов.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>📄 Спецификации ПОСЛЕ согласования</h2>
+        <div class="grid-2">
+          <div>
+            <h3>Версия UI (Approved):</h3>
+            <p style="font-size: 13px; color: var(--text-muted);">Файл: <code>specs/ui-spec.md</code> — полностью переведена на <code>snake_case</code>, идемпотентные ответы и модалку с агрегацией цен.</p>
+          </div>
+          <div>
+            <h3>Версия Logic (Approved):</h3>
+            <p style="font-size: 13px; color: var(--text-muted);">Файл: <code>specs/logic-spec.md</code> — добавлены обогащенные DTO, транзакционный <code>move_to_cart</code> и обработка 404/400.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 4 -->
+    <section class="slide">
+      <div class="card">
+        <h2>💻 4. Реализация и сквозные проверки (5 баллов)</h2>
+        <p>Код реализован в точном соответствии с утвержденными спецификациями:</p>
+        <ul style="margin: 10px 0 16px 20px; font-size: 13px; color: var(--text-muted);">
+          <li><b>Бэкенд:</b> класс <code>FavoritesService</code> в <code>app/services.py</code> и обработчики в <code>app/server.py</code>.</li>
+          <li><b>Фронтенд:</b> интерактивные кнопки сердечек, реактивный бейдж с анимацией пульсации, модальное окно в <code>app.js</code> / <code>styles.css</code>.</li>
+        </ul>
+
+        <h3>Результаты запуска Pytest (38/38 успешно)</h3>
+        <pre>============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\3sem\vibecoding\ITMOv2\practices
+collected 38 items
+
+practice_05\tests\test_catalog.py ...                                    [  7%]
+practice_05\tests\test_favorites.py ...........                          [ 36%]
+practice_05\tests\test_feature_a.py ......                               [ 52%]
+practice_05\tests\test_feature_b.py ......                               [ 68%]
+practice_05\tests\test_mcp.py ............                               [100%]
+
+============================= 38 passed in 2.07s ==============================</pre>
+
+        <h3>Результаты сквозного HTTP E2E-теста (test_favorites_e2e.py)</h3>
+        <pre>✓ Тестовый HTTP-сервер запущен на http://127.0.0.1:8899
+✓ [GET /api/favorites]: пустой список корректен
+✓ [POST /api/favorites]: товар prod-1 успешно добавлен
+✓ [POST /api/favorites]: идемпотентность подтверждена (200 OK, already_exists=True)
+✓ [POST /api/favorites]: товар prod-3 успешно добавлен, всего 2 товара
+✓ [GET /api/favorites]: обогащенный DTO (цена 530.0 ₽, калории 280) подтвержден
+✓ [DELETE /api/favorites]: товар prod-1 удален
+✓ [POST /api/favorites/move-to-cart]: атомарный перенос в корзину успешен
+✓ [Error 404]: корректный ответ product_not_found при несуществующем ID
+✓ [Error 400]: корректный ответ missing_product_id при пустом payload
+
+🎉 ВСЕ СЦЕНАРИИ СКВОЗНОГО ТЕСТИРОВАНИЯ УСПЕШНО ПРОЙДЕНЫ!</pre>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 5 -->
+    <section class="slide">
+      <div class="card">
+        <h2>💡 5. Рефлексия: Чему научились (1 балл)</h2>
+        <div style="display: flex; flex-direction: column; gap: 14px; font-size: 14px;">
+          <div style="background: rgba(16, 185, 129, 0.1); padding: 14px; border-radius: 8px; border-left: 4px solid #10b981;">
+            <b>1. Контракт ДО кода спас часы на интеграции:</b> Если бы команды начали программировать по своим драфтам, пришлось бы переписывать сериализаторы (camelCase vs snake_case), обрабатывать 400-е ошибки при кликах и бороться с рассинхронизацией цен.
+          </div>
+          <div style="background: rgba(236, 72, 153, 0.1); padding: 14px; border-radius: 8px; border-left: 4px solid #ec4899;">
+            <b>2. Идемпотентность — основа надёжного UI:</b> Быстрый двойной клик пользователя по сердечку не должен генерировать ошибки в консоли браузера. Сервер должен спокойно отвечать <code>200 OK</code> с актуальным состоянием.
+          </div>
+          <div style="background: rgba(59, 130, 246, 0.1); padding: 14px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <b>3. Spec-Kit обеспечивает четкие границы для AI-агентов:</b> Агенту фронтенда не нужно сканировать весь бэкенд, а агенту бэкенда — разбираться в верстке. Контракт служит точным изолированным интерфейсом.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function switchSlide(index) {
+      const slides = document.querySelectorAll('.slide');
+      const buttons = document.querySelectorAll('.nav-btn');
+      slides.forEach((s, i) => s.classList.toggle('active', i === index));
+      buttons.forEach((b, i) => b.classList.toggle('active', i === index));
+    }
+  </script>
+</body>
+</html>

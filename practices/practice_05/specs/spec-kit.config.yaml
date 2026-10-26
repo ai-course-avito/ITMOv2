@@ -1,0 +1,39 @@
+# Spec-Kit Framework Configuration
+version: "1.0.0"
+project: "VkusMart Grocery - Practice 5"
+methodology: "Specification-Driven Development (SDD)"
+teams:
+  - id: "team-ui"
+    name: "Frontend / UI Engineering"
+    scope: "Presentation layer, user interactions, local client state, accessibility"
+    spec_path: "specs/ui-spec.md"
+    draft_path: "specs/draft/ui-spec.draft.md"
+  - id: "team-logic"
+    name: "Backend / Logic Engineering"
+    scope: "Domain model, REST API endpoints, validations, business calculations, persistence"
+    spec_path: "specs/logic-spec.md"
+    draft_path: "specs/draft/logic-spec.draft.md"
+
+contract:
+  path: "specs/contract.md"
+  status: "approved"
+  enforcement: "strict"
+  validation_rules:
+    naming_convention: "snake_case"
+    content_type: "application/json; charset=utf-8"
+    error_format:
+      required_fields: ["error", "message"]
+    idempotent_actions: ["add_favorite", "remove_favorite"]
+
+lifecycle:
+  phases:
+    - name: "Drafting"
+      description: "Teams independently produce their specifications based on user requirements"
+    - name: "Negotiation"
+      description: "Teams compare data models, API endpoints, errors, and define the shared contract"
+    - name: "Revision"
+      description: "Both specifications are updated to strictly align with the approved contract"
+    - name: "Implementation"
+      description: "Code generation and manual implementation strictly complying with specifications"
+    - name: "Verification"
+      description: "Automated test suite asserting contract compliance and e2e integration"
