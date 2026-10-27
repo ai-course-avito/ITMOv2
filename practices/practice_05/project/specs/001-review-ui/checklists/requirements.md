@@ -3,7 +3,7 @@
 **Purpose**: Validate specification completeness and quality before proceeding to planning  
 **Created**: 2026-10-27  
 **Feature**: [spec.md](../spec.md)  
-**Status**: Draft — awaiting human agreement
+**Status**: Approved — aligned with CONTRACT v1.0 (2026-10-27)
 
 ## Content Quality
 
@@ -27,15 +27,14 @@
 
 - [x] All functional requirements have clear acceptance criteria
 - [x] User scenarios cover primary flows
-- [ ] Feature meets measurable outcomes defined in Success Criteria
+- [x] Feature meets measurable outcomes defined in Success Criteria
 - [x] No implementation details leak into specification
 
 ## Notes
 
-- Проверка draft выполнена 2026-10-27: mandatory headings сохранены; три пользовательских пути, четыре состояния, FR-001–FR-014 и SC-001–SC-005 заполнены; у требований указана проверка. Из документов удалены шаблонные заполнители.
-- Техническое предложение обмена вынесено в [contract-proposal.md](../contract-proposal.md). Имена полей в спецификации сохранены из OUT-1; они описывают данные результата, а не выбранный стек реализации.
-- Незавершённый readiness-пункт не означает выявленный дефект реализации: реализации ещё нет, измеримые результаты не проверялись. Нельзя заявлять их достижение до сквозных проверок.
-- Новые решения явно помечены «предложение UI, не согласовано»: например, A-002 «Unicode code point», A-004 «15 секунд». Разумные defaults позволили подготовить проверяемый draft без блокирующих NEEDS CLARIFICATION; это не подменяет согласование человеком.
-- Открыты межкомандное сопоставление данных/вызовов/ошибок и решение пользователя. Статус НЕ ready for implementation или plan: constitution требует согласовать обе спецификации и общий контракт до кода. Следующий шаг — передать draft родителю для сопоставления; спецификация другой команды не читалась.
-- `.specify/extensions.yml` отсутствует при проверке pre/post hooks; выполнять hooks не требуется. Setup и разрешение шаблона выполнены родительским агентом; evidence находится в `../../../../evidence/spec-template-resolution.json` относительно этого checklist.
-- Это валидация текста требований, не отчёт о пройденных UI, интеграционных или модельных тестах. Прикладной и тестовый код не создавался.
+- Итоговая спецификация согласована через [CONTRACT v1.0](../../../../CONTRACT.md), [ответ пользователя](../../../../evidence/approval.md). Исходный независимый draft сохранён в evidence/before/ui и не менялся.
+- Проверены mandatory headings, три stories, четыре состояния, требования FR-001–FR-015 и SC-001–SC-005; у каждого требования есть способ приёмки. Заполнителей и блокирующих уточнений нет.
+- Итоговые решения: «Возможные риски», обязательные координаты и цитата, checks 1–10, ограничения полей, ошибки MODEL_*, явный mode, 10 секунд модели/15 UI, code point count. Технический стек описан в plan.md, не в продуктовой спецификации.
+- Readiness-пункт о measurable outcomes проверен как качество спецификации: требования и сценарии покрывают измеримые критерии. Сами результаты ещё не измерялись на реализации. План и задачи готовы; это не отчёт о прохождении тестов. Screen reader, реальный LLM и e2e нельзя объявлять проверенными без выполнения.
+- speckit-plan и speckit-tasks применены с явным каталогом UI и SPECIFY_FEATURE_NO_PERSIST=1. `.specify/extensions.yml` отсутствует; hooks не требуются. Setup шаблонов использует установленный resolver; tasks-setup.json содержит результат разрешения.
+- Прикладной и тестовый код в этом этапе не создавался. Готово к фиксации согласованных specs координатором и последующему этапу реализации.

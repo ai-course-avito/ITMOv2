@@ -1,0 +1,30 @@
+# План общей интеграции ДЗ 5
+
+Основание: CONTRACT.md v1.0 и одобрение пользователя 2026-10-27.
+Команды готовят и реализуют собственные plan/tasks через Spec Kit;
+координатор владеет общей сборкой, доказательствами и браузерной проверкой.
+
+- [x] I01 Сохранить согласованные спецификации «после» и commit до прикладного кода.
+- [x] I02 Создать project/requirements.txt, requirements-dev.txt и Makefile.
+- [ ] I03 Связать GET /, static assets и POST /api/reviews; проверить отсутствие дрейфа контракта.
+- [ ] I04 Создать project/tests/test_e2e.py: браузер → реальный HTTP → demo-логика → UI.
+- [ ] I05 Проверить через браузер success, empty/20000/20001, invalid diff, ошибку сервера,
+  loading/double submit, сетевую ошибку, форму результата, literal rendering,
+  очистку, keyboard/focus, ширину 360px и поздний ответ после 15 секунд.
+- [ ] I06 Запустить unit/API и E2E; сохранить вывод и скриншоты, визуально проверить экран.
+- [ ] I07 Применить speckit-converge к обеим feature directories, устранить реальные пробелы.
+- [ ] I08 Обновить README, сравнение фреймворков, журнал, короткий сценарий демо и commit.
+- [ ] I09 Получить личную рефлексию пользователя; не подменять её текстом агента.
+
+Окружение: Python 3.13, FastAPI 0.162.0, HTTPX 0.28.1, Uvicorn 0.54.0;
+Playwright с локальным Google Chrome (headless), без внешних сайтов.
+Для E2E сервер запускается отдельным процессом на свободном loopback-порту
+и останавливается в cleanup. Контролируемые browser route responses применяются
+только к проверкам UI ошибок/неверного результата; happy path проходит реальный
+backend с явной demo-моделью. Эти разные виды доказательств будут отмечены в отчёте.
+
+Официальные источники, проверенные при подготовке:
+- https://playwright.dev/python/docs/library
+- https://playwright.dev/python/docs/browsers
+- https://playwright.dev/python/docs/screenshots
+- https://fastapi.tiangolo.com/tutorial/static-files/
