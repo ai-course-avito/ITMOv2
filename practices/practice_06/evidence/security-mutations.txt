@@ -1,0 +1,43 @@
+M01 поймана: T01 роль берётся и из заголовка X-Role — test_t01_role_header_grants_nothing
+M02 поймана: T02 нет проверки владельца профиля — test_t02_customer_cannot_read_foreign_profile
+M03 поймана: T03 SQL строкой в /profile (без проверки владельца) — test_t02_customer_cannot_read_foreign_profile
+M04 поймана: T03/T04 поиск не ограничен своим профилем — test_t03_search_does_not_expose_foreign_profiles
+M05 поймана: T03 SQL строкой в /search — test_t03_search_does_not_expose_foreign_profiles, test_t03_search_is_not_sql
+M06 поймана: T04 /orders отдаёт все заказы — test_t04_orders_list_is_scoped_to_caller
+M07 поймана: T05 цена из тела запроса — test_t05_price_comes_from_catalog
+M08 поймана: T06 нет проверки владельца файла — test_t06_customer_cannot_read_foreign_receipt, test_t10_read_file_is_limited_to_own_receipt
+M09 поймана: T06 путь не ограничен простым именем — test_t06_path_cannot_reach_private_notes
+M10 поймана: T07 /debug/logs доступен клиенту — test_t07_debug_logs_not_public_and_without_secrets
+M11 поймана: T07 журнал снова хранит заголовки — test_t07_debug_logs_not_public_and_without_secrets
+M12 поймана: T08 отзыв выводится без экранирования — test_t08_review_html_is_escaped
+M13 поймана: T09 prompt без пометки недоверенных данных — test_t09_prompt_marks_reviews_as_untrusted
+M14 поймана: T10 read_file читает любой путь песочницы — test_t10_read_file_is_limited_to_own_receipt
+M15 поймана: T11 export_profiles доступен клиенту — test_t11_customer_cannot_export_profiles
+M16 поймана: T12 delete_tree снова исполняется — test_t12_nobody_deletes_files_through_assistant
+M17 поймана: T03 контекст помощника для чужого заказа — test_t03_assistant_context_for_foreign_order_denied
+M18 поймана: T03 SQL строкой в /assistant/context — test_t03_assistant_order_id_is_not_sql
+M19 поймана: T13 нет лимита попыток входа — test_t13_failed_logins_are_rate_limited, test_t13_unknown_names_are_limited_like_known_ones
+M20 поймана: T13 токен не истекает — test_t13_token_expires
+M21 поймана: T16 действия не попадают в журнал аудита — test_t16_actions_are_audited_without_secrets
+M22 поймана: T14 ошибки отдают текст исключения — test_t14_errors_do_not_leak_internals
+M23 поймана: T15 тело не проверяется на объект — test_t14_errors_do_not_leak_internals, test_t15_json_must_be_an_object
+M24 поймана: T15 логин не проверяет типы — test_t15_malformed_bodies_are_400_not_500
+M25 поймана: T15 заказ не проверяет тип product — test_t15_malformed_bodies_are_400_not_500
+M26 поймана: T12 execute принимает decision любой формы — test_t12_malformed_decision_is_400
+M27 поймана: T20 нет таймаута сокета: зависший клиент держит поток — test_t20_stalled_request_is_cut_off
+M28 поймана: T20 сессии не чистятся и не ограничены — test_t20_expired_sessions_are_purged, test_t20_sessions_are_bounded_per_account
+M29 поймана: T20 отзывы не ограничены — test_t20_reviews_are_bounded
+M30 поймана: T20 журнал запросов не ограничен — test_t20_request_log_is_bounded
+M31 поймана: T09 в prompt попадают отзывы всех товаров — test_t09_prompt_has_only_reviews_of_the_ordered_product
+M32 поймана: T09 число отзывов в prompt не ограничено — test_t09_prompt_review_count_is_bounded
+M33 поймана: T07 журнал хранит тела запросов (пароли из /login) — test_t07_debug_logs_not_public_and_without_secrets, test_t07_logs_hold_no_passwords_from_login_bodies
+M34 поймана: T17 /search доступен без входа — test_t17_search_and_assistant_context_require_login
+M35 поймана: T17 /assistant/context доступен без входа — test_t17_search_and_assistant_context_require_login
+M36 поймана: T22 проверка Host снята (DNS rebinding) — test_t22_foreign_host_header_is_refused
+M37 поймана: T22 Content-Type не проверяется (простой кросс-сайтовый POST) — test_t22_simple_cross_site_post_is_refused
+M38 поймана: T20 таблица неудачных входов не ограничена — test_t20_failed_login_tracking_is_bounded
+M39 поймана: T13 лимит попыток только для существующих имён (оракул перечисления) — test_t13_unknown_names_are_limited_like_known_ones
+M40 поймана: T20 лимит сессий общий: клиент вытесняет токен сотрудника — test_t20_one_customer_cannot_evict_the_staff_session
+M41 поймана: T21 пароль сравнивается как str: не-ASCII ломает вход — test_t21_non_ascii_password_is_401_not_500
+
+Поймано 41 из 41
