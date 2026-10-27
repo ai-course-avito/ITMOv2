@@ -107,3 +107,44 @@ h1 {
   background: var(--danger);
   color: #fff;
 }
+/* Calendar view basic styles */
+.view-switch { margin: 10px 0; display: flex; gap: 8px; }
+.calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 10px; width: 100%; }
+.container { max-width: 1200px; margin: 0 auto; }
+.cal-header { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.cal-title { margin-left: auto; font-weight: bold; }
+.cal-day { border: 1px solid #ddd; padding: 8px; min-height: 140px; background: #fff; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.cal-day .weekday { margin: 0; font-size: 0.85rem; color: #555; }
+.cal-day .daynum { margin: 4px 0 8px; font-size: 1.1rem; font-weight: 600; }
+.no-time-title { margin-top: 16px; }
+
+/* Tasks grid for no-time */
+.no-time { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.no-time .task { border: 1px solid #ddd; border-radius: 6px; padding: 6px; }
+
+/* Buttons */
+.btn { border: 1px solid #ccc; background: linear-gradient(#fff, #f9f9f9); padding: 8px 14px; border-radius: 8px; cursor: pointer; box-shadow: 0 1px 1px rgba(0,0,0,.08); transition: transform .05s ease, box-shadow .2s; }
+.btn:hover { background: linear-gradient(#fff, #eaeaea); }
+.btn.primary { border-color: #2b7cff; background: linear-gradient(#4c8dff, #2b7cff); color: #fff; }
+.btn.primary:hover { background: linear-gradient(#5c99ff, #3b87ff); }
+.btn.danger { border-color: #d9534f; background: linear-gradient(#f07f7c, #d9534f); color: #fff; }
+.btn.danger:hover { background: linear-gradient(#f48b88, #e05b57); }
+.btn.toggle[aria-pressed="true"] { border-color: #2b7cff; color: #2b7cff; background: #eef5ff; }
+.btn:active { transform: translateY(1px); box-shadow: 0 0 0 rgba(0,0,0,0); }
+
+/* Center add form */
+.new-task { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; margin: 10px 0; }
+.new-task input[type="text"], .new-task input[type="date"], .new-task input[type="datetime-local"], .new-task select { padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; }
+.time-fields { display: inline-flex; gap: 6px; align-items: center; }
+
+/* Enhance selects */
+.new-task select, #edit-time-mode { background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M0 0h10L5 6z" fill="%23666"/></svg>') no-repeat right 8px center; appearance: none; padding-right: 22px; }
+
+/* Prevent checkbox click from bubbling */
+.task-left input[type="checkbox"] { pointer-events: auto; }
+
+/* Modal */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; }
+.modal[hidden] { display: none; }
+.modal-content { background: #fff; padding: 16px; border-radius: 8px; width: min(480px, 90vw); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }

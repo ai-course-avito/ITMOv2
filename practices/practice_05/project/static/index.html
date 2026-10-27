@@ -10,12 +10,76 @@
     <main class="container">
       <h1>Менеджер задач</h1>
 
+      <nav class="view-switch">
+        <button id="view-list" class="btn toggle" aria-pressed="true">Список</button>
+        <button id="view-calendar" class="btn toggle" aria-pressed="false">Календарь недели</button>
+      </nav>
+
       <form id="new-task-form" class="new-task">
         <input id="new-task-input" type="text" placeholder="Новая задача" aria-label="Новая задача" />
-        <button type="submit">Добавить</button>
+        <select id="new-time-mode" aria-label="Режим времени">
+          <option value="none" selected>Без времени</option>
+          <option value="all_day">На весь день</option>
+          <option value="when">Точка во времени</option>
+          <option value="timed">Интервал</option>
+        </select>
+        <span class="time-fields">
+          <input id="new-all-day" type="date" aria-label="Дата (на весь день)" hidden />
+          <input id="new-when" type="datetime-local" aria-label="Время (точка)" hidden />
+          <input id="new-start" type="datetime-local" aria-label="Начало" hidden />
+          <input id="new-end" type="datetime-local" aria-label="Окончание" hidden />
+        </span>
+        <button type="submit" class="btn primary">Добавить</button>
       </form>
 
-      <ul id="task-list" class="tasks"></ul>
+      <section id="list-view">
+        <ul id="task-list" class="tasks"></ul>
+      </section>
+
+      <section id="calendar-view" hidden>
+        <header class="cal-header">
+          <button id="cal-prev" class="btn">Предыдущая</button>
+          <button id="cal-today" class="btn">Эта неделя</button>
+          <button id="cal-next" class="btn">Следующая</button>
+          <span id="cal-title" aria-live="polite" class="cal-title"></span>
+        </header>
+        <div id="calendar" class="calendar"></div>
+        <h2 class="no-time-title">Без времени</h2>
+        <ul id="no-time-list" class="tasks no-time"></ul>
+      </section>
+
+      <!-- Edit Modal -->
+      <div id="edit-modal" class="modal" hidden>
+        <div class="modal-content">
+          <h2>Редактирование задачи</h2>
+          <form id="edit-form">
+            <label>
+              Название
+              <input id="edit-title" type="text" />
+            </label>
+            <label>
+              Режим времени
+              <select id="edit-time-mode">
+                <option value="none">Без времени</option>
+                <option value="all_day">На весь день</option>
+                <option value="when">Точка во времени</option>
+                <option value="timed">Интервал</option>
+              </select>
+            </label>
+            <div class="edit-time-fields">
+              <input id="edit-all-day" type="date" aria-label="Дата (на весь день)" />
+              <input id="edit-when" type="datetime-local" aria-label="Время (when)" />
+              <input id="edit-start" type="datetime-local" aria-label="Начало" />
+              <input id="edit-end" type="datetime-local" aria-label="Окончание" />
+            </div>
+            <div class="modal-actions">
+              <button type="button" id="edit-delete" class="btn danger">Удалить</button>
+              <button type="submit" class="btn primary">Сохранить</button>
+              <button type="button" id="edit-cancel" class="btn">Отмена</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </main>
 
     <script src="/static/script.js"></script>
