@@ -51,7 +51,7 @@
     Tasks не изменялись во время converge; координатор сверил SHA256 отчётов.
 20. Финальный make check: 37 unit/API (0.078 s) и 10 browser tests (18.744 s), PASS.
     Покрытие backend с ветвлениями 94%. Все 12 before/after snapshot hashes совпали.
-21. Обновлены README, FRAMEWORK, RECONCILIATION, сценарий DEMO и итог validation.
+21. Обновлены README, FRAMEWORK, RECONCILIATION и итог validation.
     В REFLECTION сохранены факты решений и вопросы; личный ответ студентки,
     ручное демо и внешний LLM-вызов не выдаются за выполненные.
 22. Пользователь предоставил скриншоты успешного ручного запуска demo с тремя
