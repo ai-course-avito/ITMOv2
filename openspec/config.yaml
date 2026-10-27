@@ -1,5 +1,9 @@
 schema: spec-driven
 
+rules:
+  design:
+    - Объясни взаимодействие диаграммой Mermaid.
+
 # Project context (optional)
 # Add only constraints that should guide OpenSpec artifacts and workflows.
 # Include constraints an agent cannot infer by reading the code.
