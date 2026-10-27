@@ -1,0 +1,107 @@
+test_new_git_block_cannot_reuse_previous_path (tests.test_logic.DiffTests.test_new_git_block_cannot_reuse_previous_path) ...
+  test_new_git_block_cannot_reuse_previous_path (tests.test_logic.DiffTests.test_new_git_block_cannot_reuse_previous_path) (suffix='diff --git a/b b/b\n') ... FAIL
+  test_new_git_block_cannot_reuse_previous_path (tests.test_logic.DiffTests.test_new_git_block_cannot_reuse_previous_path) (suffix='diff --git a/b b/b\n@@ -1 +1 @@\n-old\n+new\n') ... FAIL
+test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) ...
+  test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='', closed=True) ... FAIL
+  test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='', closed=False) ... FAIL
+  test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='RSA ', closed=True) ... FAIL
+  test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='RSA ', closed=False) ... FAIL
+  test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='EC ', closed=True) ... FAIL
+  test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='EC ', closed=False) ... FAIL
+  test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='OPENSSH ', closed=True) ... FAIL
+  test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='OPENSSH ', closed=False) ... FAIL
+
+======================================================================
+FAIL: test_new_git_block_cannot_reuse_previous_path (tests.test_logic.DiffTests.test_new_git_block_cannot_reuse_previous_path) (suffix='diff --git a/b b/b\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 88, in test_new_git_block_cannot_reuse_previous_path
+    with self.assertRaises(ReviewError) as ctx:
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: ReviewError not raised
+
+======================================================================
+FAIL: test_new_git_block_cannot_reuse_previous_path (tests.test_logic.DiffTests.test_new_git_block_cannot_reuse_previous_path) (suffix='diff --git a/b b/b\n@@ -1 +1 @@\n-old\n+new\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 88, in test_new_git_block_cannot_reuse_previous_path
+    with self.assertRaises(ReviewError) as ctx:
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: ReviewError not raised
+
+======================================================================
+FAIL: test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='', closed=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 148, in test_inline_and_unclosed_inline_pem_payload_is_masked
+    self.assertNotIn('inline-secret', result)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'inline-secret' unexpectedly found in '+key = "-----BEGIN PRIVATE KEY-----inline-secret-----END PRIVATE KEY-----"'
+
+======================================================================
+FAIL: test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='', closed=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 148, in test_inline_and_unclosed_inline_pem_payload_is_masked
+    self.assertNotIn('inline-secret', result)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'inline-secret' unexpectedly found in '+key = "-----BEGIN PRIVATE KEY-----inline-secret"'
+
+======================================================================
+FAIL: test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='RSA ', closed=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 148, in test_inline_and_unclosed_inline_pem_payload_is_masked
+    self.assertNotIn('inline-secret', result)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'inline-secret' unexpectedly found in '+key = "-----BEGIN RSA PRIVATE KEY-----inline-secret-----END RSA PRIVATE KEY-----"'
+
+======================================================================
+FAIL: test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='RSA ', closed=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 148, in test_inline_and_unclosed_inline_pem_payload_is_masked
+    self.assertNotIn('inline-secret', result)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'inline-secret' unexpectedly found in '+key = "-----BEGIN RSA PRIVATE KEY-----inline-secret"'
+
+======================================================================
+FAIL: test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='EC ', closed=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 148, in test_inline_and_unclosed_inline_pem_payload_is_masked
+    self.assertNotIn('inline-secret', result)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'inline-secret' unexpectedly found in '+key = "-----BEGIN EC PRIVATE KEY-----inline-secret-----END EC PRIVATE KEY-----"'
+
+======================================================================
+FAIL: test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='EC ', closed=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 148, in test_inline_and_unclosed_inline_pem_payload_is_masked
+    self.assertNotIn('inline-secret', result)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'inline-secret' unexpectedly found in '+key = "-----BEGIN EC PRIVATE KEY-----inline-secret"'
+
+======================================================================
+FAIL: test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='OPENSSH ', closed=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 148, in test_inline_and_unclosed_inline_pem_payload_is_masked
+    self.assertNotIn('inline-secret', result)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'inline-secret' unexpectedly found in '+key = "-----BEGIN OPENSSH PRIVATE KEY-----inline-secret-----END OPENSSH PRIVATE KEY-----"'
+
+======================================================================
+FAIL: test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) (kind='OPENSSH ', closed=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 148, in test_inline_and_unclosed_inline_pem_payload_is_masked
+    self.assertNotIn('inline-secret', result)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'inline-secret' unexpectedly found in '+key = "-----BEGIN OPENSSH PRIVATE KEY-----inline-secret"'
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.002s
+
+FAILED (failures=10)

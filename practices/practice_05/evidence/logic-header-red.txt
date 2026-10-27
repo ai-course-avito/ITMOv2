@@ -1,0 +1,17 @@
+test_header_shaped_hunk_payload_is_not_a_new_file (tests.test_logic.DiffTests.test_header_shaped_hunk_payload_is_not_a_new_file) ... ERROR
+test_multifile_without_git_marker_keeps_partial_hunks (tests.test_logic.DiffTests.test_multifile_without_git_marker_keeps_partial_hunks) ... ok
+
+======================================================================
+ERROR: test_header_shaped_hunk_payload_is_not_a_new_file (tests.test_logic.DiffTests.test_header_shaped_hunk_payload_is_not_a_new_file)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 94, in test_header_shaped_hunk_payload_is_not_a_new_file
+    rows = parse_diff(diff)
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/app/diff.py", line 95, in parse_diff
+    raise ReviewError('INVALID_DIFF')
+app.errors.ReviewError: Вставьте текстовый unified diff с изменёнными строками.
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.000s
+
+FAILED (errors=1)

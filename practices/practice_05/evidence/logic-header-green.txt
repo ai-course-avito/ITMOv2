@@ -1,0 +1,13 @@
+test_added_deleted_context_and_crlf (tests.test_logic.DiffTests.test_added_deleted_context_and_crlf) ... ok
+test_create_delete_and_no_newline_marker (tests.test_logic.DiffTests.test_create_delete_and_no_newline_marker) ... ok
+test_file_headers_are_not_evidence_and_multiple_hunks (tests.test_logic.DiffTests.test_file_headers_are_not_evidence_and_multiple_hunks) ... ok
+test_header_shaped_hunk_payload_is_not_a_new_file (tests.test_logic.DiffTests.test_header_shaped_hunk_payload_is_not_a_new_file) ... ok
+test_multifile_without_git_marker_keeps_partial_hunks (tests.test_logic.DiffTests.test_multifile_without_git_marker_keeps_partial_hunks) ... ok
+test_new_git_block_cannot_reuse_previous_path (tests.test_logic.DiffTests.test_new_git_block_cannot_reuse_previous_path) ... ok
+test_training_partial_hunks_and_coordinates (tests.test_logic.DiffTests.test_training_partial_hunks_and_coordinates) ... ok
+test_unsupported_and_invalid (tests.test_logic.DiffTests.test_unsupported_and_invalid) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.001s
+
+OK

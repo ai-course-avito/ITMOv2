@@ -29,3 +29,19 @@ REVIEW_MODE=demo ../../../.venv/bin/python -m uvicorn app.api:app --host 127.0.0
 ## Live
 
 После настройки REVIEW_MODE=live, REVIEW_LLM_URL (полный chat/completions URL), REVIEW_LLM_MODEL и REVIEW_LLM_KEY во внешнем окружении запустить ту же app. Без полного конфига допустимый diff даёт 503 MODEL_NOT_CONFIGURED. Использовать учебный diff без реальных секретов. Успех имеет mode live. Без фактического вызова этот режим не считается проверенным; отказ никогда не заменяется demo-успехом.
+
+
+## Фактическая проверка логики — 2026-10-27
+
+- Реализованы все 14 backend-задач; entry point `app.api:app`, интерфейс инъекции для tests — `create_app(service=...)`, `ReviewService(settings, adapter, timeout_seconds=...)`.
+- Первый красный прогон настоящих сценариев выполнен до app/: `/tmp/hw5-logic-red.txt` (отсутствующие модули). Дополнительные регрессии parser/однострочного PEM сначала воспроизведены красными: `/tmp/hw5-logic-regression-red.txt`, затем исправлены.
+- Финальная команда: `COVERAGE_FILE=/tmp/hw5-logic.coverage ../../../.venv/bin/python -m coverage run --source=app --branch -m unittest tests.test_logic tests.test_api -v`. Результат: **35 tests, OK**, 0.104 секунды самого набора; stdout/stderr — `/tmp/hw5-logic-green.txt`.
+- `coverage report -m`: суммарно **94%** (318 statements, 98 branches); `app/secrets.py` — 100%. Отчёт: `/tmp/hw5-logic-coverage.txt`.
+- Проверены demo API и учебные partial hunks, строгий evidence, границы Unicode/CRLF, единая форма ошибок, все заявленные секреты, escaped quotes, PEM без END и на одной строке, идемпотентность, маскирование перед окончательной валидацией, общий deadline и распространение cancellation. Новая секция diff без пары заголовков не наследует прежний путь.
+- HTTPX live adapter проверен только через MockTransport, настройки и ключ — синтетические; реального вызова LLM команда логики не делала. В тесте deadline сокращён внутренней инъекцией до 0.02 секунды; production значение отдельно проверено как 10 секунд.
+- Ограниченный sandbox блокировал пробуждение AnyIO worker при FileResponse; изолированный тест и полный набор прошли после разрешённого запуска без sandbox. Это наблюдение среды, а не замена проверки статических файлов заглушкой.
+- Координатору передан backend для независимого browser e2e; он сообщил о 10/10 успешных проверках до финальных исправлений parser/PEM. Итоговую совместную проверку и её артефакты ведёт root.
+
+### Дополнительная регрессия parser — 2026-10-27
+
+Координатор воспроизвёл допустимые строки тела `--- old` / `+++ new`, ошибочно воспринимавшиеся как пара заголовков. Красная проверка сохранена в `/tmp/hw5-logic-header-red.txt`; после уточнения признака нового file block все 8 parser tests прошли (`/tmp/hw5-logic-header-green.txt`), включая multi-file без `diff --git`, partial counts и запрет наследования пути. Итоговый повторный unit/API набор: **37 tests, OK**, отчёты `/tmp/hw5-logic-green.txt` и `/tmp/hw5-logic-coverage.txt` обновлены; coverage **94%**. После этого начинается read-only converge; прикладной код в converge не редактируется.

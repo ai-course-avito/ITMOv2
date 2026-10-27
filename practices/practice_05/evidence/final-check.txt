@@ -1,0 +1,80 @@
+../../../.venv/bin/python -m unittest tests.test_logic tests.test_api -v
+test_added_deleted_context_and_crlf (tests.test_logic.DiffTests.test_added_deleted_context_and_crlf) ... ok
+test_create_delete_and_no_newline_marker (tests.test_logic.DiffTests.test_create_delete_and_no_newline_marker) ... ok
+test_file_headers_are_not_evidence_and_multiple_hunks (tests.test_logic.DiffTests.test_file_headers_are_not_evidence_and_multiple_hunks) ... ok
+test_header_shaped_hunk_payload_is_not_a_new_file (tests.test_logic.DiffTests.test_header_shaped_hunk_payload_is_not_a_new_file) ... ok
+test_multifile_without_git_marker_keeps_partial_hunks (tests.test_logic.DiffTests.test_multifile_without_git_marker_keeps_partial_hunks) ... ok
+test_new_git_block_cannot_reuse_previous_path (tests.test_logic.DiffTests.test_new_git_block_cannot_reuse_previous_path) ... ok
+test_training_partial_hunks_and_coordinates (tests.test_logic.DiffTests.test_training_partial_hunks_and_coordinates) ... ok
+test_unsupported_and_invalid (tests.test_logic.DiffTests.test_unsupported_and_invalid) ... ok
+test_provider_and_shape_failures (tests.test_logic.LiveAdapterTests.test_provider_and_shape_failures) ... ok
+test_transport_error_timeout_and_cancellation (tests.test_logic.LiveAdapterTests.test_transport_error_timeout_and_cancellation) ... ok
+test_wire_contract_and_validated_live_result (tests.test_logic.LiveAdapterTests.test_wire_contract_and_validated_live_result) ... ok
+test_deleted_line_uses_old_coordinate (tests.test_logic.OutputTests.test_deleted_line_uses_old_coordinate) ... ok
+test_invalid_fields_and_limits (tests.test_logic.OutputTests.test_invalid_fields_and_limits) ... ok
+test_zero_three_and_four_risks (tests.test_logic.OutputTests.test_zero_three_and_four_risks) ... ok
+test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) ... ok
+test_pem_types_preserve_lines_and_diff_prefixes (tests.test_logic.RedactionTests.test_pem_types_preserve_lines_and_diff_prefixes) ... ok
+test_prefixes_bearer_and_short_token_boundary (tests.test_logic.RedactionTests.test_prefixes_bearer_and_short_token_boundary) ... ok
+test_redaction_all_prefixes_and_recursive_values (tests.test_logic.RedactionTests.test_redaction_all_prefixes_and_recursive_values) ... ok
+test_supported_assignments_and_escaped_quotes (tests.test_logic.RedactionTests.test_supported_assignments_and_escaped_quotes) ... ok
+test_unclosed_pem_keeps_structural_headers_and_masks_following_payload (tests.test_logic.RedactionTests.test_unclosed_pem_keeps_structural_headers_and_masks_following_payload) ... ok
+test_default_budget_ten_seconds (tests.test_logic.ServiceTests.test_default_budget_ten_seconds) ... ok
+test_demo_training_has_three_verified_risks (tests.test_logic.ServiceTests.test_demo_training_has_three_verified_risks) ... ok
+test_external_cancellation_propagates (tests.test_logic.ServiceTests.test_external_cancellation_propagates) ... ok
+test_live_missing_config_no_call_and_no_fallback (tests.test_logic.ServiceTests.test_live_missing_config_no_call_and_no_fallback) ... ok
+test_no_demo_matching_rules (tests.test_logic.ServiceTests.test_no_demo_matching_rules) ... ok
+test_output_mask_before_evidence_validation (tests.test_logic.ServiceTests.test_output_mask_before_evidence_validation) ... ok
+test_timeout_cancels_adapter_once (tests.test_logic.ServiceTests.test_timeout_cancels_adapter_once) ... ok
+test_env_default_demo_and_configured_live (tests.test_logic.SettingsTests.test_env_default_demo_and_configured_live) ... ok
+test_content_type_json_shape_and_order (tests.test_api.APITests.test_content_type_json_shape_and_order) ... {"request_id": "905ad9f7-aa0e-4fc2-84d7-650bef4fd98d", "duration_ms": 0.022, "status": 415}
+{"request_id": "67580937-ad0e-4068-8d1a-11d4e3d0cb18", "duration_ms": 0.05, "status": 400}
+{"request_id": "4ae676b6-ad93-4b5b-a83a-5d05c2ae2109", "duration_ms": 0.039, "status": 422}
+{"request_id": "b6ecb4cc-f485-4fe5-9db4-ba0f7586aec0", "duration_ms": 0.036, "status": 422}
+{"request_id": "31756fee-f1fd-4f04-a3df-44e0419e3779", "duration_ms": 0.037, "status": 422}
+{"request_id": "9bee5987-04d6-408c-bda4-974dd3b3a43c", "duration_ms": 0.04, "status": 422}
+{"request_id": "d6efb2ed-e4cd-40c2-8f63-5d1221880144", "duration_ms": 0.042, "status": 422}
+{"request_id": "0b14cc29-12c5-4b68-be63-c88394bb61d4", "duration_ms": 0.053, "status": 413}
+{"request_id": "3820fa64-0ee8-4622-af05-3ce61472b2bb", "duration_ms": 0.038, "status": 422}
+{"request_id": "7f883eb6-634a-4569-af0c-9e1278b612b4", "duration_ms": 0.041, "status": 422}
+{"request_id": "a2f0f887-f679-4d0f-b466-a1460c97847e", "duration_ms": 0.039, "status": 422}
+ok
+test_demo_uses_training_diff_over_actual_api (tests.test_api.APITests.test_demo_uses_training_diff_over_actual_api) ... {"request_id": "e1da7ca1-4f61-4723-9cd8-d2facadd5c59", "duration_ms": 0.374, "status": 200}
+ok
+test_exact_limit_emoji_and_crlf (tests.test_api.APITests.test_exact_limit_emoji_and_crlf) ... {"request_id": "1c3c4899-cc80-46e6-9700-51a4b5749ae9", "duration_ms": 3.518, "status": 200}
+{"request_id": "304bb9b6-55ef-455b-9b70-8eb1556d4da7", "duration_ms": 0.132, "status": 413}
+ok
+test_invalid_model_response_is_atomic (tests.test_api.APITests.test_invalid_model_response_is_atomic) ... {"request_id": "ca10324f-dcf5-4149-83fd-02a861709558", "duration_ms": 0.167, "status": 502}
+ok
+test_live_not_configured_is_503_no_fallback (tests.test_api.APITests.test_live_not_configured_is_503_no_fallback) ... {"request_id": "3885abeb-4985-40da-8751-a5f0384dd147", "duration_ms": 0.066, "status": 503}
+ok
+test_logging_only_three_fields_on_success_and_failure (tests.test_api.APITests.test_logging_only_three_fields_on_success_and_failure) ... ok
+test_static_routes_do_not_prevent_api_startup (tests.test_api.APITests.test_static_routes_do_not_prevent_api_startup) ... {"request_id": "ead1e08b-043b-402f-b4a3-c650539fdd81", "duration_ms": 0.252, "status": 200}
+ok
+test_success_envelope (tests.test_api.APITests.test_success_envelope) ... {"request_id": "6f748836-8846-4fc7-a841-a1d1065f913d", "duration_ms": 0.374, "status": 200}
+ok
+test_timeout_error_and_internal_safe_messages (tests.test_api.APITests.test_timeout_error_and_internal_safe_messages) ... {"request_id": "5ebf06cd-0a99-4744-b821-d62aa53cf8a7", "duration_ms": 0.142, "status": 502}
+{"request_id": "28e72f72-5f92-4d92-9049-00fb17b2390a", "duration_ms": 0.134, "status": 504}
+{"request_id": "56f727b5-1998-4fc3-aa0b-77815a75d114", "duration_ms": 0.134, "status": 500}
+ok
+
+----------------------------------------------------------------------
+Ran 37 tests in 0.078s
+
+OK
+../../../.venv/bin/python -m unittest tests.test_e2e -v
+test_empty_and_oversized_stay_local (tests.test_e2e.BrowserTests.test_empty_and_oversized_stay_local) ... ok
+test_exact_unicode_boundary_real_server (tests.test_e2e.BrowserTests.test_exact_unicode_boundary_real_server) ... ok
+test_invalid_diff_and_manual_retry_real_server (tests.test_e2e.BrowserTests.test_invalid_diff_and_manual_retry_real_server) ... ok
+test_literal_rendering_three_risks_live_label (tests.test_e2e.BrowserTests.test_literal_rendering_three_risks_live_label) ... ok
+test_loading_single_attempt_and_late_response (tests.test_e2e.BrowserTests.test_loading_single_attempt_and_late_response) ... ok
+test_malformed_success_rejected_wholly (tests.test_e2e.BrowserTests.test_malformed_success_rejected_wholly) ... ok
+test_mobile_layout_keyboard_and_aria (tests.test_e2e.BrowserTests.test_mobile_layout_keyboard_and_aria) ... ok
+test_network_error_ui (tests.test_e2e.BrowserTests.test_network_error_ui) ... ok
+test_provider_error_and_retry_ui (tests.test_e2e.BrowserTests.test_provider_error_and_retry_ui) ... ok
+test_real_demo_roundtrip_and_clear (tests.test_e2e.BrowserTests.test_real_demo_roundtrip_and_clear) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 18.744s
+
+OK

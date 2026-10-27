@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ревью diff — AI-помощник</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body data-state="idle">
+  <main class="workspace">
+    <header class="page-header">
+      <p class="eyebrow">AI-помощник ревью PR</p>
+      <h1>Ещё один взгляд на изменения</h1>
+      <p class="intro">Вставьте diff одного PR: получите краткое описание, возможные риски и список проверок.</p>
+    </header>
+
+    <section class="panel input-panel" aria-labelledby="input-heading">
+      <div class="section-heading">
+        <h2 id="input-heading">Изменения для ревью</h2>
+        <span class="step-label" aria-hidden="true">01 / Ввод</span>
+      </div>
+      <form id="review-form" novalidate autocomplete="off">
+        <div class="field-heading">
+          <label for="diff">Diff одного PR</label>
+          <span id="character-count">0 / 20 000</span>
+        </div>
+        <textarea id="diff" name="diff" rows="12" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="diff-help character-count privacy-note" placeholder="diff --git a/example.py b/example.py&#10;--- a/example.py&#10;+++ b/example.py&#10;@@ -1 +1 @@&#10;-old()&#10;+new()"></textarea>
+        <p id="diff-help" class="field-help">Текстовый unified diff, до 20 000 символов. Анализ ограничен переданными изменениями.</p>
+        <p id="privacy-note" class="privacy-note">Распознаваемые секреты удаляются перед передачей внешней модели. Полное обнаружение не гарантируется — не вставляйте реальные токены, пароли и приватные ключи.</p>
+        <div class="actions">
+          <button id="submit-review" type="submit">Проверить diff</button>
+          <button id="clear-review" class="secondary" type="button">Очистить</button>
+        </div>
+      </form>
+      <div class="feedback">
+        <p id="status" class="status" role="status" aria-live="polite" aria-atomic="true">Готово к проверке.</p>
+        <div id="error" class="error" role="alert" aria-atomic="true" hidden></div>
+      </div>
+    </section>
+
+    <section id="result" class="panel result-panel" aria-labelledby="result-heading" hidden>
+      <div class="section-heading">
+        <h2 id="result-heading">Рекомендация по diff</h2>
+        <span class="step-label" aria-hidden="true">02 / Результат</span>
+      </div>
+      <p id="mode" class="mode-label"></p>
+      <p class="result-note">Совпадение цитаты подтверждает её наличие в diff, но не правильность вывода. Решение по PR остаётся за вами.</p>
+      <section class="result-section" aria-labelledby="summary-heading">
+        <h3 id="summary-heading">Краткое описание</h3>
+        <p id="summary" class="preserve-lines"></p>
+      </section>
+      <section class="result-section" aria-labelledby="risks-heading">
+        <div class="risk-heading">
+          <h3 id="risks-heading">Возможные риски</h3>
+          <span id="risk-count" class="count-badge" aria-label="Количество возможных рисков"></span>
+        </div>
+        <p id="no-risks" class="empty-message" hidden>Возможных рисков не найдено. Это не гарантирует отсутствие ошибок.</p>
+        <ol id="risks" class="risk-list"></ol>
+      </section>
+      <section class="result-section" aria-labelledby="checks-heading">
+        <h3 id="checks-heading">Что проверить</h3>
+        <ol id="checks" class="check-list"></ol>
+      </section>
+      <p id="request-id" class="request-id"></p>
+    </section>
+
+    <footer class="page-footer">Помощник советует. Вы проверяете и принимаете решение.</footer>
+    <noscript><p class="error">Для анализа включите JavaScript в браузере.</p></noscript>
+  </main>
+</body>
+</html>

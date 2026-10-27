@@ -1,0 +1,16 @@
+../../../.venv/bin/python -m unittest tests.test_e2e -v
+test_empty_and_oversized_stay_local (tests.test_e2e.BrowserTests.test_empty_and_oversized_stay_local) ... ok
+test_exact_unicode_boundary_real_server (tests.test_e2e.BrowserTests.test_exact_unicode_boundary_real_server) ... ok
+test_invalid_diff_and_manual_retry_real_server (tests.test_e2e.BrowserTests.test_invalid_diff_and_manual_retry_real_server) ... ok
+test_literal_rendering_three_risks_live_label (tests.test_e2e.BrowserTests.test_literal_rendering_three_risks_live_label) ... ok
+test_loading_single_attempt_and_late_response (tests.test_e2e.BrowserTests.test_loading_single_attempt_and_late_response) ... ok
+test_malformed_success_rejected_wholly (tests.test_e2e.BrowserTests.test_malformed_success_rejected_wholly) ... ok
+test_mobile_layout_keyboard_and_aria (tests.test_e2e.BrowserTests.test_mobile_layout_keyboard_and_aria) ... ok
+test_network_error_ui (tests.test_e2e.BrowserTests.test_network_error_ui) ... ok
+test_provider_error_and_retry_ui (tests.test_e2e.BrowserTests.test_provider_error_and_retry_ui) ... ok
+test_real_demo_roundtrip_and_clear (tests.test_e2e.BrowserTests.test_real_demo_roundtrip_and_clear) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 18.763s
+
+OK

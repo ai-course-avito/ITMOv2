@@ -1,0 +1,63 @@
+test_added_deleted_context_and_crlf (tests.test_logic.DiffTests.test_added_deleted_context_and_crlf) ... ok
+test_create_delete_and_no_newline_marker (tests.test_logic.DiffTests.test_create_delete_and_no_newline_marker) ... ok
+test_file_headers_are_not_evidence_and_multiple_hunks (tests.test_logic.DiffTests.test_file_headers_are_not_evidence_and_multiple_hunks) ... ok
+test_header_shaped_hunk_payload_is_not_a_new_file (tests.test_logic.DiffTests.test_header_shaped_hunk_payload_is_not_a_new_file) ... ok
+test_multifile_without_git_marker_keeps_partial_hunks (tests.test_logic.DiffTests.test_multifile_without_git_marker_keeps_partial_hunks) ... ok
+test_new_git_block_cannot_reuse_previous_path (tests.test_logic.DiffTests.test_new_git_block_cannot_reuse_previous_path) ... ok
+test_training_partial_hunks_and_coordinates (tests.test_logic.DiffTests.test_training_partial_hunks_and_coordinates) ... ok
+test_unsupported_and_invalid (tests.test_logic.DiffTests.test_unsupported_and_invalid) ... ok
+test_provider_and_shape_failures (tests.test_logic.LiveAdapterTests.test_provider_and_shape_failures) ... ok
+test_transport_error_timeout_and_cancellation (tests.test_logic.LiveAdapterTests.test_transport_error_timeout_and_cancellation) ... ok
+test_wire_contract_and_validated_live_result (tests.test_logic.LiveAdapterTests.test_wire_contract_and_validated_live_result) ... ok
+test_deleted_line_uses_old_coordinate (tests.test_logic.OutputTests.test_deleted_line_uses_old_coordinate) ... ok
+test_invalid_fields_and_limits (tests.test_logic.OutputTests.test_invalid_fields_and_limits) ... ok
+test_zero_three_and_four_risks (tests.test_logic.OutputTests.test_zero_three_and_four_risks) ... ok
+test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) ... ok
+test_pem_types_preserve_lines_and_diff_prefixes (tests.test_logic.RedactionTests.test_pem_types_preserve_lines_and_diff_prefixes) ... ok
+test_prefixes_bearer_and_short_token_boundary (tests.test_logic.RedactionTests.test_prefixes_bearer_and_short_token_boundary) ... ok
+test_redaction_all_prefixes_and_recursive_values (tests.test_logic.RedactionTests.test_redaction_all_prefixes_and_recursive_values) ... ok
+test_supported_assignments_and_escaped_quotes (tests.test_logic.RedactionTests.test_supported_assignments_and_escaped_quotes) ... ok
+test_unclosed_pem_keeps_structural_headers_and_masks_following_payload (tests.test_logic.RedactionTests.test_unclosed_pem_keeps_structural_headers_and_masks_following_payload) ... ok
+test_default_budget_ten_seconds (tests.test_logic.ServiceTests.test_default_budget_ten_seconds) ... ok
+test_demo_training_has_three_verified_risks (tests.test_logic.ServiceTests.test_demo_training_has_three_verified_risks) ... ok
+test_external_cancellation_propagates (tests.test_logic.ServiceTests.test_external_cancellation_propagates) ... ok
+test_live_missing_config_no_call_and_no_fallback (tests.test_logic.ServiceTests.test_live_missing_config_no_call_and_no_fallback) ... ok
+test_no_demo_matching_rules (tests.test_logic.ServiceTests.test_no_demo_matching_rules) ... ok
+test_output_mask_before_evidence_validation (tests.test_logic.ServiceTests.test_output_mask_before_evidence_validation) ... ok
+test_timeout_cancels_adapter_once (tests.test_logic.ServiceTests.test_timeout_cancels_adapter_once) ... ok
+test_env_default_demo_and_configured_live (tests.test_logic.SettingsTests.test_env_default_demo_and_configured_live) ... ok
+test_content_type_json_shape_and_order (tests.test_api.APITests.test_content_type_json_shape_and_order) ... {"request_id": "430117b1-4959-4b10-a72e-298e2b3f973f", "duration_ms": 0.038, "status": 415}
+{"request_id": "cae09e1c-fe6a-46d6-82b5-b48416e9e81f", "duration_ms": 0.093, "status": 400}
+{"request_id": "c686ea2b-4ffb-4e05-86a6-92488fba1138", "duration_ms": 0.043, "status": 422}
+{"request_id": "8b3ba70d-ddf9-4269-bf61-151f9f69f7e8", "duration_ms": 0.046, "status": 422}
+{"request_id": "02975a88-50b6-4d92-b40a-f8795634c09d", "duration_ms": 0.042, "status": 422}
+{"request_id": "b8893ecb-fdc4-4106-aa71-5ae6e9bb346e", "duration_ms": 0.042, "status": 422}
+{"request_id": "e6b0cc61-9785-4176-bed3-fe893479658c", "duration_ms": 0.046, "status": 422}
+{"request_id": "426372c4-2f55-4e8b-b322-4d91327ccd19", "duration_ms": 0.061, "status": 413}
+{"request_id": "5b2e4062-e1c4-439b-9bf7-b23639e0f32c", "duration_ms": 0.044, "status": 422}
+{"request_id": "4b8c1b4b-a1e3-411d-a0ed-7c702c37690e", "duration_ms": 0.053, "status": 422}
+{"request_id": "1bff9c08-c2eb-415b-b912-3b844c44a0c3", "duration_ms": 0.074, "status": 422}
+ok
+test_demo_uses_training_diff_over_actual_api (tests.test_api.APITests.test_demo_uses_training_diff_over_actual_api) ... {"request_id": "11f02019-7306-4aac-8a84-a37dc9cb6647", "duration_ms": 0.635, "status": 200}
+ok
+test_exact_limit_emoji_and_crlf (tests.test_api.APITests.test_exact_limit_emoji_and_crlf) ... {"request_id": "92d2a245-8667-41bf-8699-171f24084554", "duration_ms": 3.79, "status": 200}
+{"request_id": "aa62ca61-9194-4862-ad09-9c602d435704", "duration_ms": 0.134, "status": 413}
+ok
+test_invalid_model_response_is_atomic (tests.test_api.APITests.test_invalid_model_response_is_atomic) ... {"request_id": "5b708fde-e63f-4c24-8762-e50ac2df4b1a", "duration_ms": 0.256, "status": 502}
+ok
+test_live_not_configured_is_503_no_fallback (tests.test_api.APITests.test_live_not_configured_is_503_no_fallback) ... {"request_id": "ac84593a-9fb4-4759-9324-fe51675ce130", "duration_ms": 0.084, "status": 503}
+ok
+test_logging_only_three_fields_on_success_and_failure (tests.test_api.APITests.test_logging_only_three_fields_on_success_and_failure) ... ok
+test_static_routes_do_not_prevent_api_startup (tests.test_api.APITests.test_static_routes_do_not_prevent_api_startup) ... {"request_id": "2bfbeb42-e244-4d07-9b76-c977b6b4d9a9", "duration_ms": 0.317, "status": 200}
+ok
+test_success_envelope (tests.test_api.APITests.test_success_envelope) ... {"request_id": "24bb9a20-3e8c-4c03-914d-b71d414ed678", "duration_ms": 0.248, "status": 200}
+ok
+test_timeout_error_and_internal_safe_messages (tests.test_api.APITests.test_timeout_error_and_internal_safe_messages) ... {"request_id": "340fc7f1-86e3-4239-a2b8-974f89e59efa", "duration_ms": 0.188, "status": 502}
+{"request_id": "635fdc24-8696-4f3d-ade2-048c95e6757e", "duration_ms": 0.174, "status": 504}
+{"request_id": "9f80c118-b692-4132-9ae3-0cd4dbeb05ee", "duration_ms": 0.178, "status": 500}
+ok
+
+----------------------------------------------------------------------
+Ran 37 tests in 0.109s
+
+OK
