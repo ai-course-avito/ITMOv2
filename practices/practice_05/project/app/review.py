@@ -16,12 +16,20 @@ def validate_input(diff):
         raise ReviewError('DIFF_TOO_LARGE')
     if not diff.strip():
         raise ReviewError('INVALID_REQUEST')
+    try:
+        diff.encode('utf-8')
+    except UnicodeEncodeError:
+        raise ReviewError('INVALID_REQUEST') from None
     return parse_diff(diff)
 
 
 def _text(value, limit):
     if not isinstance(value, str) or not value.strip() or len(value.strip()) > limit:
         raise ReviewError('INVALID_MODEL_OUTPUT')
+    try:
+        value.encode('utf-8')
+    except UnicodeEncodeError:
+        raise ReviewError('INVALID_MODEL_OUTPUT') from None
     return value.strip()
 
 

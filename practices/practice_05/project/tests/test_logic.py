@@ -105,6 +105,29 @@ class DiffTests(unittest.TestCase):
         self.assertEqual((rows[-2].file, rows[-2].line), ('second.py', 10))
         self.assertEqual((rows[-1].file, rows[-1].line), ('second.py', 20))
 
+    def test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence(self):
+        for header, prefix, coordinate in [('@@ -1 +1 @@', '', 1),
+                                           ('@@ -1,2 +1,2 @@', ' context\n', 2)]:
+            diff = ('--- a/a.txt\n+++ b/a.txt\n' + header + '\n' + prefix
+                    + '--- old\n+++ new\n@@ -10 +10 @@\n-last\n+next\n')
+            with self.subTest(header=header):
+                rows = parse_diff(diff)
+                self.assertEqual({row.file for row in rows}, {'a.txt'})
+                self.assertIn(('a.txt', coordinate, '+++ new'),
+                              [(row.file, row.line, row.evidence) for row in rows])
+                self.assertEqual(rows[-1].line, 10)
+
+    def test_excessive_hunk_numbers_are_invalid_diff(self):
+        diff = '--- a/a\n+++ b/a\n@@ -' + '9'*5000 + ' +1 @@\n-old\n+new\n'
+        with self.assertRaises(ReviewError) as ctx:
+            parse_diff(diff)
+        self.assertEqual(ctx.exception.code, 'INVALID_DIFF')
+
+    def test_empty_normalized_path_is_invalid_diff(self):
+        with self.assertRaises(ReviewError) as ctx:
+            parse_diff('--- a/\n+++ b/\n@@ -1 +1 @@\n-old\n+new\n')
+        self.assertEqual(ctx.exception.code, 'INVALID_DIFF')
+
     def test_file_headers_are_not_evidence_and_multiple_hunks(self):
         rows = parse_diff(SIMPLE + '@@ -30 +40 @@\n-other\n+next\n')
         self.assertEqual(rows[-1].line, 40)

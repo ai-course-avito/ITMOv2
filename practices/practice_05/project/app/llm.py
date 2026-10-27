@@ -48,8 +48,10 @@ class DemoAdapter:
             if row:
                 risks.append({'file': row.file, 'line': row.line, 'evidence': row.evidence, 'risk': risk})
                 checks.append(check)
+        file_count = len({row.file for row in rows})
+        file_word = 'файле' if file_count % 10 == 1 and file_count % 100 != 11 else 'файлах'
         return {
-            'summary': f'Демонстрационные правила проверили текстовые изменения в {len({r.file for r in rows})} файлах. Это воспроизводимая подмена, не ответ внешнего AI.',
+            'summary': f'Демонстрационные правила проверили текстовые изменения в {file_count} {file_word}. Это воспроизводимая подмена, не ответ внешнего AI.',
             'risks': risks,
             'checks': checks or ['Проверить изменённый сценарий на ожидаемом и ошибочном входе; сравнить наблюдаемое поведение с требованиями PR.'],
         }

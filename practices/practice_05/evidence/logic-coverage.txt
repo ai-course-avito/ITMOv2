@@ -1,12 +1,86 @@
+../../../.venv/bin/python -m coverage run --source=app --branch -m unittest tests.test_logic tests.test_api -v
+test_added_deleted_context_and_crlf (tests.test_logic.DiffTests.test_added_deleted_context_and_crlf) ... ok
+test_create_delete_and_no_newline_marker (tests.test_logic.DiffTests.test_create_delete_and_no_newline_marker) ... ok
+test_empty_normalized_path_is_invalid_diff (tests.test_logic.DiffTests.test_empty_normalized_path_is_invalid_diff) ... ok
+test_excessive_hunk_numbers_are_invalid_diff (tests.test_logic.DiffTests.test_excessive_hunk_numbers_are_invalid_diff) ... ok
+test_file_headers_are_not_evidence_and_multiple_hunks (tests.test_logic.DiffTests.test_file_headers_are_not_evidence_and_multiple_hunks) ... ok
+test_header_shaped_hunk_payload_is_not_a_new_file (tests.test_logic.DiffTests.test_header_shaped_hunk_payload_is_not_a_new_file) ... ok
+test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence (tests.test_logic.DiffTests.test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence) ... ok
+test_multifile_without_git_marker_keeps_partial_hunks (tests.test_logic.DiffTests.test_multifile_without_git_marker_keeps_partial_hunks) ... ok
+test_new_git_block_cannot_reuse_previous_path (tests.test_logic.DiffTests.test_new_git_block_cannot_reuse_previous_path) ... ok
+test_training_partial_hunks_and_coordinates (tests.test_logic.DiffTests.test_training_partial_hunks_and_coordinates) ... ok
+test_unsupported_and_invalid (tests.test_logic.DiffTests.test_unsupported_and_invalid) ... ok
+test_provider_and_shape_failures (tests.test_logic.LiveAdapterTests.test_provider_and_shape_failures) ... ok
+test_transport_error_timeout_and_cancellation (tests.test_logic.LiveAdapterTests.test_transport_error_timeout_and_cancellation) ... ok
+test_wire_contract_and_validated_live_result (tests.test_logic.LiveAdapterTests.test_wire_contract_and_validated_live_result) ... ok
+test_deleted_line_uses_old_coordinate (tests.test_logic.OutputTests.test_deleted_line_uses_old_coordinate) ... ok
+test_invalid_fields_and_limits (tests.test_logic.OutputTests.test_invalid_fields_and_limits) ... ok
+test_zero_three_and_four_risks (tests.test_logic.OutputTests.test_zero_three_and_four_risks) ... ok
+test_inline_and_unclosed_inline_pem_payload_is_masked (tests.test_logic.RedactionTests.test_inline_and_unclosed_inline_pem_payload_is_masked) ... ok
+test_pem_types_preserve_lines_and_diff_prefixes (tests.test_logic.RedactionTests.test_pem_types_preserve_lines_and_diff_prefixes) ... ok
+test_prefixes_bearer_and_short_token_boundary (tests.test_logic.RedactionTests.test_prefixes_bearer_and_short_token_boundary) ... ok
+test_redaction_all_prefixes_and_recursive_values (tests.test_logic.RedactionTests.test_redaction_all_prefixes_and_recursive_values) ... ok
+test_supported_assignments_and_escaped_quotes (tests.test_logic.RedactionTests.test_supported_assignments_and_escaped_quotes) ... ok
+test_unclosed_pem_keeps_structural_headers_and_masks_following_payload (tests.test_logic.RedactionTests.test_unclosed_pem_keeps_structural_headers_and_masks_following_payload) ... ok
+test_default_budget_ten_seconds (tests.test_logic.ServiceTests.test_default_budget_ten_seconds) ... ok
+test_demo_training_has_three_verified_risks (tests.test_logic.ServiceTests.test_demo_training_has_three_verified_risks) ... ok
+test_external_cancellation_propagates (tests.test_logic.ServiceTests.test_external_cancellation_propagates) ... ok
+test_live_missing_config_no_call_and_no_fallback (tests.test_logic.ServiceTests.test_live_missing_config_no_call_and_no_fallback) ... ok
+test_no_demo_matching_rules (tests.test_logic.ServiceTests.test_no_demo_matching_rules) ... ok
+test_output_mask_before_evidence_validation (tests.test_logic.ServiceTests.test_output_mask_before_evidence_validation) ... ok
+test_timeout_cancels_adapter_once (tests.test_logic.ServiceTests.test_timeout_cancels_adapter_once) ... ok
+test_env_default_demo_and_configured_live (tests.test_logic.SettingsTests.test_env_default_demo_and_configured_live) ... ok
+test_content_type_json_shape_and_order (tests.test_api.APITests.test_content_type_json_shape_and_order) ... {"request_id": "4eaf641c-0c26-46eb-a943-34ee09c5aa50", "duration_ms": 0.037, "status": 415}
+{"request_id": "bdcee52a-e151-4bbc-b237-a13e121b5be0", "duration_ms": 0.078, "status": 400}
+{"request_id": "36f8574e-62ff-4c27-8b05-354643b89097", "duration_ms": 0.043, "status": 422}
+{"request_id": "9e06c42f-8693-46a6-bbea-20161e07c7b6", "duration_ms": 0.04, "status": 422}
+{"request_id": "f697919b-807f-49e6-ab4f-a617cc9899e9", "duration_ms": 0.039, "status": 422}
+{"request_id": "6703418b-0713-456a-aff2-e8ba055e0c10", "duration_ms": 0.038, "status": 422}
+{"request_id": "c812914e-6c1e-4502-b8f2-411fceb7cc40", "duration_ms": 0.045, "status": 422}
+{"request_id": "150c4080-267e-4b86-8764-73bdafb8ca3d", "duration_ms": 0.061, "status": 413}
+{"request_id": "ea768f8f-14b7-43c5-81b0-880d8f722dff", "duration_ms": 0.049, "status": 422}
+{"request_id": "8e153d18-d038-496f-a3b4-225800907ed7", "duration_ms": 0.158, "status": 422}
+{"request_id": "f1458f2f-184f-40a0-bea0-c563c3d41a72", "duration_ms": 0.133, "status": 422}
+ok
+test_demo_uses_training_diff_over_actual_api (tests.test_api.APITests.test_demo_uses_training_diff_over_actual_api) ... {"request_id": "762ed0b0-f715-4592-84f7-fcc9af5b749b", "duration_ms": 0.959, "status": 200}
+ok
+test_exact_limit_emoji_and_crlf (tests.test_api.APITests.test_exact_limit_emoji_and_crlf) ... {"request_id": "3508c975-c909-4f12-90a7-03425cc52629", "duration_ms": 4.071, "status": 200}
+{"request_id": "53310775-2e5e-4d35-8acd-e5dbda6e7ed5", "duration_ms": 0.144, "status": 413}
+ok
+test_invalid_model_response_is_atomic (tests.test_api.APITests.test_invalid_model_response_is_atomic) ... {"request_id": "64fe5173-e34c-4bfa-9257-a693ff8114c7", "duration_ms": 0.247, "status": 502}
+ok
+test_invalid_unicode_input_does_not_call_model (tests.test_api.APITests.test_invalid_unicode_input_does_not_call_model) ... {"request_id": "d2d01416-361b-408f-a94f-d78c684ae639", "duration_ms": 0.056, "status": 422}
+ok
+test_invalid_unicode_model_text_is_rejected_atomically (tests.test_api.APITests.test_invalid_unicode_model_text_is_rejected_atomically) ... {"request_id": "d14fded9-f7a3-49ee-beeb-fa40304e9922", "duration_ms": 0.239, "status": 502}
+{"request_id": "be14adcd-768e-4fa3-a61b-a2de8a166ab1", "duration_ms": 0.227, "status": 502}
+{"request_id": "96c3bd18-2815-412f-a349-cf328b2b1ef0", "duration_ms": 0.434, "status": 502}
+ok
+test_live_not_configured_is_503_no_fallback (tests.test_api.APITests.test_live_not_configured_is_503_no_fallback) ... {"request_id": "3ee3d812-b9b9-43b2-9a1e-671a5eeddf84", "duration_ms": 0.079, "status": 503}
+ok
+test_logging_only_three_fields_on_success_and_failure (tests.test_api.APITests.test_logging_only_three_fields_on_success_and_failure) ... ok
+test_static_routes_and_api_are_available (tests.test_api.APITests.test_static_routes_and_api_are_available) ... {"request_id": "7b2b06bf-6309-4d97-af42-5f89809b2557", "duration_ms": 0.281, "status": 200}
+ok
+test_success_envelope (tests.test_api.APITests.test_success_envelope) ... {"request_id": "31579412-79b0-402e-8f99-9ae27723e249", "duration_ms": 0.258, "status": 200}
+ok
+test_timeout_error_and_internal_safe_messages (tests.test_api.APITests.test_timeout_error_and_internal_safe_messages) ... {"request_id": "464cf8e5-23e7-40ae-a6fa-0587cd2a1068", "duration_ms": 0.193, "status": 502}
+{"request_id": "b501d5ee-0061-4a06-aeda-6587df5a3b9c", "duration_ms": 0.203, "status": 504}
+{"request_id": "ca2842ef-62fa-45bf-ad28-ef1033c1db4c", "duration_ms": 0.188, "status": 500}
+ok
+
+----------------------------------------------------------------------
+Ran 42 tests in 0.134s
+
+OK
+../../../.venv/bin/python -m coverage report -m
 Name              Stmts   Miss Branch BrPart  Cover   Missing
 -------------------------------------------------------------
 app/__init__.py       0      0      0      0   100%
 app/api.py           62      3      8      2    93%   21->27, 37, 63-64
 app/config.py        27      3      8      1    89%   28, 34-35
-app/diff.py          88      5     42      5    92%   24, 48, 60, 64, 88
+app/diff.py         101      5     44      5    93%   24, 52, 66, 70, 100
 app/errors.py         6      0      0      0   100%
-app/llm.py           39      1      6      1    96%   84
-app/review.py        61      3     22      2    94%   14, 69, 73
+app/llm.py           41      1      6      1    96%   86
+app/review.py        69      3     22      2    95%   14, 77, 81
 app/secrets.py       37      0     12      0   100%
 -------------------------------------------------------------
-TOTAL               320     15     98     11    94%
+TOTAL               343     15    100     11    94%

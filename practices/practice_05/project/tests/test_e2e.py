@@ -94,6 +94,14 @@ class BrowserTests(unittest.TestCase):
         self.field.fill(diff)
         self.submit.click()
 
+    def test_header_shaped_lines_keep_real_file_in_browser_result(self):
+        diff = ('--- a/a.txt\n+++ b/a.txt\n@@ -1 +1 @@\n--- old\n+++ new\n'
+                '@@ -10 +10 @@\n-old\n+return payload["diff"]\n')
+        self.send(diff)
+        expect(self.result).to_be_visible()
+        expect(self.page.locator('.risk-location')).to_have_text('a.txt:10 · новая версия')
+        expect(self.page.locator('#summary')).to_contain_text('в 1 файле')
+
     def fulfill(self, data, status=200):
         self.page.route('**/api/reviews', lambda route: route.fulfill(
             status=status, content_type='application/json', body=json.dumps(data)))

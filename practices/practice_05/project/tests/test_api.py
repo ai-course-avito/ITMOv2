@@ -71,6 +71,27 @@ class APITests(unittest.IsolatedAsyncioTestCase):
         self.fake.answer = candidate(); self.fake.answer['risks'] *= 4
         self.assert_error(await self.client.post('/api/reviews', json={'diff': SIMPLE}), 502, 'INVALID_MODEL_OUTPUT')
 
+    async def test_invalid_unicode_input_does_not_call_model(self):
+        body = json.dumps({'diff': SIMPLE.replace('+new()', '+\ud800')})
+        response = await self.client.post('/api/reviews', content=body,
+                                          headers={'content-type': 'application/json'})
+        self.assert_error(response, 422, 'INVALID_REQUEST')
+        self.assertEqual(self.fake.calls, [])
+
+    async def test_invalid_unicode_model_text_is_rejected_atomically(self):
+        for field in ['summary', 'risk', 'checks']:
+            answer = candidate()
+            if field == 'risk':
+                answer['risks'][0]['risk'] = '\udfff'
+            elif field == 'checks':
+                answer['checks'] = ['\udfff']
+            else:
+                answer[field] = '\udfff'
+            self.fake.answer = answer
+            with self.subTest(field=field):
+                self.assert_error(await self.client.post('/api/reviews', json={'diff': SIMPLE}),
+                                  502, 'INVALID_MODEL_OUTPUT')
+
     async def test_timeout_error_and_internal_safe_messages(self):
         for error, status, code in [(ReviewError('MODEL_UNAVAILABLE'), 502, 'MODEL_UNAVAILABLE'),
                                     (ReviewError('MODEL_TIMEOUT'), 504, 'MODEL_TIMEOUT'),
@@ -100,11 +121,12 @@ class APITests(unittest.IsolatedAsyncioTestCase):
             self.assert_error(await client.post('/api/reviews', json={'diff': SIMPLE}), 503, 'MODEL_NOT_CONFIGURED')
         self.assertEqual(self.fake.calls, [])
 
-    async def test_static_routes_do_not_prevent_api_startup(self):
-        # Static files are produced independently by the UI team. Missing ones may
-        # return 404 while the API must remain usable, without import-time errors.
+    async def test_static_routes_and_api_are_available(self):
         response = await self.client.get('/')
-        self.assertIn(response.status_code, [200, 404])
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="review-form"', response.text)
+        for path in ['/static/app.js', '/static/styles.css']:
+            self.assertEqual((await self.client.get(path)).status_code, 200)
         self.assertEqual((await self.client.post('/api/reviews', json={'diff': SIMPLE})).status_code, 200)
 
     async def test_demo_uses_training_diff_over_actual_api(self):

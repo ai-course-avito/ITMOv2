@@ -1,0 +1,22 @@
+test_added_deleted_context_and_crlf (tests.test_logic.DiffTests.test_added_deleted_context_and_crlf) ... ok
+test_create_delete_and_no_newline_marker (tests.test_logic.DiffTests.test_create_delete_and_no_newline_marker) ... ok
+test_empty_normalized_path_is_invalid_diff (tests.test_logic.DiffTests.test_empty_normalized_path_is_invalid_diff) ... ok
+test_excessive_hunk_numbers_are_invalid_diff (tests.test_logic.DiffTests.test_excessive_hunk_numbers_are_invalid_diff) ... ok
+test_file_headers_are_not_evidence_and_multiple_hunks (tests.test_logic.DiffTests.test_file_headers_are_not_evidence_and_multiple_hunks) ... ok
+test_header_shaped_hunk_payload_is_not_a_new_file (tests.test_logic.DiffTests.test_header_shaped_hunk_payload_is_not_a_new_file) ... ok
+test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence (tests.test_logic.DiffTests.test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence) ... ok
+test_multifile_without_git_marker_keeps_partial_hunks (tests.test_logic.DiffTests.test_multifile_without_git_marker_keeps_partial_hunks) ... ok
+test_new_git_block_cannot_reuse_previous_path (tests.test_logic.DiffTests.test_new_git_block_cannot_reuse_previous_path) ... ok
+test_training_partial_hunks_and_coordinates (tests.test_logic.DiffTests.test_training_partial_hunks_and_coordinates) ... ok
+test_unsupported_and_invalid (tests.test_logic.DiffTests.test_unsupported_and_invalid) ... ok
+test_invalid_unicode_input_does_not_call_model (tests.test_api.APITests.test_invalid_unicode_input_does_not_call_model) ... {"request_id": "b10e844b-c715-4615-896e-da81b5c3fbb3", "duration_ms": 0.075, "status": 422}
+ok
+test_invalid_unicode_model_text_is_rejected_atomically (tests.test_api.APITests.test_invalid_unicode_model_text_is_rejected_atomically) ... {"request_id": "21f5ae56-b0ce-4bdd-b1d8-78e1ae16ca50", "duration_ms": 0.278, "status": 502}
+{"request_id": "4591d466-01f6-4a6c-8c03-064f6bc61999", "duration_ms": 0.179, "status": 502}
+{"request_id": "02eba85e-610f-4689-b56f-99f28c321281", "duration_ms": 0.156, "status": 502}
+ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.007s
+
+OK

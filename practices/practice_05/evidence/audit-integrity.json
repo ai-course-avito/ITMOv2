@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-27",
+  "branch": "practice_05",
+  "approval_commit": "5301bc5",
+  "app_and_static_absent_at_approval": true,
+  "snapshot_hashes": {
+    "evidence/before/ui/checklists/requirements.md": "29e55d79d1da8ffcc13f6fbb25bfd7239cee35cac346f53eb5f5288d38d8a46b",
+    "evidence/before/ui/contract-proposal.md": "b9b849230da618aee5a7c89f229705bd832af50b53afb949f6da12c46163a604",
+    "evidence/before/ui/spec.md": "4566b10509c3e30300af1a13ddc86508770de992468649a7ade692a9cc50e211",
+    "evidence/before/logic/checklists/requirements.md": "ec7780259a17530ce514775c4356440caba5f7c7c116a345d880606bea4cf6d8",
+    "evidence/before/logic/contract-proposal.md": "68557de9a31a883201746748766e368a77de13d99b8ebd1ebf4e2af4fedf030c",
+    "evidence/before/logic/spec.md": "f5a2b889d7ecb9aa29975d7cd15629d7062169cf212a0ee863293bf3758d66ec",
+    "evidence/after/ui/spec.md": "4ca805880eab9d3dfc32512270373ee43dc2720e4c22c5f256f67e46ab507643",
+    "evidence/after/ui/contract-proposal.md": "fad2dd9d55e251cad79c14915bfa77f0a7b8dc30e680ed7ad5f5b986cf0e23f8",
+    "evidence/after/ui/checklists/requirements.md": "42b59249b59acd98954b9e22e93ae9cd70e1b1e8b92148b56280ad32d217ad7a",
+    "evidence/after/logic/spec.md": "a57d397ce83fdd88b902e1187700b70b1704fcc484650f5efa417eb0851babed",
+    "evidence/after/logic/contract-proposal.md": "73dd6a0edcecfb4aa63d878bfc04365fad070b1285c61bb815599c113bd772ee",
+    "evidence/after/logic/checklists/requirements.md": "fefd6dbb6618eeed08c4222ab2b4e17d589f00fd1cd0bd4ab96d996906bf5406"
+  },
+  "tasks_unchanged_sha256": {
+    "001-review-ui": "12070d15737251c658e54d5b7952487b652eab5fad1500c7fd66f0dbedbdaf8b",
+    "002-review-logic": "e312afb53c722baebb1d4f816dc01ceb55775874a69193bd681f3975f1ae6d38"
+  },
+  "original_course_files_unchanged": [
+    "README.md",
+    "lections/README.md",
+    "practices/practice_01/README.md",
+    "practices/practice_02/README.md",
+    "practices/practice_03/README.md",
+    "practices/practice_03/lab/demo/README.md",
+    "practices/practice_04/README.md",
+    "practices/practice_05/prenetation.pdf",
+    "practices/practice_06/README.md",
+    "practices/practice_06/lab/README.md"
+  ],
+  "source_sha256": {
+    "project/app/__init__.py": "6d695b8adfc8b818961462a42cebe82eec91e4021b6759c8f2618fe6abcae4c2",
+    "project/app/api.py": "8a87da45ccc0c3a9c6ee5987e2820084e639d4cc0a85f22550080e84c3a232e1",
+    "project/app/config.py": "b47cf8b3128c80d29ed8277534d0eb65c47fe3ce97f4c4dc57a78c1f7120d004",
+    "project/app/diff.py": "6744a6fb1d01c975541f6401854b6f7da7e84346485766edf4ef5313d736c376",
+    "project/app/errors.py": "f371896bd2273d12ebbaba638d3ade37d572d53e0015dee3770339d74279d98a",
+    "project/app/llm.py": "a7f1e4a919cf0cc9baa4b1dfaa2dd4958fd54d8a73e92e8022d5d5ac2ba1ba6a",
+    "project/app/review.py": "7b127270a4f12c461b8149e87546952c04635e20fa122994b3ca0098186b6010",
+    "project/app/secrets.py": "f42d946c43b5219e9a720794cfdf60cb7401960dbb1e0a5a113e49f465078cfb",
+    "project/static/app.js": "9ec96a9abbf1c9cf3cbac3d1ffd629aef05b407c9f9afca3d4d6c9196e7c4c57",
+    "project/static/index.html": "b31bfc5573eb8acfd88bd4a77ab9ec1f8316cd55d773c06d18ded577921e7292",
+    "project/static/styles.css": "f41c543d3f3990134046c8b258902ce643b37a7e582061836ff3f08534ad9aa3",
+    "project/tests/__init__.py": "95b2fa62560c414fc7325dae17ae9ec5c75c3f57443dcbacbdb3eb2eb0b6bd19",
+    "project/tests/test_api.py": "143282053e1061371400bda368ac2a78fd93cd3292370c12d349061e3df41eba",
+    "project/tests/test_e2e.py": "6f72ec7f7084eceececbe7e3a8d57a6765a38877544982040342b62472f83670",
+    "project/tests/test_logic.py": "c62ed65cf769c401cc7d6ab2677eaf33c41e31c06e343e7d2a9b04a4f437736b"
+  }
+}

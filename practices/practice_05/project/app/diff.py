@@ -4,7 +4,7 @@ import re
 
 from app.errors import ReviewError
 
-HUNK = re.compile(r'^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@(?:.*)$')
+HUNK = re.compile(r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@(?:.*)$')
 META = ('index ', 'new file mode ', 'deleted file mode ', 'old mode ', 'new mode ',
         'similarity index ', 'dissimilarity index ', 'rename from ', 'rename to ')
 UNSUPPORTED = ('diff --cc ', 'diff --combined ', '@@@', 'GIT binary patch', 'Binary files ')
@@ -24,7 +24,10 @@ def _path(header):
         raise ReviewError('INVALID_DIFF')
     if value.startswith('"') or '\\' in value:
         raise ReviewError('UNSUPPORTED_DIFF')
-    return value[2:] if value.startswith(('a/', 'b/')) else value
+    normalized = value[2:] if value.startswith(('a/', 'b/')) else value
+    if not normalized.strip():
+        raise ReviewError('INVALID_DIFF')
+    return normalized
 
 
 def parse_diff(diff):
@@ -40,6 +43,7 @@ def parse_diff(diff):
     pending_git_header = False
     changed = False
     old = new = 0
+    old_remaining = new_remaining = 0
     i = 0
     while i < len(lines):
         line = lines[i]
@@ -51,10 +55,12 @@ def parse_diff(diff):
             pending_git_header = True
             i += 1
             continue
-        # Inside a hunk, ---/+++ may be ordinary removed/added text. A new
-        # unmarked file needs its own immediately following hunk header.
+        # A final removed/added pair can look like file headers followed by
+        # another hunk. Prefer the complete current hunk in that case. Counts
+        # only disambiguate: partial teaching hunks remain supported.
         header_pair = line.startswith('--- ') and i + 1 < len(lines) and lines[i+1].startswith('+++ ')
-        starts_file = not in_hunk or (i + 2 < len(lines) and HUNK.match(lines[i+2]))
+        completes_hunk = in_hunk and old_remaining == 1 and new_remaining == 1
+        starts_file = not in_hunk or (not completes_hunk and i + 2 < len(lines) and HUNK.match(lines[i+2]))
         if header_pair and starts_file:
             if file is not None and not file_has_hunk:
                 raise ReviewError('INVALID_DIFF')
@@ -70,7 +76,13 @@ def parse_diff(diff):
         if match:
             if file is None:
                 raise ReviewError('INVALID_DIFF')
-            old, new = map(int, match.groups())
+            try:
+                old = int(match[1])
+                old_remaining = int(match[2]) if match[2] is not None else 1
+                new = int(match[3])
+                new_remaining = int(match[4]) if match[4] is not None else 1
+            except ValueError:
+                raise ReviewError('INVALID_DIFF') from None
             in_hunk = file_has_hunk = True
             i += 1
             continue
@@ -89,8 +101,10 @@ def parse_diff(diff):
             rows.append(DiffLine(file, coordinate, line, side))
             if prefix != '+':
                 old += 1
+                old_remaining -= 1
             if prefix != '-':
                 new += 1
+                new_remaining -= 1
             changed |= prefix in ('+', '-')
         elif line and not line.startswith(META):
             raise ReviewError('INVALID_DIFF')

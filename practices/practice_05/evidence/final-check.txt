@@ -1,8 +1,11 @@
 ../../../.venv/bin/python -m unittest tests.test_logic tests.test_api -v
 test_added_deleted_context_and_crlf (tests.test_logic.DiffTests.test_added_deleted_context_and_crlf) ... ok
 test_create_delete_and_no_newline_marker (tests.test_logic.DiffTests.test_create_delete_and_no_newline_marker) ... ok
+test_empty_normalized_path_is_invalid_diff (tests.test_logic.DiffTests.test_empty_normalized_path_is_invalid_diff) ... ok
+test_excessive_hunk_numbers_are_invalid_diff (tests.test_logic.DiffTests.test_excessive_hunk_numbers_are_invalid_diff) ... ok
 test_file_headers_are_not_evidence_and_multiple_hunks (tests.test_logic.DiffTests.test_file_headers_are_not_evidence_and_multiple_hunks) ... ok
 test_header_shaped_hunk_payload_is_not_a_new_file (tests.test_logic.DiffTests.test_header_shaped_hunk_payload_is_not_a_new_file) ... ok
+test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence (tests.test_logic.DiffTests.test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence) ... ok
 test_multifile_without_git_marker_keeps_partial_hunks (tests.test_logic.DiffTests.test_multifile_without_git_marker_keeps_partial_hunks) ... ok
 test_new_git_block_cannot_reuse_previous_path (tests.test_logic.DiffTests.test_new_git_block_cannot_reuse_previous_path) ... ok
 test_training_partial_hunks_and_coordinates (tests.test_logic.DiffTests.test_training_partial_hunks_and_coordinates) ... ok
@@ -27,44 +30,51 @@ test_no_demo_matching_rules (tests.test_logic.ServiceTests.test_no_demo_matching
 test_output_mask_before_evidence_validation (tests.test_logic.ServiceTests.test_output_mask_before_evidence_validation) ... ok
 test_timeout_cancels_adapter_once (tests.test_logic.ServiceTests.test_timeout_cancels_adapter_once) ... ok
 test_env_default_demo_and_configured_live (tests.test_logic.SettingsTests.test_env_default_demo_and_configured_live) ... ok
-test_content_type_json_shape_and_order (tests.test_api.APITests.test_content_type_json_shape_and_order) ... {"request_id": "905ad9f7-aa0e-4fc2-84d7-650bef4fd98d", "duration_ms": 0.022, "status": 415}
-{"request_id": "67580937-ad0e-4068-8d1a-11d4e3d0cb18", "duration_ms": 0.05, "status": 400}
-{"request_id": "4ae676b6-ad93-4b5b-a83a-5d05c2ae2109", "duration_ms": 0.039, "status": 422}
-{"request_id": "b6ecb4cc-f485-4fe5-9db4-ba0f7586aec0", "duration_ms": 0.036, "status": 422}
-{"request_id": "31756fee-f1fd-4f04-a3df-44e0419e3779", "duration_ms": 0.037, "status": 422}
-{"request_id": "9bee5987-04d6-408c-bda4-974dd3b3a43c", "duration_ms": 0.04, "status": 422}
-{"request_id": "d6efb2ed-e4cd-40c2-8f63-5d1221880144", "duration_ms": 0.042, "status": 422}
-{"request_id": "0b14cc29-12c5-4b68-be63-c88394bb61d4", "duration_ms": 0.053, "status": 413}
-{"request_id": "3820fa64-0ee8-4622-af05-3ce61472b2bb", "duration_ms": 0.038, "status": 422}
-{"request_id": "7f883eb6-634a-4569-af0c-9e1278b612b4", "duration_ms": 0.041, "status": 422}
-{"request_id": "a2f0f887-f679-4d0f-b466-a1460c97847e", "duration_ms": 0.039, "status": 422}
+test_content_type_json_shape_and_order (tests.test_api.APITests.test_content_type_json_shape_and_order) ... {"request_id": "70b84a37-9106-4934-b8a2-6e7dd80fd670", "duration_ms": 0.039, "status": 415}
+{"request_id": "da58ef0b-ec85-454b-9919-5ce45b4fb224", "duration_ms": 0.058, "status": 400}
+{"request_id": "0a8ea96e-e99e-4504-92c4-72a031d81649", "duration_ms": 0.037, "status": 422}
+{"request_id": "aeb972b9-9b34-45c2-bced-abb8b60815a4", "duration_ms": 0.036, "status": 422}
+{"request_id": "d89f201d-8e90-459b-bb55-a76f2e64c62e", "duration_ms": 0.037, "status": 422}
+{"request_id": "063c7815-f380-4099-8e6e-d9da36427b9f", "duration_ms": 0.037, "status": 422}
+{"request_id": "18c89849-6d00-4ada-a0d8-32fbd62c824d", "duration_ms": 0.038, "status": 422}
+{"request_id": "b49f580c-29d9-488d-92dd-99bb2500ef56", "duration_ms": 0.053, "status": 413}
+{"request_id": "c3771879-9c14-42e4-bff5-a78378ecd3c4", "duration_ms": 0.042, "status": 422}
+{"request_id": "27ead677-b60f-48ea-9993-d6d605635c1d", "duration_ms": 0.045, "status": 422}
+{"request_id": "5012ed35-ebb0-4663-aaf2-dea63c8b1215", "duration_ms": 0.048, "status": 422}
 ok
-test_demo_uses_training_diff_over_actual_api (tests.test_api.APITests.test_demo_uses_training_diff_over_actual_api) ... {"request_id": "e1da7ca1-4f61-4723-9cd8-d2facadd5c59", "duration_ms": 0.374, "status": 200}
+test_demo_uses_training_diff_over_actual_api (tests.test_api.APITests.test_demo_uses_training_diff_over_actual_api) ... {"request_id": "6a55af4a-935d-4825-b0de-8d7e212613b7", "duration_ms": 0.4, "status": 200}
 ok
-test_exact_limit_emoji_and_crlf (tests.test_api.APITests.test_exact_limit_emoji_and_crlf) ... {"request_id": "1c3c4899-cc80-46e6-9700-51a4b5749ae9", "duration_ms": 3.518, "status": 200}
-{"request_id": "304bb9b6-55ef-455b-9b70-8eb1556d4da7", "duration_ms": 0.132, "status": 413}
+test_exact_limit_emoji_and_crlf (tests.test_api.APITests.test_exact_limit_emoji_and_crlf) ... {"request_id": "6eaf0555-6a98-4ca3-8421-2db0a2de951f", "duration_ms": 3.525, "status": 200}
+{"request_id": "a3014853-ca25-4897-8972-846fc163f475", "duration_ms": 0.133, "status": 413}
 ok
-test_invalid_model_response_is_atomic (tests.test_api.APITests.test_invalid_model_response_is_atomic) ... {"request_id": "ca10324f-dcf5-4149-83fd-02a861709558", "duration_ms": 0.167, "status": 502}
+test_invalid_model_response_is_atomic (tests.test_api.APITests.test_invalid_model_response_is_atomic) ... {"request_id": "4e481158-a0ef-44da-b50e-67d53237fdc6", "duration_ms": 0.168, "status": 502}
 ok
-test_live_not_configured_is_503_no_fallback (tests.test_api.APITests.test_live_not_configured_is_503_no_fallback) ... {"request_id": "3885abeb-4985-40da-8751-a5f0384dd147", "duration_ms": 0.066, "status": 503}
+test_invalid_unicode_input_does_not_call_model (tests.test_api.APITests.test_invalid_unicode_input_does_not_call_model) ... {"request_id": "dd3abe54-967e-4287-b825-dc7779c69c19", "duration_ms": 0.052, "status": 422}
+ok
+test_invalid_unicode_model_text_is_rejected_atomically (tests.test_api.APITests.test_invalid_unicode_model_text_is_rejected_atomically) ... {"request_id": "9d2832ce-4baa-47e0-a015-8e93147e6fb6", "duration_ms": 0.157, "status": 502}
+{"request_id": "a9a0c669-e002-427b-af4b-b0058325ec15", "duration_ms": 0.148, "status": 502}
+{"request_id": "73e6542c-ce12-47c1-90e4-73e2f9956e49", "duration_ms": 0.147, "status": 502}
+ok
+test_live_not_configured_is_503_no_fallback (tests.test_api.APITests.test_live_not_configured_is_503_no_fallback) ... {"request_id": "4d89b248-226d-4876-ac0e-7af2455400b5", "duration_ms": 0.062, "status": 503}
 ok
 test_logging_only_three_fields_on_success_and_failure (tests.test_api.APITests.test_logging_only_three_fields_on_success_and_failure) ... ok
-test_static_routes_do_not_prevent_api_startup (tests.test_api.APITests.test_static_routes_do_not_prevent_api_startup) ... {"request_id": "ead1e08b-043b-402f-b4a3-c650539fdd81", "duration_ms": 0.252, "status": 200}
+test_static_routes_and_api_are_available (tests.test_api.APITests.test_static_routes_and_api_are_available) ... {"request_id": "c292cb7d-d851-4114-a964-5cc9d2a16206", "duration_ms": 0.194, "status": 200}
 ok
-test_success_envelope (tests.test_api.APITests.test_success_envelope) ... {"request_id": "6f748836-8846-4fc7-a841-a1d1065f913d", "duration_ms": 0.374, "status": 200}
+test_success_envelope (tests.test_api.APITests.test_success_envelope) ... {"request_id": "97bea65f-dd04-4205-b41e-6f6ad12cc5a3", "duration_ms": 0.175, "status": 200}
 ok
-test_timeout_error_and_internal_safe_messages (tests.test_api.APITests.test_timeout_error_and_internal_safe_messages) ... {"request_id": "5ebf06cd-0a99-4744-b821-d62aa53cf8a7", "duration_ms": 0.142, "status": 502}
-{"request_id": "28e72f72-5f92-4d92-9049-00fb17b2390a", "duration_ms": 0.134, "status": 504}
-{"request_id": "56f727b5-1998-4fc3-aa0b-77815a75d114", "duration_ms": 0.134, "status": 500}
+test_timeout_error_and_internal_safe_messages (tests.test_api.APITests.test_timeout_error_and_internal_safe_messages) ... {"request_id": "f4dd20af-45bd-4ae9-9e47-4354fc65bf28", "duration_ms": 0.133, "status": 502}
+{"request_id": "927e729d-54f6-4de4-835a-7a3a7e81c8d3", "duration_ms": 0.131, "status": 504}
+{"request_id": "cf054dbb-cfcb-461a-9693-d195cbbd2f29", "duration_ms": 0.13, "status": 500}
 ok
 
 ----------------------------------------------------------------------
-Ran 37 tests in 0.078s
+Ran 42 tests in 0.085s
 
 OK
 ../../../.venv/bin/python -m unittest tests.test_e2e -v
 test_empty_and_oversized_stay_local (tests.test_e2e.BrowserTests.test_empty_and_oversized_stay_local) ... ok
 test_exact_unicode_boundary_real_server (tests.test_e2e.BrowserTests.test_exact_unicode_boundary_real_server) ... ok
+test_header_shaped_lines_keep_real_file_in_browser_result (tests.test_e2e.BrowserTests.test_header_shaped_lines_keep_real_file_in_browser_result) ... ok
 test_invalid_diff_and_manual_retry_real_server (tests.test_e2e.BrowserTests.test_invalid_diff_and_manual_retry_real_server) ... ok
 test_literal_rendering_three_risks_live_label (tests.test_e2e.BrowserTests.test_literal_rendering_three_risks_live_label) ... ok
 test_loading_single_attempt_and_late_response (tests.test_e2e.BrowserTests.test_loading_single_attempt_and_late_response) ... ok
@@ -75,6 +85,6 @@ test_provider_error_and_retry_ui (tests.test_e2e.BrowserTests.test_provider_erro
 test_real_demo_roundtrip_and_clear (tests.test_e2e.BrowserTests.test_real_demo_roundtrip_and_clear) ... ok
 
 ----------------------------------------------------------------------
-Ran 10 tests in 18.744s
+Ran 11 tests in 18.989s
 
 OK

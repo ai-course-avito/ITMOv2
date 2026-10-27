@@ -1,0 +1,122 @@
+test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence (tests.test_logic.DiffTests.test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence) ...
+  test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence (tests.test_logic.DiffTests.test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence) (header='@@ -1 +1 @@') ... FAIL
+  test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence (tests.test_logic.DiffTests.test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence) (header='@@ -1,2 +1,2 @@') ... FAIL
+test_excessive_hunk_numbers_are_invalid_diff (tests.test_logic.DiffTests.test_excessive_hunk_numbers_are_invalid_diff) ... ERROR
+test_empty_normalized_path_is_invalid_diff (tests.test_logic.DiffTests.test_empty_normalized_path_is_invalid_diff) ... FAIL
+test_invalid_unicode_input_does_not_call_model (tests.test_api.APITests.test_invalid_unicode_input_does_not_call_model) ... {"request_id": "e422c81d-0df8-4266-8c44-49377da009db", "duration_ms": 0.313, "status": 500}
+FAIL
+test_invalid_unicode_model_text_is_rejected_atomically (tests.test_api.APITests.test_invalid_unicode_model_text_is_rejected_atomically) ... {"request_id": "e5ab3622-ced9-4ff6-8def-e31a6de64ffb", "duration_ms": 0.198, "status": 500}
+
+  test_invalid_unicode_model_text_is_rejected_atomically (tests.test_api.APITests.test_invalid_unicode_model_text_is_rejected_atomically) (field='summary') ... FAIL
+{"request_id": "9a03590a-61e6-45a7-80f5-5510ec5126ec", "duration_ms": 0.184, "status": 500}
+  test_invalid_unicode_model_text_is_rejected_atomically (tests.test_api.APITests.test_invalid_unicode_model_text_is_rejected_atomically) (field='risk') ... FAIL
+{"request_id": "adec4f20-e240-48f4-9dcb-8751a9194abd", "duration_ms": 0.17, "status": 500}
+  test_invalid_unicode_model_text_is_rejected_atomically (tests.test_api.APITests.test_invalid_unicode_model_text_is_rejected_atomically) (field='checks') ... FAIL
+
+======================================================================
+ERROR: test_excessive_hunk_numbers_are_invalid_diff (tests.test_logic.DiffTests.test_excessive_hunk_numbers_are_invalid_diff)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 123, in test_excessive_hunk_numbers_are_invalid_diff
+    parse_diff(diff)
+    ~~~~~~~~~~^^^^^^
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/app/diff.py", line 73, in parse_diff
+    old, new = map(int, match.groups())
+    ^^^^^^^^
+ValueError: Exceeds the limit (4300 digits) for integer string conversion: value has 5000 digits; use sys.set_int_max_str_digits() to increase the limit
+
+======================================================================
+FAIL: test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence (tests.test_logic.DiffTests.test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence) (header='@@ -1 +1 @@')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 115, in test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence
+    self.assertEqual({row.file for row in rows}, {'a.txt'})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'new'
+Items in the second set but not the first:
+'a.txt'
+
+======================================================================
+FAIL: test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence (tests.test_logic.DiffTests.test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence) (header='@@ -1,2 +1,2 @@')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 115, in test_header_shaped_payload_before_next_hunk_keeps_file_and_evidence
+    self.assertEqual({row.file for row in rows}, {'a.txt'})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'new'
+
+======================================================================
+FAIL: test_empty_normalized_path_is_invalid_diff (tests.test_logic.DiffTests.test_empty_normalized_path_is_invalid_diff)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_logic.py", line 127, in test_empty_normalized_path_is_invalid_diff
+    with self.assertRaises(ReviewError) as ctx:
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: ReviewError not raised
+
+======================================================================
+FAIL: test_invalid_unicode_input_does_not_call_model (tests.test_api.APITests.test_invalid_unicode_input_does_not_call_model)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_api.py", line 78, in test_invalid_unicode_input_does_not_call_model
+    self.assert_error(response, 422, 'INVALID_REQUEST')
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_api.py", line 26, in assert_error
+    self.assertEqual(response.status_code, status, response.text)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 500 != 422 : {"request_id":"e422c81d-0df8-4266-8c44-49377da009db","error":{"code":"INTERNAL_ERROR","message":"Не удалось выполнить анализ. Сохраните идентификатор запроса."}}
+
+======================================================================
+FAIL: test_invalid_unicode_model_text_is_rejected_atomically (tests.test_api.APITests.test_invalid_unicode_model_text_is_rejected_atomically) (field='summary')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_api.py", line 92, in test_invalid_unicode_model_text_is_rejected_atomically
+    self.assert_error(await self.client.post('/api/reviews', json={'diff': SIMPLE}),
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      502, 'INVALID_MODEL_OUTPUT')
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_api.py", line 26, in assert_error
+    self.assertEqual(response.status_code, status, response.text)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 500 != 502 : {"request_id":"e5ab3622-ced9-4ff6-8def-e31a6de64ffb","error":{"code":"INTERNAL_ERROR","message":"Не удалось выполнить анализ. Сохраните идентификатор запроса."}}
+
+======================================================================
+FAIL: test_invalid_unicode_model_text_is_rejected_atomically (tests.test_api.APITests.test_invalid_unicode_model_text_is_rejected_atomically) (field='risk')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_api.py", line 92, in test_invalid_unicode_model_text_is_rejected_atomically
+    self.assert_error(await self.client.post('/api/reviews', json={'diff': SIMPLE}),
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      502, 'INVALID_MODEL_OUTPUT')
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_api.py", line 26, in assert_error
+    self.assertEqual(response.status_code, status, response.text)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 500 != 502 : {"request_id":"9a03590a-61e6-45a7-80f5-5510ec5126ec","error":{"code":"INTERNAL_ERROR","message":"Не удалось выполнить анализ. Сохраните идентификатор запроса."}}
+
+======================================================================
+FAIL: test_invalid_unicode_model_text_is_rejected_atomically (tests.test_api.APITests.test_invalid_unicode_model_text_is_rejected_atomically) (field='checks')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_api.py", line 92, in test_invalid_unicode_model_text_is_rejected_atomically
+    self.assert_error(await self.client.post('/api/reviews', json={'diff': SIMPLE}),
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      502, 'INVALID_MODEL_OUTPUT')
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kate/Documents/ITMO/AI/ITMOv2/practices/practice_05/project/tests/test_api.py", line 26, in assert_error
+    self.assertEqual(response.status_code, status, response.text)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 500 != 502 : {"request_id":"adec4f20-e240-48f4-9dcb-8751a9194abd","error":{"code":"INTERNAL_ERROR","message":"Не удалось выполнить анализ. Сохраните идентификатор запроса."}}
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.009s
+
+FAILED (failures=7, errors=1)
