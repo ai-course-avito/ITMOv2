@@ -38,13 +38,13 @@
 
 ## Материалы
 
-- [Продуктовый контекст и происхождение](inputs/README.md)
+- [Продуктовый контекст и происхождение](inputs/SOURCES.md)
 - [Правила проекта](project/.specify/memory/constitution.md)
 - [Применение фреймворка и сравнение](FRAMEWORK.md)
 - [Согласованный общий контракт](CONTRACT.md)
 - [Исходные различия и принятые решения](RECONCILIATION.md)
 - [Журнал процесса](evidence/process.md)
-- [Запуск приложения и тестов](project/README.md)
+- [Запуск приложения и тестов](project/RUN.md)
 - [Итог проверок и ограничения](evidence/validation.md)
 - [Рефлексия студентки](REFLECTION.md)
 
