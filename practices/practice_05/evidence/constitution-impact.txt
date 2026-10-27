@@ -1,0 +1,6 @@
+Sync Impact Report
+Version: scaffold -> 1.0.0 (initial project governance).
+Principles: two independent specifications; human contract decision before code;
+source-grounded review; private inputs; observable acceptance.
+Sections added: scope, workflow, governance.
+Pending: human approval of the coordinated specifications and contract.
