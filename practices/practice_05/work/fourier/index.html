@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ряды Фурье</title>
+    <meta name="description" content="Интуитивное объяснение рядов Фурье" />
+    <script>
+      // MathJax configuration must be defined before loading script
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        },
+        options: { skipHtmlTags: ['noscript', 'style', 'textarea', 'pre', 'code'] }
+      };
+      // helper to typeset dynamically added math later
+      window.requestMathJaxTypeset = function () {
+        if (window.MathJax && MathJax.typesetPromise) {
+          return MathJax.typesetPromise();
+        }
+        return Promise.resolve();
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <link rel="stylesheet" href="/static/css/tokens.css" />
+    <style>
+      header { max-width: 960px; margin: 0 auto; padding: 16px; }
+      main { max-width: 960px; margin: 0 auto; padding: 16px; }
+      .formula-demo { background: var(--color-surface); padding:1rem; border-radius: var(--radius-md); box-shadow: var(--shadow-1); }
+      a { color: var(--color-accent); }
+    </style>
+  </head>
+  <body>
+    <script src="/static/js/prefs.js"></script>
+    <header>
+      <h1>Ряды Фурье</h1>
+      <nav>
+        <a href="/">Главная</a> · <a href="/chebyshev/">Полиномы Чебышева</a> · <a href="/approximation/">Теория приближения</a>
+      </nav>
+    </header>
+    <main>
+      <section>
+        <h2>Формулы</h2>
+        <p class="card">
+          Inline формула: $f(x)=\sum_{n=1}^{\infty} a_n\cos(nx)+b_n\sin(nx)$ отображается внутри текста.
+        </p>
+        <div class="formula-demo" aria-label="Пример блочной формулы">
+          $$S_N(x)=\sum_{n=1}^{N}\big(a_n\cos(nx)+b_n\sin(nx)\big)$$
+        </div>
+      </section>
+      <section id="demos" aria-label="Демонстрации: Частичные суммы ряда Фурье">
+        <h2>Демонстрации</h2>
+        <p class="card">
+          Квадратный сигнал, частичная сумма порядка
+          <span data-testid="fourier-N-label">N = 10</span>
+        </p>
+        <label>
+          <span class="sr-only">Порядок частичной суммы</span>
+          <input
+            type="range"
+            min="1"
+            max="50"
+            step="1"
+            value="10"
+            aria-label="Порядок частичной суммы"
+            data-testid="fourier-slider"
+          />
+        </label>
+        <div style="margin-top:1rem">
+          <svg id="fourier-svg" width="600" height="300" role="img" aria-label="График частичной суммы ряда Фурье квадратного сигнала" viewBox="0 0 600 300">
+            <desc>Кривая аппроксимации квадратного сигнала частичной суммой ряда Фурье</desc>
+            <path data-testid="fourier-plot" d="" fill="none" stroke="#0d6efd" stroke-width="2" />
+          </svg>
+        </div>
+        <script>
+          // Simple Fourier partial sum (square wave) drawn into SVG path
+          (function () {
+            const slider = document.querySelector('input[data-testid="fourier-slider"]');
+            const label = document.querySelector('span[data-testid="fourier-N-label"]');
+            const path = document.querySelector('path[data-testid="fourier-plot"]');
+            const svg = document.getElementById('fourier-svg');
+
+            const W = 600, H = 300;
+            const X_MIN = -Math.PI, X_MAX = Math.PI;
+            const Y_MIN = -1.5, Y_MAX = 1.5; // a bit of padding
+
+            function xToPx(x) {
+              return ((x - X_MIN) / (X_MAX - X_MIN)) * W;
+            }
+            function yToPx(y) {
+              // invert to have positive y upwards visually
+              const py = ((y - Y_MIN) / (Y_MAX - Y_MIN)) * H;
+              return H - py;
+            }
+
+            function squareWavePartial(x, N) {
+              // s_N(x) = (4/π) * sum_{k=0}^{N-1} sin((2k+1)x)/(2k+1)
+              let sum = 0.0;
+              for (let k = 0; k < N; k++) {
+                const n = 2 * k + 1;
+                sum += Math.sin(n * x) / n;
+              }
+              return (4 / Math.PI) * sum;
+            }
+
+            function buildPath(N) {
+              const samples = 512;
+              let d = '';
+              for (let i = 0; i <= samples; i++) {
+                const t = i / samples;
+                const x = X_MIN + t * (X_MAX - X_MIN);
+                const y = squareWavePartial(x, N);
+                const X = xToPx(x);
+                const Y = yToPx(y);
+                d += (i === 0 ? 'M' : 'L') + X.toFixed(2) + ',' + Y.toFixed(2);
+              }
+              return d;
+            }
+
+            function render() {
+              const N = parseInt(slider.value, 10);
+              label.textContent = `N = ${N}`;
+              const d = buildPath(N);
+              // update path data
+              path.setAttribute('d', d);
+            }
+
+            slider.addEventListener('input', render);
+            slider.addEventListener('change', render);
+
+            // initial render
+            render();
+          })();
+        </script>
+      </section>
+    </main>
+  </body>
+  </html>

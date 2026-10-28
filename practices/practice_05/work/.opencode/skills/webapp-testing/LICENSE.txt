@@ -1,0 +1,1 @@
+Apache License 2.0 applies. See upstream anthropics/skills for full terms.
