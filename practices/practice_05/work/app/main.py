@@ -4,10 +4,13 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.api.routes import router as calculation_router
+
 
 ROOT = Path(__file__).resolve().parent.parent
 app = FastAPI(title="Fourier & Chebyshev Education Site")
 app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
+app.include_router(calculation_router)
 
 
 def page(path: str) -> FileResponse:

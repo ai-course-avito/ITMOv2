@@ -18,3 +18,13 @@ npm run test:e2e
 ```
 
 The browser tests require Playwright Chromium. The Python Playwright test additionally requires the Python `playwright` package.
+The FastAPI service also exposes the versioned calculation endpoint at
+`POST /api/v1/calculate`. The request/response contract is documented in
+`specs/001-logic-backend/contracts/v1.md`; runnable scenarios are in
+`specs/001-logic-backend/quickstart.md`.
+
+Backend validation is covered by:
+
+```bash
+pytest tests/contract tests/unit tests/performance -q
+```
