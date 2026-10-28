@@ -42,7 +42,7 @@ class HttpTest(unittest.TestCase):
         status, _, body = self.call("POST", "/login", {"username": "alice", "password": "learn-alice"})
         self.assertEqual(status, 200)
         token = json.loads(body)["token"]
-        status, headers, body = self.call("POST", "/orders", {"product": "chair"}, {"X-Token": token})
+        status, headers, body = self.call("POST", "/orders", {"product": "chair", "price": 1}, {"X-Token": token})
         self.assertEqual(status, 201)
         self.assertIn("application/json", headers["Content-Type"])
         self.assertEqual(json.loads(body)["price"], 5000)
@@ -51,6 +51,20 @@ class HttpTest(unittest.TestCase):
         status, _, body = self.call("GET", "/health")
         self.assertEqual((status, json.loads(body)), (200, {"status": "ok"}))
         self.assertEqual(self.call("GET", "/missing")[0], 404)
+
+    def test_malformed_json_does_not_leak_details(self):
+        # Send malformed JSON to an endpoint that does not require auth first
+        from urllib.request import Request, urlopen
+        req = Request(self.base + "/login", data=b"not json",
+                      headers={"Content-Type": "application/json"}, method="POST")
+        with self.assertRaises(Exception) as ctx:
+            # urllib raises HTTPError on 4xx; capture it to inspect
+            urlopen(req, timeout=5)
+        exc = ctx.exception
+        # HTTPError has code and fp with body
+        self.assertEqual(getattr(exc, 'code', None), 400)
+        body = exc.read().decode()
+        self.assertEqual(json.loads(body), {"error": "invalid JSON"})
 
     def test_transport_only_binds_loopback(self):
         self.assertEqual(self.server.server_address[0], "127.0.0.1")
