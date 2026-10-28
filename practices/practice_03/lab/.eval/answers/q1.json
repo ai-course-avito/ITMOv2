@@ -1,0 +1,36 @@
+{
+    "type": "step_start",
+    "timestamp": 1791319662690,
+    "sessionID": "ses_eed0a9d5fffedyLeHcqfS389we",
+    "part": {
+        "id": "prt_112f8e037001I6IbYcupunW7Tp",
+        "messageID": "msg_112f565d0001O7v3oNtUrIgJR3",
+        "sessionID": "ses_eed0a9d5fffedyLeHcqfS389we",
+        "snapshot": "e2c7733410e04f7a2e361f0019928c026546e45a",
+        "type": "step-start"
+    }
+}
+{
+    "type": "step_finish",
+    "timestamp": 1791319664745,
+    "sessionID": "ses_eed0a9d5fffedyLeHcqfS389we",
+    "part": {
+        "id": "prt_112f8e861001cte2LdR0jXxBf1",
+        "reason": "length",
+        "snapshot": "e2c7733410e04f7a2e361f0019928c026546e45a",
+        "messageID": "msg_112f565d0001O7v3oNtUrIgJR3",
+        "sessionID": "ses_eed0a9d5fffedyLeHcqfS389we",
+        "type": "step-finish",
+        "tokens": {
+            "total": 2048,
+            "input": 2020,
+            "output": 28,
+            "reasoning": 0,
+            "cache": {
+                "write": 0,
+                "read": 0
+            }
+        },
+        "cost": 0
+    }
+}
