@@ -59,6 +59,21 @@ button, select { font: inherit; }
 .route-fields { display: flex; align-items: flex-end; gap: 12px; }
 .field { flex: 1; min-width: 0; text-align: left; }
 .field > span { display: block; margin: 0 0 7px; font-size: 13px; color: #555; }
+.airport-field { position: relative; }
+.airport-field > label { display: block; margin: 0 0 7px; font-size: 13px; color: #555; }
+.airport-list {
+  position: absolute; z-index: 10; top: calc(100% - 1px); left: 0; right: 0;
+  max-height: 240px; overflow-y: auto; border: 1px solid #a9a9a9;
+  background: #fff; box-shadow: 0 4px 10px #0002;
+}
+.airport-option {
+  display: block; width: 100%; padding: 10px; border: 0; background: #fff;
+  color: #222; text-align: left; font: inherit; cursor: pointer;
+}
+.airport-option:hover, .airport-option.active { background: #eaf2ff; }
+.airport-empty { margin: 0; padding: 10px; color: #666; font-size: 13px; }
+.field-error { margin: 5px 0 0; color: #b3261e; font-size: 12px; }
+.airport-field input[aria-invalid="true"] { border-color: #b3261e; }
 .field select {
   width: 100%;
   height: 38px;
@@ -130,8 +145,8 @@ button, select { font: inherit; }
   .topbar { gap: 12px; }
   .logo { letter-spacing: -5px; }
   .tagline { margin-bottom: 32px; }
-  .route-fields { gap: 7px; }
-  .route-arrow { font-size: 18px; }
+  .route-fields { flex-direction: column; align-items: stretch; gap: 8px; }
+  .route-arrow { height: 18px; align-self: center; font-size: 18px; transform: rotate(90deg); }
   .transfer-options { flex-wrap: wrap; gap: 10px 16px; }
   .transfer-options legend { margin-bottom: 3px; }
 }

@@ -1,4 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react'
+import { AirportField, type AirportValue } from './AirportField'
+import { postFareSearch, prepareFareSearch } from './fareSearch'
 
 type Segment = {
   marketing_carrier_code: string | null
@@ -55,8 +57,9 @@ function legText(leg: Leg) {
 }
 
 function App() {
-  const [origin, setOrigin] = useState('MOW')
-  const [destination, setDestination] = useState('LED')
+  const [origin, setOrigin] = useState<AirportValue>({ text: '', selected: null })
+  const [destination, setDestination] = useState<AirportValue>({ text: '', selected: null })
+  const [routeErrors, setRouteErrors] = useState({ origin: '', destination: '' })
   const [departureDate, setDepartureDate] = useState('')
   const [returnDate, setReturnDate] = useState('')
   const [roundTrip, setRoundTrip] = useState(false)
@@ -79,40 +82,23 @@ function App() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (isLoading) return
     setError('')
     setResult(null)
-    if (origin.trim().toUpperCase() === destination.trim().toUpperCase()) {
-      setError('Пункты отправления и назначения должны отличаться.')
+    setSearchedRoute('')
+    const prepared = prepareFareSearch({ origin, destination, departureDate, returnDate, roundTrip, direct, maxPrice, market })
+    if (!prepared.ok) {
+      setRouteErrors({ origin: prepared.errors.origin ?? '', destination: prepared.errors.destination ?? '' })
+      setError(prepared.errors.form ?? '')
       return
     }
-    if (roundTrip && returnDate < departureDate) {
-      setError('Дата возвращения должна быть не раньше даты вылета.')
-      return
-    }
-    const body = {
-      origin: origin.trim().toUpperCase(),
-      destination: destination.trim().toUpperCase(),
-      departure_date: departureDate,
-      market,
-      direct,
-      ...(roundTrip ? { return_date: returnDate } : {}),
-      ...(maxPrice ? { max_price: Number(maxPrice) } : {}),
-    }
+    setRouteErrors({ origin: '', destination: '' })
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/fares/${roundTrip ? 'round-trip' : 'one-way'}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      const data = await response.json()
-      if (!response.ok) {
-        const detail = data.detail
-        throw new Error(typeof detail === 'string' ? detail : 'Проверьте маршрут и даты поиска.')
-      }
-      setSearchedRoute(`${body.origin} → ${body.destination}`)
+      const data = await postFareSearch<SearchResult>(prepared.request)
+      setSearchedRoute(prepared.request.routeLabel)
       setPriceOrder('ascending')
-      setResult(data as SearchResult)
+      setResult(data)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Не удалось выполнить поиск.')
     } finally {
@@ -126,11 +112,11 @@ function App() {
       <main className="main">
         <div className="logo" aria-label="Билетик"><span className="logo-blue">Б</span><span className="logo-red">и</span><span className="logo-yellow">л</span><span className="logo-blue">е</span><span className="logo-green">т</span><span className="logo-red">и</span><span className="logo-blue">к</span></div>
         <p className="tagline">Найдите билет по приятной цене</p>
-        <form className="search-form" onSubmit={handleSubmit}>
+        <form className="search-form" onSubmit={handleSubmit} noValidate>
           <div className="route-fields">
-            <label className="field"><span>Откуда · IATA</span><input value={origin} onChange={event => setOrigin(event.target.value)} pattern="[A-Za-z]{3}" maxLength={3} required placeholder="MOW" /></label>
+            <AirportField label="Откуда" value={origin} error={routeErrors.origin} onChange={value => { setOrigin(value); setRouteErrors(previous => ({ ...previous, origin: '' })) }} />
             <span className="route-arrow" aria-hidden="true">→</span>
-            <label className="field"><span>Куда · IATA</span><input value={destination} onChange={event => setDestination(event.target.value)} pattern="[A-Za-z]{3}" maxLength={3} required placeholder="LED" /></label>
+            <AirportField label="Куда" value={destination} error={routeErrors.destination} onChange={value => { setDestination(value); setRouteErrors(previous => ({ ...previous, destination: '' })) }} />
           </div>
           <div className="options-row">
             <label className="field"><span>Дата вылета</span><input type="date" value={departureDate} min={new Date().toLocaleDateString('en-CA')} onChange={event => setDepartureDate(event.target.value)} required /></label>
