@@ -8,17 +8,30 @@
 Кнопка "Сообщить об ошибке": эндпоинт /report-error принимает текст ошибки
 от пользователя (с той же идеей валидации, что и в Фиче A) и пишет его в
 лог-файл для диагностики.
+
+Таблица рекордов: /race-results сохраняет время победителя под его именем,
+/leaderboard отдаёт лучшие результаты (общие для всех, переживают перезапуск).
+Хранилище — JSON-файл на сервере (app/leaderboard.py); если он недоступен
+или повреждён, оба эндпоинта отвечают 503 и файл не трогают.
 """
 
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Annotated
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.models import CarSelection, ErrorReport
+from app.leaderboard import STORAGE_UNAVAILABLE_DETAIL, LeaderboardStore, StorageError
+from app.models import (
+    CarSelection,
+    ErrorReport,
+    Leaderboard,
+    RaceResult,
+    SaveResultResponse,
+)
 
 app = FastAPI(title="Гонки API")
 
@@ -31,6 +44,23 @@ app.add_middleware(
 )
 
 ERROR_LOG_PATH = Path(__file__).resolve().parent.parent / "error_reports.log"
+LEADERBOARD_PATH = Path(__file__).resolve().parent.parent / "leaderboard.json"
+
+_store = LeaderboardStore(LEADERBOARD_PATH)
+
+
+def get_store() -> LeaderboardStore:
+    """Зависимость эндпоинтов таблицы рекордов (в тестах подменяется на файл в tmp_path)."""
+    return _store
+
+
+StoreDep = Annotated[LeaderboardStore, Depends(get_store)]
+
+
+@app.exception_handler(StorageError)
+async def storage_error_handler(request: Request, exc: StorageError) -> JSONResponse:
+    return JSONResponse(status_code=503, content={"detail": STORAGE_UNAVAILABLE_DETAIL})
+
 
 # Простая защита от слишком большого запроса (фича A: "большой запрос — отклонить").
 MAX_BODY_SIZE_BYTES = 2048
@@ -80,3 +110,20 @@ def report_error(report: ErrorReport) -> dict:
         log_file.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
     return {"status": "ok", "message": "Спасибо, сообщение об ошибке принято"}
+
+
+@app.post("/race-results", status_code=201)
+def save_race_result(result: RaceResult, store: StoreDep) -> SaveResultResponse:
+    """Сохранить время круга победителя под его именем.
+
+    До этой точки доходят только валидные данные (имя нормализовано, время в
+    диапазоне) — иначе Pydantic вернёт 422 и хранилище не будет затронуто.
+    Повтор того же запроса безопасен: равное время рекорд не меняет.
+    """
+    return SaveResultResponse(**store.save_result(result.name, result.lap_time_ms))
+
+
+@app.get("/leaderboard")
+def get_leaderboard(store: StoreDep, limit: Annotated[int, Query(ge=1, le=50)] = 10) -> Leaderboard:
+    """Таблица рекордов: топ-limit по лучшему времени, число имён и последний результат."""
+    return Leaderboard(**store.get_leaderboard(limit))

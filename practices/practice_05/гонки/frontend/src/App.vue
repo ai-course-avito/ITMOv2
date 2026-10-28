@@ -1,7 +1,21 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import ReportErrorButton from "./ReportErrorButton.vue";
+import Leaderboard from "./Leaderboard.vue";
 import { createRaceScene } from "./scene3d.js";
+import { getLeaderboard, saveRaceResult } from "./api.js";
+import {
+  MAX_NAME_LENGTH,
+  nameLength,
+  clampName,
+  normalizeName,
+  validateNames,
+  formatTime,
+  pickWinner,
+  leaderboardState,
+  isLapTimeSavable,
+  nameKey,
+} from "./raceLogic.js";
 
 const API_URL = "http://localhost:8000/select-car";
 
@@ -29,8 +43,50 @@ const p1Color = ref("red");
 const p2Model = ref("drifter");
 const p2Color = ref("purple");
 
+// Имена игроков: живут всю сессию вкладки, «Новая игра» их не сбрасывает
+const p1Name = ref("Игрок 1");
+const p2Name = ref("Игрок 2");
+const nameErrors = ref({ p1: null, p2: null }); // null | "empty" | "duplicate"
+let isComposing = false; // идёт IME-набор — не обрезаем посреди символа
+
+function nameRef(player) {
+  return player === 1 ? p1Name : p2Name;
+}
+
+function applyNameInput(player, input) {
+  const clamped = clampName(input.value);
+  // Vue не перерисует поле, если обрезанное значение совпало со старым, — пишем сами
+  if (clamped !== input.value) input.value = clamped;
+  nameRef(player).value = clamped;
+  const key = player === 1 ? "p1" : "p2";
+  const otherKey = player === 1 ? "p2" : "p1";
+  const errors = { ...nameErrors.value, [key]: null };
+  if (errors[otherKey] === "duplicate") errors[otherKey] = null;
+  nameErrors.value = errors;
+}
+
+function onNameInput(player, event) {
+  if (isComposing) return;
+  applyNameInput(player, event.target);
+}
+
+function onNameCompositionStart() {
+  isComposing = true;
+}
+
+function onNameCompositionEnd(player, event) {
+  isComposing = false;
+  applyNameInput(player, event.target);
+}
+
 const countdown = ref(3);
 const winner = ref(null);
+
+// Часы гонки: монотонные (performance.now), одно показание на кадр — по нему и
+// таймер, и время круга. Время скрытой вкладки тоже входит (часы не стоят).
+let raceStartMs = null;
+const elapsedMs = ref(0);
+let frameFinishers = []; // кто достиг финиша в текущем кадре
 const errorMessage = ref("");
 
 // Canvas и анимация
@@ -90,9 +146,67 @@ function onKeyUp(e) {
   keysDown[e.code] = false;
 }
 
+// Таблица рекордов: грузится при открытии сайта, при возврате на «Выбор»,
+// после сохранения результата и по «Повторить». Ошибка не мешает играть.
+const board = ref(null);
+const boardStatus = ref("loading"); // "loading" | "ready" | "error"
+let boardController = null;
+
+async function loadLeaderboard() {
+  boardController?.abort();
+  const controller = new AbortController();
+  boardController = controller;
+  boardStatus.value = "loading";
+  const result = await getLeaderboard({ signal: controller.signal });
+  if (result.ok) {
+    board.value = result.data;
+    boardStatus.value = "ready";
+  } else if (result.kind !== "aborted") {
+    boardStatus.value = "error";
+  }
+}
+
+// Сохранение времени победителя на «Финише».
+// "saving" | "saved" | "error" | "rejected" | "out_of_range" | null
+const saveStatus = ref(null);
+const newRecordKey = ref(null);
+let finishController = null;
+let finishGeneration = 0; // ответ от прерванного сохранения не применяется
+
+async function saveAndRefresh() {
+  const generation = ++finishGeneration;
+  finishController?.abort();
+  const controller = new AbortController();
+  finishController = controller;
+  newRecordKey.value = null;
+
+  // Время вне 3000–5 999 999 мс сервер не примет — не отправляем вовсе
+  if (!isLapTimeSavable(winner.value.lapTimeMs)) {
+    saveStatus.value = "out_of_range";
+    loadLeaderboard();
+    return;
+  }
+
+  saveStatus.value = "saving";
+  const result = await saveRaceResult(
+    { name: winner.value.name, lapTimeMs: winner.value.lapTimeMs },
+    { signal: controller.signal },
+  );
+  if (generation !== finishGeneration || (!result.ok && result.kind === "aborted")) return;
+
+  if (result.ok) {
+    saveStatus.value = "saved";
+    newRecordKey.value = result.data.is_new_record ? nameKey(result.data.name) : null;
+  } else {
+    saveStatus.value = result.kind === "rejected" ? "rejected" : "error";
+  }
+  loadLeaderboard();
+}
+
 onMounted(() => {
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
+  loadLeaderboard();
 });
 
 onUnmounted(() => {
@@ -105,6 +219,13 @@ onUnmounted(() => {
 // Старт гонки через бэкенд валидацию для обоих игроков
 async function prepareAndStartRace() {
   errorMessage.value = "";
+
+  // Имена проверяются до сервера: пустое или одинаковые — гонка не стартует
+  p1Name.value = normalizeName(p1Name.value);
+  p2Name.value = normalizeName(p2Name.value);
+  nameErrors.value = validateNames(p1Name.value, p2Name.value);
+  if (nameErrors.value.p1 || nameErrors.value.p2) return;
+
   try {
     // Валидируем выбор обоих игроков через бэкенд
     const [res1, res2] = await Promise.all([
@@ -142,6 +263,9 @@ function startCountdown() {
     if (countdown.value <= 0) {
       clearInterval(timer);
       gameState.value = "racing";
+      raceStartMs = performance.now();
+      elapsedMs.value = 0;
+      frameFinishers = [];
       runGameLoop();
     }
   }, 1000);
@@ -165,12 +289,16 @@ function initCars() {
   p2State.finished = false;
 
   winner.value = null;
+  frameFinishers = [];
 }
 
 function runGameLoop() {
   if (gameState.value !== "racing") return;
 
+  const now = performance.now();
   updatePhysics();
+  if (resolveFinish(now)) return;
+  elapsedMs.value = now - raceStartMs;
   drawScene();
 
   // 3D недоступно: гонку не продолжаем, пользователь видит сообщение
@@ -289,15 +417,27 @@ function checkLap(car, playerNum) {
   }
 }
 
+// Вызывается из checkLap: только запоминает финишировавшего в этом кадре.
+// Победителя выбирает resolveFinish после обработки обеих машинок — иначе при
+// финише в одном кадре игрок 2 всегда перезаписывал бы игрока 1.
 function declareWinner(playerNum) {
+  if (!frameFinishers.includes(playerNum)) frameFinishers.push(playerNum);
+}
+
+function resolveFinish(now) {
+  if (frameFinishers.length === 0) return false;
+  const playerNum = pickWinner(frameFinishers, Math.random);
   winner.value = {
     player: playerNum,
-    name: playerNum === 1 ? "Игрок 1" : "Игрок 2",
+    name: playerNum === 1 ? p1Name.value : p2Name.value,
     model: playerNum === 1 ? getModelParams(p1Model.value).name : getModelParams(p2Model.value).name,
     color: playerNum === 1 ? p1Color.value : p2Color.value,
     hex: playerNum === 1 ? getColorHex(p1Color.value) : getColorHex(p2Color.value),
+    lapTimeMs: Math.round(now - raceStartMs),
   };
   gameState.value = "gameover";
+  saveAndRefresh();
+  return true;
 }
 
 function resetGame() {
@@ -306,6 +446,12 @@ function resetGame() {
   errorMessage.value = "";
   sceneError.value = "";
   if (animationFrameId) cancelAnimationFrame(animationFrameId);
+  // «Новая игра» во время сохранения: запрос отменяется, его ответ не показывается
+  finishGeneration++;
+  finishController?.abort();
+  saveStatus.value = null;
+  newRecordKey.value = null;
+  loadLeaderboard();
 }
 
 function disposeScene() {
@@ -361,6 +507,25 @@ watch(gameState, (state) => {
           </div>
 
           <div class="form-section">
+            <label class="label" for="p1-name">Имя:</label>
+            <div class="name-row">
+              <input
+                id="p1-name"
+                class="name-input"
+                :class="{ invalid: nameErrors.p1 }"
+                type="text"
+                autocomplete="off"
+                :value="p1Name"
+                @input="onNameInput(1, $event)"
+                @compositionstart="onNameCompositionStart"
+                @compositionend="onNameCompositionEnd(1, $event)"
+              />
+              <span class="name-counter">{{ nameLength(p1Name) }}/{{ MAX_NAME_LENGTH }}</span>
+            </div>
+            <span v-if="nameErrors.p1 === 'empty'" class="name-error">Введите имя</span>
+          </div>
+
+          <div class="form-section">
             <span class="label">Модель:</span>
             <div class="option-row">
               <button
@@ -400,6 +565,25 @@ watch(gameState, (state) => {
           </div>
 
           <div class="form-section">
+            <label class="label" for="p2-name">Имя:</label>
+            <div class="name-row">
+              <input
+                id="p2-name"
+                class="name-input"
+                :class="{ invalid: nameErrors.p2 }"
+                type="text"
+                autocomplete="off"
+                :value="p2Name"
+                @input="onNameInput(2, $event)"
+                @compositionstart="onNameCompositionStart"
+                @compositionend="onNameCompositionEnd(2, $event)"
+              />
+              <span class="name-counter">{{ nameLength(p2Name) }}/{{ MAX_NAME_LENGTH }}</span>
+            </div>
+            <span v-if="nameErrors.p2 === 'empty'" class="name-error">Введите имя</span>
+          </div>
+
+          <div class="form-section">
             <span class="label">Модель:</span>
             <div class="option-row">
               <button
@@ -432,6 +616,10 @@ watch(gameState, (state) => {
         </div>
       </div>
 
+      <div v-if="nameErrors.p1 === 'duplicate'" class="error-banner">
+        ⚠️ Имена игроков должны различаться
+      </div>
+
       <div v-if="errorMessage" class="error-banner">
         ⚠️ {{ errorMessage }}
       </div>
@@ -439,6 +627,13 @@ watch(gameState, (state) => {
       <button class="btn-start-race" @click="prepareAndStartRace">
         🏁 Начать заезд!
       </button>
+
+      <Leaderboard
+        :state="leaderboardState(board, boardStatus)"
+        :board="board"
+        :new-record-key="null"
+        @retry="loadLeaderboard"
+      />
     </div>
 
     <!-- СЛАЙД 2: ОБРАТНЫЙ ОТСЧЁТ -->
@@ -451,11 +646,14 @@ watch(gameState, (state) => {
     <div v-else-if="gameState === 'racing'" class="racing-container">
       <div class="race-hud">
         <div class="hud-item" :style="{ color: getColorHex(p1Color) }">
-          <strong>Игрок 1 (W/A/S/D):</strong> {{ Math.min(100, Math.round((p1State.progress / (2 * Math.PI)) * 100)) }}%
+          <strong>{{ p1Name }} (W/A/S/D):</strong> {{ Math.min(100, Math.round((p1State.progress / (2 * Math.PI)) * 100)) }}%
         </div>
-        <div class="hud-item finish-label">🏁 ФИНИШ: 1 КРУГ</div>
+        <div class="hud-item hud-timer">
+          <span v-if="!sceneError" class="timer-value">{{ formatTime(elapsedMs) }}</span>
+          <span class="finish-label">🏁 1 КРУГ</span>
+        </div>
         <div class="hud-item" :style="{ color: getColorHex(p2Color) }">
-          <strong>Игрок 2 (Стрелки):</strong> {{ Math.min(100, Math.round((p2State.progress / (2 * Math.PI)) * 100)) }}%
+          <strong>{{ p2Name }} (Стрелки):</strong> {{ Math.min(100, Math.round((p2State.progress / (2 * Math.PI)) * 100)) }}%
         </div>
       </div>
 
@@ -482,10 +680,33 @@ watch(gameState, (state) => {
       <p class="victory-details">
         Болид: <strong>{{ winner.model }}</strong> | Первый завершил круг!
       </p>
+      <p class="lap-time">
+        Время круга: <strong>{{ formatTime(winner.lapTimeMs) }}</strong>
+      </p>
+
+      <div v-if="saveStatus === 'saving'" class="save-status">Сохраняем результат…</div>
+      <div v-else-if="saveStatus === 'saved'" class="save-status save-ok">Результат сохранён ✓</div>
+      <div v-else-if="saveStatus === 'error'" class="save-status save-fail">
+        <span>Не удалось сохранить результат</span>
+        <button class="lb-retry-btn" @click="saveAndRefresh">Повторить</button>
+      </div>
+      <div v-else-if="saveStatus === 'rejected'" class="save-status save-fail">
+        Результат не сохранён: некорректные данные
+      </div>
+      <div v-else-if="saveStatus === 'out_of_range'" class="save-status save-fail">
+        Результат не сохранён: время вне допустимого диапазона
+      </div>
 
       <button class="btn-new-game" @click="resetGame">
         🔄 Новая игра
       </button>
+
+      <Leaderboard
+        :state="leaderboardState(board, boardStatus)"
+        :board="board"
+        :new-record-key="newRecordKey"
+        @retry="loadLeaderboard"
+      />
     </div>
 
     <ReportErrorButton />
@@ -615,6 +836,47 @@ watch(gameState, (state) => {
   gap: 8px;
 }
 
+/* Поле имени */
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.name-input {
+  flex: 1;
+  min-width: 0;
+  background: #1a1033;
+  color: #f5f3ff;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.name-input:focus {
+  outline: none;
+  border-color: #22d3ee;
+}
+
+.name-input.invalid {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.name-counter {
+  font-size: 0.75rem;
+  color: #a78bfa;
+  font-variant-numeric: tabular-nums;
+}
+
+.name-error {
+  font-size: 0.8rem;
+  color: #fca5a5;
+  text-align: left;
+}
+
 .choice-btn {
   background: #1a1033;
   color: #f5f3ff;
@@ -721,6 +983,30 @@ watch(gameState, (state) => {
   font-weight: bold;
 }
 
+.hud-timer {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.timer-value {
+  color: #f5f3ff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-timer .finish-label {
+  font-size: 0.75rem;
+}
+
+.lap-time {
+  font-size: 1.3rem;
+  color: #22d3ee;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 .scene-error {
   display: flex;
   flex-direction: column;
@@ -790,5 +1076,46 @@ watch(gameState, (state) => {
 
 .btn-new-game:hover {
   transform: translateY(-2px);
+}
+
+/* Статус сохранения результата */
+.save-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: #cbd5e1;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.save-ok {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.save-fail {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.12);
+  border-color: #ef4444;
+}
+
+.lb-retry-btn {
+  background: #1a1033;
+  color: #22d3ee;
+  border: 1px solid #22d3ee;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.victory-slide {
+  width: min(560px, 95vw);
+  box-sizing: border-box;
 }
 </style>
