@@ -1,0 +1,12 @@
+$ npx --offline -y mcp-pg-server   (as written in .mcp.json)
+file:///Users/kio/.npm/_npx/916e8e8267c54156/node_modules/mcp-pg-server/dist/index.js:2
+#!/usr/bin/env node
+^
+
+SyntaxError: Invalid or unexpected token
+    at compileSourceTextModule (node:internal/modules/esm/utils:355:16)
+
+$ head -3 ~/.npm/_npx/*/node_modules/mcp-pg-server/dist/index.js
+#!/usr/bin/env node
+#!/usr/bin/env node
+

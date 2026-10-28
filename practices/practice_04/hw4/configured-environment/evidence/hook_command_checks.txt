@@ -1,0 +1,16 @@
+# Exact command from settings.json, cwd=/tmp, CLAUDE_PROJECT_DIR set, JSON on stdin
+matcher: Write|Edit|Bash
+command: python3 "$CLAUDE_PROJECT_DIR/.claude/hooks/protect_env.py"
+
+payload: {"tool_name":"Write","tool_input":{"file_path":"/Users/kio/avito ai/ITMOv2/practices/practice_04/subtracker/backend/.env"}}
+  exit=2  stderr: BLOCKED: /Users/kio/avito ai/ITMOv2/practices/practice_04/subtracker/backend/.env is a secrets file. AGENTS.md forbids editing or committing .env; put variable names in .env.example and ask the user to set real values themselves.
+
+payload: {"tool_name":"Bash","tool_input":{"command":"echo 'DEBUG=true' >> backend/.env"}}
+  exit=2  stderr: BLOCKED: .env is a secrets file. AGENTS.md forbids editing or committing .env; put variable names in .env.example and ask the user to set real values themselves.
+
+payload: {"tool_name":"Bash","tool_input":{"command":"cat backend/.env"}}
+  exit=0
+
+payload: {"tool_name":"Bash","tool_input":{"command":"echo DEBUG=false >> backend/.env.example"}}
+  exit=0
+

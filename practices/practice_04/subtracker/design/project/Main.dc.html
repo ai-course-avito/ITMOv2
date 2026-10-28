@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Обзор расходов</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="{{vars}} width:1280px; height:1000px; box-sizing:border-box; background:var(--bg); color:var(--text); font-family:'Onest',system-ui,sans-serif; padding:0 40px; display:flex; flex-direction:column; gap:28px">
+
+<!-- header -->
+<div style="height:88px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0">
+<div style="display:flex; align-items:center; gap:12px">
+<div style="width:36px; height:36px; border-radius:11px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accentText)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16M4 12h10M4 16h6"/></svg>
+</div>
+<span style="font-size:20px; font-weight:500; letter-spacing:-0.01em">subtracker</span>
+</div>
+
+<div style="display:flex; gap:4px; padding:4px; border-radius:999px; background:var(--surface); border:1px solid var(--line)">
+<a href="Main.dc.html" style="padding:10px 22px; border-radius:999px; background:var(--accent); color:var(--accentText); font-size:14px; font-weight:500; text-decoration:none">{{t.tabOverview}}</a>
+<a href="Subscriptions.dc.html" style="padding:10px 22px; border-radius:999px; color:var(--muted); font-size:14px; text-decoration:none">{{t.tabSubs}}</a>
+<span style="padding:10px 18px; border-radius:999px; color:var(--muted); font-size:14px; display:flex; align-items:center; gap:8px; opacity:0.75">{{t.tabCal}}
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+<span style="font-size:11px; font-weight:600; letter-spacing:0.04em; padding:2px 7px; border-radius:999px; border:1px solid var(--line)">PRO</span></span>
+</div>
+
+<div style="display:flex; align-items:center; gap:12px">
+<div style="display:flex; padding:3px; border-radius:999px; background:var(--surface); border:1px solid var(--line); font-size:13px">
+<span style="padding:6px 12px; border-radius:999px; {{ruStyle}}">RU</span>
+<span style="padding:6px 12px; border-radius:999px; {{enStyle}}">EN</span>
+</div>
+<button aria-label="{{t.theme}}" style="width:40px; height:40px; border-radius:999px; background:var(--surface); border:1px solid var(--line); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>
+</button>
+<span style="font-size:12px; font-weight:500; padding:6px 12px; border-radius:999px; border:1px solid var(--line); color:var(--muted)">Free</span>
+<button style="height:44px; padding:0 20px; border-radius:999px; background:var(--accent); color:var(--accentText); border:0; font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px; cursor:pointer">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>{{t.add}}</button>
+</div>
+</div>
+
+<!-- title -->
+<div style="display:flex; align-items:flex-end; justify-content:space-between; flex-shrink:0">
+<div>
+<span style="display:inline-block; font-size:12px; color:var(--muted); border:1px solid var(--line); padding:5px 12px; border-radius:999px; margin-bottom:14px">{{t.label}}</span>
+<h1 style="margin:0; font-size:40px; font-weight:300; letter-spacing:-0.02em">{{t.title}}</h1>
+</div>
+<span style="font-size:14px; color:var(--muted)">{{t.today}}</span>
+</div>
+
+<!-- KPI -->
+<div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:20px; flex-shrink:0">
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:24px; padding:26px 28px">
+<div style="font-size:14px; color:var(--muted)">{{t.kMonth}}</div>
+<div style="font-size:44px; font-weight:300; letter-spacing:-0.02em; margin-top:10px">$82.10</div>
+<div style="font-size:13px; color:var(--muted); margin-top:6px">{{t.kMonthHint}}</div>
+</div>
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:24px; padding:26px 28px">
+<div style="font-size:14px; color:var(--muted)">{{t.kYear}}</div>
+<div style="font-size:44px; font-weight:300; letter-spacing:-0.02em; margin-top:10px">$985.20</div>
+<div style="font-size:13px; color:var(--muted); margin-top:6px">{{t.kYearHint}}</div>
+</div>
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:24px; padding:26px 28px">
+<div style="font-size:14px; color:var(--muted)">{{t.kActive}}</div>
+<div style="font-size:44px; font-weight:300; letter-spacing:-0.02em; margin-top:10px">6</div>
+<div style="font-size:13px; color:var(--muted); margin-top:6px">{{t.kActiveHint}}</div>
+</div>
+</div>
+
+<!-- charts -->
+<div style="display:grid; grid-template-columns:minmax(0, 1.15fr) minmax(0, 1fr); gap:20px; flex-shrink:0">
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:24px; padding:28px; display:flex; gap:28px; align-items:center">
+<div style="position:relative; width:200px; height:200px; flex-shrink:0">
+<svg width="200" height="200" viewBox="0 0 200 200" role="img" aria-label="{{t.donutAria}}">
+<g transform="rotate(-90 100 100)" fill="none" stroke-width="26">
+<circle cx="100" cy="100" r="70" stroke="#f26b2a" stroke-dasharray="137.29 302.53" stroke-dashoffset="0"/>
+<circle cx="100" cy="100" r="70" stroke="#f2b24a" stroke-dasharray="105.14 334.68" stroke-dashoffset="-139.29"/>
+<circle cx="100" cy="100" r="70" stroke="#3fb8a5" stroke-dasharray="80.99 358.83" stroke-dashoffset="-246.43"/>
+<circle cx="100" cy="100" r="70" stroke="#5b8def" stroke-dasharray="56.89 382.93" stroke-dashoffset="-329.42"/>
+<circle cx="100" cy="100" r="70" stroke="#a182ee" stroke-dasharray="33.54 406.28" stroke-dashoffset="-388.31"/>
+<circle cx="100" cy="100" r="70" stroke="#8d8d89" stroke-dasharray="14.01 425.81" stroke-dashoffset="-423.85"/>
+</g>
+</svg>
+<div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center">
+<span style="font-size:13px; color:var(--muted)">{{t.perMonth}}</span>
+<span style="font-size:26px; font-weight:300">$82.10</span>
+</div>
+</div>
+<div style="flex:1; min-width:0">
+<div style="font-size:18px; font-weight:400; margin-bottom:4px">{{t.donutTitle}}</div>
+<div style="font-size:13px; color:var(--muted); margin-bottom:16px">{{t.donutSub}}</div>
+<div style="display:flex; flex-direction:column; gap:9px">
+<sc-for list="{{legend}}" as="l" hint-placeholder-count="6">
+<div style="display:flex; align-items:center; gap:10px; font-size:14px">
+<span style="width:10px; height:10px; border-radius:3px; background:{{l.color}}; flex-shrink:0"></span>
+<span style="flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{l.name}}</span>
+<span style="color:var(--muted)">{{l.share}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:24px; padding:28px">
+<div style="font-size:18px; font-weight:400; margin-bottom:4px">{{t.topTitle}}</div>
+<div style="font-size:13px; color:var(--muted); margin-bottom:20px">{{t.topSub}}</div>
+<div style="display:flex; flex-direction:column; gap:15px">
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="5">
+<div>
+<div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:7px"><span>{{b.name}}</span><span style="color:var(--muted)">{{b.cost}}</span></div>
+<div style="height:8px; border-radius:999px; background:var(--line)"><div style="height:8px; border-radius:999px; background:var(--accent); width:{{b.w}}"></div></div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+
+<!-- upcoming -->
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:24px; padding:26px 28px; flex-shrink:0">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+<div style="font-size:18px; font-weight:400">{{t.upTitle}}</div>
+<div style="display:flex; padding:3px; border-radius:999px; background:var(--bg); border:1px solid var(--line); font-size:13px">
+<span style="padding:5px 12px; border-radius:999px; color:var(--muted)">{{t.d7}}</span>
+<span style="padding:5px 12px; border-radius:999px; background:var(--surface2); color:var(--text)">{{t.d30}}</span>
+</div>
+</div>
+<div style="display:flex; gap:14px">
+<sc-for list="{{upcoming}}" as="u" hint-placeholder-count="5">
+<div style="flex:1; min-width:0; border:1px solid var(--line); border-radius:18px; padding:16px; background:var(--bg)">
+<div style="font-size:12px; color:{{u.whenColor}}; font-weight:500">{{u.when}}</div>
+<div style="font-size:15px; margin-top:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{u.name}}</div>
+<div style="display:flex; justify-content:space-between; margin-top:8px; font-size:13px; color:var(--muted)"><span>{{u.date}}</span><span style="color:var(--text)">{{u.amount}}</span></div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<!-- ad slot (Free) -->
+<div style="margin-top:auto; margin-bottom:24px; height:56px; border:1px dashed var(--line); border-radius:16px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; color:var(--muted); font-size:13px; flex-shrink:0">
+<span><span style="font-weight:600; letter-spacing:0.05em; margin-right:10px">{{t.adLabel}}</span>{{t.adText}}</span>
+<span style="color:var(--accent); font-weight:500">{{t.adCta}}</span>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"Вид"},"lang":{"editor":"enum","options":["ru","en"],"default":"ru","section":"Вид"},"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = "--bg:#121212;--surface:#1a1a1a;--surface2:#242424;--line:#2f2f2f;--text:#f2f2ef;--muted:#9c9c97;--accent:#f26b2a;--accentText:#1a0d05;";
+    const light = "--bg:#f4f3ef;--surface:#ffffff;--surface2:#f1f0ec;--line:#e0dfd9;--text:#1c1c1a;--muted:#66665f;--accent:#d9531a;--accentText:#ffffff;";
+    const isEn = this.props.lang === 'en';
+    const ru = {
+      tabOverview:'Обзор', tabSubs:'Подписки', tabCal:'Календарь', add:'Добавить', theme:'Сменить тему',
+      label:'Обзор', title:'Сколько вы тратите', today:'Сегодня 16 октября',
+      kMonth:'Расход в месяц', kMonthHint:'по 6 активным подпискам',
+      kYear:'Расход в год', kYearHint:'месячный расход × 12',
+      kActive:'Активных подписок', kActiveHint:'1 приостановлена',
+      perMonth:'в месяц', donutTitle:'Куда уходят деньги', donutSub:'Доли месячного расхода по подпискам', donutAria:'Диаграмма долей расходов по подпискам',
+      topTitle:'Топ-5 самых дорогих', topSub:'В пересчёте на месяц',
+      upTitle:'Ближайшие списания', d7:'7 дней', d30:'30 дней',
+      adLabel:'РЕКЛАМА', adText:'Здесь будет рекламный блок на бесплатном тарифе', adCta:'Убрать рекламу в Pro'
+    };
+    const en = {
+      tabOverview:'Overview', tabSubs:'Subscriptions', tabCal:'Calendar', add:'Add', theme:'Switch theme',
+      label:'Overview', title:'What you spend', today:'Today, Oct 16',
+      kMonth:'Monthly spend', kMonthHint:'across 6 active subscriptions',
+      kYear:'Yearly spend', kYearHint:'monthly spend × 12',
+      kActive:'Active subscriptions', kActiveHint:'1 paused',
+      perMonth:'per month', donutTitle:'Where the money goes', donutSub:'Share of monthly spend by subscription', donutAria:'Chart of spending shares by subscription',
+      topTitle:'Top 5 most expensive', topSub:'Converted to a monthly cost',
+      upTitle:'Upcoming charges', d7:'7 days', d30:'30 days',
+      adLabel:'AD', adText:'An ad block will appear here on the free plan', adCta:'Remove ads with Pro'
+    };
+    const on = "background:var(--accent);color:var(--accentText);font-weight:500;";
+    const off = "color:var(--muted);";
+    const m = isEn
+      ? { gym:'Gym pass', gpt:'ChatGPT Plus', nf:'Netflix', sp:'Spotify', vpn:'VPN', ic:'iCloud+', d:['Oct 17','Oct 18','Oct 22','Oct 25','Nov 10'], w:['Tomorrow','In 2 days','In 6 days','In 9 days','In 25 days'] }
+      : { gym:'Спортзал', gpt:'ChatGPT Plus', nf:'Netflix', sp:'Spotify', vpn:'VPN', ic:'iCloud+', d:['17 окт','18 окт','22 окт','25 окт','10 ноя'], w:['Завтра','Через 2 дня','Через 6 дней','Через 9 дней','Через 25 дней'] };
+    return {
+      vars: this.props.theme === 'light' ? light : dark,
+      t: isEn ? en : ru,
+      ruStyle: isEn ? off : on,
+      enStyle: isEn ? on : off,
+      legend: [
+        { name:m.gym, share:'31.67%', color:'#f26b2a' },
+        { name:m.gpt, share:'24.36%', color:'#f2b24a' },
+        { name:m.nf, share:'18.87%', color:'#3fb8a5' },
+        { name:m.sp, share:'13.39%', color:'#5b8def' },
+        { name:m.vpn, share:'8.08%', color:'#a182ee' },
+        { name:m.ic, share:'3.64%', color:'#8d8d89' }
+      ],
+      bars: [
+        { name:m.gym, cost:'$26.00', w:'100%' },
+        { name:m.gpt, cost:'$20.00', w:'77%' },
+        { name:m.nf, cost:'$15.49', w:'60%' },
+        { name:m.sp, cost:'$10.99', w:'42%' },
+        { name:m.vpn, cost:'$6.63', w:'26%' }
+      ],
+      upcoming: [
+        { name:m.gym, date:m.d[0], when:m.w[0], amount:'$6.00', whenColor:'var(--accent)' },
+        { name:m.nf, date:m.d[1], when:m.w[1], amount:'$15.49', whenColor:'var(--accent)' },
+        { name:m.gpt, date:m.d[2], when:m.w[2], amount:'$20.00', whenColor:'var(--muted)' },
+        { name:m.sp, date:m.d[3], when:m.w[3], amount:'$10.99', whenColor:'var(--muted)' },
+        { name:m.vpn, date:m.d[4], when:m.w[4], amount:'$19.90', whenColor:'var(--muted)' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

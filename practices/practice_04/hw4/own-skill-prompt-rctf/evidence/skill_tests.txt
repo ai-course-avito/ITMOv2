@@ -1,0 +1,39 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.14.8, pytest-9.1.1, pluggy-1.6.0 -- /Users/kio/avito ai/ITMOv2/practices/practice_04/subtracker/backend/.venv/bin/python
+rootdir: /Users/kio/avito ai/ITMOv2/practices/practice_04/hw4/own-skill-prompt-rctf/prompt-rctf/scripts
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 30 items
+
+test_check_prompt.py::test_good_prompt_has_no_issues PASSED              [  3%]
+test_check_prompt.py::test_parse_blocks_reads_all_four PASSED            [  6%]
+test_check_prompt.py::test_headers_are_recognised_in_different_styles[## Context:] PASSED [ 10%]
+test_check_prompt.py::test_headers_are_recognised_in_different_styles[**Context:**] PASSED [ 13%]
+test_check_prompt.py::test_headers_are_recognised_in_different_styles[- \u041a\u043e\u043d\u0442\u0435\u043a\u0441\u0442:] PASSED [ 16%]
+test_check_prompt.py::test_headers_are_recognised_in_different_styles[Context :] PASSED [ 20%]
+test_check_prompt.py::test_missing_required_block_is_an_error[Context] PASSED [ 23%]
+test_check_prompt.py::test_missing_required_block_is_an_error[Task] PASSED [ 26%]
+test_check_prompt.py::test_missing_required_block_is_an_error[Format] PASSED [ 30%]
+test_check_prompt.py::test_missing_role_is_only_a_warning PASSED         [ 33%]
+test_check_prompt.py::test_empty_block_is_an_error PASSED                [ 36%]
+test_check_prompt.py::test_format_without_concrete_structure_is_an_error PASSED [ 40%]
+test_check_prompt.py::test_vague_words_are_flagged[\u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0435\u043d\u043d\u043e] PASSED [ 43%]
+test_check_prompt.py::test_vague_words_are_flagged[\u043f\u043e\u0434\u0440\u043e\u0431\u043d\u043e] PASSED [ 46%]
+test_check_prompt.py::test_vague_words_are_flagged[\u043c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u044c\u043d\u043e] PASSED [ 50%]
+test_check_prompt.py::test_vague_words_are_flagged[\u0438\u0434\u0435\u0430\u043b\u044c\u043d\u043e] PASSED [ 53%]
+test_check_prompt.py::test_role_puffery_is_flagged[\u0422\u044b \u0433\u0435\u043d\u0438\u0430\u043b\u044c\u043d\u044b\u0439 \u043f\u0440\u0435\u043f\u043e\u0434\u0430\u0432\u0430\u0442\u0435\u043b\u044c.] PASSED [ 56%]
+test_check_prompt.py::test_role_puffery_is_flagged[\u0422\u044b \u043b\u0443\u0447\u0448\u0438\u0439 \u044d\u043a\u0441\u043f\u0435\u0440\u0442 \u043f\u043e \u0431\u0430\u0437\u0430\u043c \u0434\u0430\u043d\u043d\u044b\u0445.] PASSED [ 60%]
+test_check_prompt.py::test_role_puffery_is_flagged[\u0422\u044b \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442 \u043c\u0438\u0440\u043e\u0432\u043e\u0433\u043e \u0443\u0440\u043e\u0432\u043d\u044f.] PASSED [ 63%]
+test_check_prompt.py::test_role_puffery_is_flagged[\u041f\u0440\u0435\u043f\u043e\u0434\u0430\u0432\u0430\u0442\u0435\u043b\u044c \u0441 20-\u043b\u0435\u0442\u043d\u0438\u043c \u043e\u043f\u044b\u0442\u043e\u043c.] PASSED [ 66%]
+test_check_prompt.py::test_long_role_is_flagged PASSED                   [ 70%]
+test_check_prompt.py::test_multiple_actions_in_task_are_flagged PASSED   [ 73%]
+test_check_prompt.py::test_indirect_task_start_is_flagged PASSED         [ 76%]
+test_check_prompt.py::test_thin_context_is_flagged PASSED                [ 80%]
+test_check_prompt.py::test_context_repeating_task_is_flagged PASSED      [ 83%]
+test_check_prompt.py::test_leftover_placeholder_is_an_error PASSED       [ 86%]
+test_check_prompt.py::test_cli_accepts_stdin_and_exits_zero_on_good_prompt PASSED [ 90%]
+test_check_prompt.py::test_cli_exits_one_on_error PASSED                 [ 93%]
+test_check_prompt.py::test_cli_warnings_only_still_exit_zero PASSED      [ 96%]
+test_check_prompt.py::test_cli_reports_unreadable_file PASSED            [100%]
+
+============================== 30 passed in 0.08s ==============================

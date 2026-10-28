@@ -1,0 +1,42 @@
+$ cd .claude/hooks && python -m pytest -v
+============================= test session starts ==============================
+platform darwin -- Python 3.14.8, pytest-9.1.1, pluggy-1.6.0 -- /Users/kio/avito ai/ITMOv2/practices/practice_04/subtracker/backend/.venv/bin/python
+rootdir: /Users/kio/avito ai/ITMOv2/practices/practice_04/hw4/configured-environment/.claude/hooks
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 32 items
+
+test_protect_env.py::test_secret_files_are_blocked[Write-/p/backend/.env] PASSED [  3%]
+test_protect_env.py::test_secret_files_are_blocked[Write-.env] PASSED    [  6%]
+test_protect_env.py::test_secret_files_are_blocked[Write-/p/.env.local] PASSED [  9%]
+test_protect_env.py::test_secret_files_are_blocked[Write-/p/.env.production] PASSED [ 12%]
+test_protect_env.py::test_secret_files_are_blocked[Edit-/p/backend/.env] PASSED [ 15%]
+test_protect_env.py::test_secret_files_are_blocked[Edit-.env] PASSED     [ 18%]
+test_protect_env.py::test_secret_files_are_blocked[Edit-/p/.env.local] PASSED [ 21%]
+test_protect_env.py::test_secret_files_are_blocked[Edit-/p/.env.production] PASSED [ 25%]
+test_protect_env.py::test_other_files_are_allowed[/p/backend/.env.example] PASSED [ 28%]
+test_protect_env.py::test_other_files_are_allowed[/p/.env.sample] PASSED [ 31%]
+test_protect_env.py::test_other_files_are_allowed[/p/backend/app/main.py] PASSED [ 34%]
+test_protect_env.py::test_other_files_are_allowed[/p/environment.md] PASSED [ 37%]
+test_protect_env.py::test_other_files_are_allowed[/p/backend/envs/readme.txt] PASSED [ 40%]
+test_protect_env.py::test_payload_without_file_path_is_allowed PASSED    [ 43%]
+test_protect_env.py::test_malformed_input_does_not_block_work PASSED     [ 46%]
+test_protect_env.py::test_bash_writes_to_secret_files_are_blocked[echo 'DEBUG=true' >> backend/.env] PASSED [ 50%]
+test_protect_env.py::test_bash_writes_to_secret_files_are_blocked[printf 'A=1\\n' > .env] PASSED [ 53%]
+test_protect_env.py::test_bash_writes_to_secret_files_are_blocked[echo x | tee -a backend/.env] PASSED [ 56%]
+test_protect_env.py::test_bash_writes_to_secret_files_are_blocked[sed -i '' 's/a/b/' backend/.env] PASSED [ 59%]
+test_protect_env.py::test_bash_writes_to_secret_files_are_blocked[cp backend/.env.example backend/.env] PASSED [ 62%]
+test_protect_env.py::test_bash_writes_to_secret_files_are_blocked[mv .env.local .env.bak] PASSED [ 65%]
+test_protect_env.py::test_bash_writes_to_secret_files_are_blocked[rm backend/.env] PASSED [ 68%]
+test_protect_env.py::test_bash_writes_to_secret_files_are_blocked[truncate -s 0 backend/.env] PASSED [ 71%]
+test_protect_env.py::test_bash_writes_to_secret_files_are_blocked[python3 -c "open('backend/.env','a').write('X=1')"] PASSED [ 75%]
+test_protect_env.py::test_bash_writes_to_secret_files_are_blocked[cd backend && echo DEBUG=true>>.env] PASSED [ 78%]
+test_protect_env.py::test_bash_reads_and_other_files_are_allowed[cat backend/.env] PASSED [ 81%]
+test_protect_env.py::test_bash_reads_and_other_files_are_allowed[grep -c KEY backend/.env 2>/dev/null] PASSED [ 84%]
+test_protect_env.py::test_bash_reads_and_other_files_are_allowed[git check-ignore -v backend/.env] PASSED [ 87%]
+test_protect_env.py::test_bash_reads_and_other_files_are_allowed[echo 'DEBUG=false' >> backend/.env.example] PASSED [ 90%]
+test_protect_env.py::test_bash_reads_and_other_files_are_allowed[ls -la backend] PASSED [ 93%]
+test_protect_env.py::test_bash_reads_and_other_files_are_allowed[uv run pytest -q] PASSED [ 96%]
+test_protect_env.py::test_bash_reads_and_other_files_are_allowed[echo hello > notes.txt] PASSED [100%]
+
+============================== 32 passed in 0.50s ==============================

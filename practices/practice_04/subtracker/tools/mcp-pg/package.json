@@ -1,0 +1,11 @@
+{
+  "name": "subtracker-mcp-pg",
+  "private": true,
+  "description": "Local wrapper: installs mcp-pg-server@1.0.0 and removes its duplicated shebang (SyntaxError on Node)",
+  "scripts": {
+    "postinstall": "node fix-shebang.js"
+  },
+  "dependencies": {
+    "mcp-pg-server": "1.0.0"
+  }
+}

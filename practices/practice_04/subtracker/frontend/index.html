@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>subtracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <script>
+      // Apply the saved theme and language before the first paint (no flash of the wrong theme).
+      try {
+        var t = localStorage.getItem('subtracker.theme');
+        document.documentElement.dataset.theme = t === 'light' ? 'light' : 'dark';
+        var l = localStorage.getItem('subtracker.lang');
+        document.documentElement.lang = l === 'en' ? 'en' : 'ru';
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Добавление подписки</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button,input{font-family:inherit}
+</style>
+</helmet>
+<div style="{{vars}} position:relative; width:1280px; height:1180px; overflow:hidden; background:var(--bg); font-family:'Onest',system-ui,sans-serif; color:var(--text)">
+<dc-import name="Subscriptions" theme="{{theme}}" hint-size="1280px,1180px"></dc-import>
+<div style="position:absolute; inset:0; background:rgba(0,0,0,0.55)"></div>
+
+<aside style="position:absolute; top:0; right:0; width:480px; height:100%; box-sizing:border-box; background:var(--surface); border-left:1px solid var(--line); padding:32px 36px; display:flex; flex-direction:column; gap:20px">
+<div style="display:flex; justify-content:space-between; align-items:center">
+<div>
+<span style="display:inline-block; font-size:12px; color:var(--muted); border:1px solid var(--line); padding:4px 12px; border-radius:999px; margin-bottom:12px">Новая подписка</span>
+<h2 style="margin:0; font-size:30px; font-weight:300; letter-spacing:-0.01em">Что добавим?</h2>
+</div>
+<button aria-label="Закрыть" style="width:40px; height:40px; border-radius:999px; border:1px solid var(--line); background:var(--bg); color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</div>
+
+<div>
+<label for="name" style="display:block; font-size:13px; color:var(--muted); margin-bottom:8px">Название</label>
+<input id="name" value="Яндекс Плюс" style="width:100%; box-sizing:border-box; height:50px; border-radius:14px; border:1px solid var(--accent); background:var(--bg); color:var(--text); padding:0 16px; font-size:15px; outline:none">
+</div>
+
+<div style="display:flex; gap:14px">
+<div style="flex:1">
+<label for="amount" style="display:block; font-size:13px; color:var(--muted); margin-bottom:8px">Сумма платежа</label>
+<div style="position:relative">
+<input id="amount" value="299.00" style="width:100%; box-sizing:border-box; height:50px; border-radius:14px; border:1px solid var(--line); background:var(--bg); color:var(--text); padding:0 44px 0 16px; font-size:15px; outline:none">
+<span style="position:absolute; right:16px; top:14px; color:var(--muted)">$</span>
+</div>
+</div>
+<div style="flex:1">
+<label for="start" style="display:block; font-size:13px; color:var(--muted); margin-bottom:8px">Дата начала</label>
+<input id="start" value="05.10.2026" style="width:100%; box-sizing:border-box; height:50px; border-radius:14px; border:1px solid var(--line); background:var(--bg); color:var(--text); padding:0 16px; font-size:15px; outline:none">
+</div>
+</div>
+
+<div>
+<div style="font-size:13px; color:var(--muted); margin-bottom:8px">Как часто списывается</div>
+<div style="display:flex; padding:4px; border-radius:999px; background:var(--bg); border:1px solid var(--line)">
+<span style="flex:1; text-align:center; padding:11px 0; border-radius:999px; background:var(--accent); color:var(--accentText); font-size:14px; font-weight:500">Месяц</span>
+<span style="flex:1; text-align:center; padding:11px 0; border-radius:999px; color:var(--muted); font-size:14px">Год</span>
+<span style="flex:1; text-align:center; padding:11px 0; border-radius:999px; color:var(--muted); font-size:14px">Неделя</span>
+<span style="flex:1; text-align:center; padding:11px 0; border-radius:999px; color:var(--muted); font-size:14px">Свой</span>
+</div>
+<div style="font-size:12px; color:var(--muted); margin-top:8px">Для «Свой» появится поле «Раз в сколько дней» (1–3650)</div>
+</div>
+
+<div style="border:1px solid var(--line); border-radius:16px; padding:14px 16px; background:var(--bg); display:flex; justify-content:space-between; align-items:center; font-size:14px">
+<span style="color:var(--muted)">Следующее списание</span><span style="font-weight:500">5 ноября 2026 <span style="color:var(--muted); font-weight:400">· считается само</span></span>
+</div>
+
+<div>
+<label for="note" style="display:block; font-size:13px; color:var(--muted); margin-bottom:8px">Примечание <span style="opacity:0.7">(необязательно)</span></label>
+<input id="note" value="Семейный тариф на троих" style="width:100%; box-sizing:border-box; height:50px; border-radius:14px; border:1px solid var(--line); background:var(--bg); color:var(--text); padding:0 16px; font-size:15px; outline:none">
+</div>
+
+<div style="display:flex; justify-content:space-between; align-items:center; font-size:14px">
+<span>Активная подписка</span>
+<span style="width:46px; height:26px; border-radius:999px; background:var(--accent); position:relative"><span style="position:absolute; right:3px; top:3px; width:20px; height:20px; border-radius:50%; background:var(--accentText)"></span></span>
+</div>
+
+<div style="margin-top:auto; display:flex; gap:12px">
+<button style="flex:1; height:52px; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--text); font-size:15px; cursor:pointer">Отмена</button>
+<button style="flex:2; height:52px; border-radius:999px; border:0; background:var(--accent); color:var(--accentText); font-size:15px; font-weight:600; cursor:pointer">Сохранить</button>
+</div>
+</aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"Вид"},"$preview":{"width":1280,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = "--bg:#121212;--surface:#1a1a1a;--surface2:#242424;--line:#2f2f2f;--text:#f2f2ef;--muted:#9c9c97;--accent:#f26b2a;--accentText:#1a0d05;";
+    const light = "--bg:#f4f3ef;--surface:#ffffff;--surface2:#f1f0ec;--line:#e0dfd9;--text:#1c1c1a;--muted:#66665f;--accent:#d9531a;--accentText:#ffffff;";
+    const theme = this.props.theme === 'light' ? 'light' : 'dark';
+    return { vars: theme === 'light' ? light : dark, theme };
+  }
+}
+</script>
+</body>
+</html>

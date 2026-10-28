@@ -1,0 +1,19 @@
+# Прогон валидатора на образцах из evidence/samples/
+
+$ python3 prompt-rctf/scripts/check_prompt.py evidence/samples/weak_prompt.md
+WARN  Role     украшение «гениальн» — убрать, пользы не даёт
+WARN  Role     украшение «мирового уровня» — убрать, пользы не даёт
+WARN  Role     стаж в роли не помогает — убрать
+WARN  Context  слишком короткий: добавь факты и ограничения
+WARN  Task     перечисление действий — разбей на отдельные промпты
+WARN  Task     начни с глагола действия: «составь», «сравни»
+ERROR Format   нет конкретики: задай структуру (таблица, список, JSON) или объём
+WARN  Format   размытое «качественн» — заменить числом или структурой
+WARN  Format   размытое «подробно» — заменить числом или структурой
+
+Итого: ошибок 1, предупреждений 8.
+exit=1
+
+$ python3 prompt-rctf/scripts/check_prompt.py evidence/samples/strong_prompt.md
+OK: промпт собран по RCTF, замечаний нет.
+exit=0

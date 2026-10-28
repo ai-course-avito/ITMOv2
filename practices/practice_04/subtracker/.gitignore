@@ -1,0 +1,9 @@
+backend/.env
+frontend/.env
+.mcp.json
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+tools/mcp-pg/node_modules/

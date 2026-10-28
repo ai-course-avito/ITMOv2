@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "node",
+      "args": ["tools/mcp-pg/node_modules/mcp-pg-server/dist/index.js"],
+      "env": {
+        "DATABASE_URL": "postgres://subtracker:subtracker@localhost:5432/subtracker"
+      }
+    }
+  }
+}

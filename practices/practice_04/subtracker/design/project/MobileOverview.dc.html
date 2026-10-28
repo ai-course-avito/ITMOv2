@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Обзор на телефоне</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="{{vars}} width:390px; height:1440px; box-sizing:border-box; background:var(--bg); color:var(--text); font-family:'Onest',system-ui,sans-serif; padding:0 20px; display:flex; flex-direction:column; gap:12px">
+
+<!-- top bar -->
+<div style="height:64px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0">
+<div style="display:flex; align-items:center; gap:10px">
+<div style="width:32px; height:32px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accentText)" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 12h10M4 16h6"/></svg></div>
+<span style="font-size:18px; font-weight:500">subtracker</span>
+</div>
+<div style="display:flex; align-items:center; gap:8px">
+<div style="display:flex; padding:3px; border-radius:999px; background:var(--surface); border:1px solid var(--line); font-size:12px">
+<span style="padding:5px 9px; border-radius:999px; background:var(--accent); color:var(--accentText); font-weight:500">RU</span>
+<span style="padding:5px 9px; border-radius:999px; color:var(--muted)">EN</span>
+</div>
+<button aria-label="Сменить тему" style="width:44px; height:44px; border-radius:999px; background:var(--surface); border:1px solid var(--line); color:var(--text); display:flex; align-items:center; justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></button>
+</div>
+</div>
+
+<div style="flex-shrink:0; margin-bottom:4px">
+<span style="display:inline-block; font-size:11px; color:var(--muted); border:1px solid var(--line); padding:4px 10px; border-radius:999px; margin-bottom:10px">Обзор</span>
+<h1 style="margin:0; font-size:30px; font-weight:300; letter-spacing:-0.02em">Сколько вы тратите</h1>
+</div>
+
+<!-- KPI -->
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:22px; padding:20px 22px; flex-shrink:0">
+<div style="font-size:13px; color:var(--muted)">Расход в месяц</div>
+<div style="font-size:42px; font-weight:300; letter-spacing:-0.02em; margin-top:6px">$82.10</div>
+<div style="font-size:12px; color:var(--muted); margin-top:2px">по 6 активным подпискам</div>
+</div>
+<div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; flex-shrink:0">
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:22px; padding:16px 18px">
+<div style="font-size:12px; color:var(--muted)">В год</div>
+<div style="font-size:26px; font-weight:300; margin-top:6px">$985.20</div>
+</div>
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:22px; padding:16px 18px">
+<div style="font-size:12px; color:var(--muted)">Активных</div>
+<div style="font-size:26px; font-weight:300; margin-top:6px">6 <span style="font-size:12px; color:var(--muted)">+1 пауза</span></div>
+</div>
+</div>
+
+<!-- donut -->
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:22px; padding:20px 22px; flex-shrink:0">
+<div style="font-size:16px; margin-bottom:14px">Куда уходят деньги</div>
+<div style="display:flex; gap:18px; align-items:center">
+<div style="position:relative; width:130px; height:130px; flex-shrink:0">
+<svg width="130" height="130" viewBox="0 0 200 200" role="img" aria-label="Диаграмма долей расходов по подпискам">
+<g transform="rotate(-90 100 100)" fill="none" stroke-width="30">
+<circle cx="100" cy="100" r="70" stroke="#f26b2a" stroke-dasharray="137.29 302.53" stroke-dashoffset="0"/>
+<circle cx="100" cy="100" r="70" stroke="#f2b24a" stroke-dasharray="105.14 334.68" stroke-dashoffset="-139.29"/>
+<circle cx="100" cy="100" r="70" stroke="#3fb8a5" stroke-dasharray="80.99 358.83" stroke-dashoffset="-246.43"/>
+<circle cx="100" cy="100" r="70" stroke="#5b8def" stroke-dasharray="56.89 382.93" stroke-dashoffset="-329.42"/>
+<circle cx="100" cy="100" r="70" stroke="#a182ee" stroke-dasharray="33.54 406.28" stroke-dashoffset="-388.31"/>
+<circle cx="100" cy="100" r="70" stroke="#8d8d89" stroke-dasharray="14.01 425.81" stroke-dashoffset="-423.85"/>
+</g>
+</svg>
+</div>
+<div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:7px; font-size:13px">
+<sc-for list="{{legend}}" as="l" hint-placeholder-count="6">
+<div style="display:flex; align-items:center; gap:8px">
+<span style="width:9px; height:9px; border-radius:3px; background:{{l.color}}; flex-shrink:0"></span>
+<span style="flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{l.name}}</span>
+<span style="color:var(--muted)">{{l.share}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+
+<!-- top 5 -->
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:22px; padding:20px 22px; flex-shrink:0">
+<div style="font-size:16px; margin-bottom:2px">Топ-5 самых дорогих</div>
+<div style="font-size:12px; color:var(--muted); margin-bottom:16px">В пересчёте на месяц</div>
+<div style="display:flex; flex-direction:column; gap:13px">
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="5">
+<div>
+<div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px"><span>{{b.name}}</span><span style="color:var(--muted)">{{b.cost}}</span></div>
+<div style="height:7px; border-radius:999px; background:var(--line)"><div style="height:7px; border-radius:999px; background:var(--accent); width:{{b.w}}"></div></div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<!-- upcoming -->
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:22px; padding:20px 22px; flex-shrink:0">
+<div style="font-size:16px; margin-bottom:12px">Ближайшие списания</div>
+<div style="display:flex; flex-direction:column">
+<sc-for list="{{upcoming}}" as="u" hint-placeholder-count="4">
+<div style="display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-top:1px solid var(--line)">
+<div><div style="font-size:14px">{{u.name}}</div><div style="font-size:12px; margin-top:3px; color:{{u.whenColor}}">{{u.when}} · {{u.date}}</div></div>
+<div style="font-size:14px; font-weight:500">{{u.amount}}</div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<!-- ad -->
+<div style="height:52px; border:1px dashed var(--line); border-radius:14px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:12px; flex-shrink:0"><span style="font-weight:600; letter-spacing:0.05em; margin-right:8px">РЕКЛАМА</span>блок на тарифе Free</div>
+
+<!-- tab bar -->
+<nav style="margin-top:auto; margin-bottom:16px; height:64px; border-radius:999px; background:var(--surface); border:1px solid var(--line); display:flex; align-items:center; padding:6px; gap:4px; flex-shrink:0">
+<a href="MobileOverview.dc.html" style="flex:1; height:52px; border-radius:999px; background:var(--accent); color:var(--accentText); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; text-decoration:none">Обзор</a>
+<a href="MobileSubscriptions.dc.html" style="flex:1; height:52px; border-radius:999px; color:var(--muted); display:flex; align-items:center; justify-content:center; font-size:13px; text-decoration:none">Подписки</a>
+<span style="flex:1; height:52px; border-radius:999px; color:var(--muted); display:flex; align-items:center; justify-content:center; gap:5px; font-size:13px; opacity:0.75">Календарь<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"Вид"},"$preview":{"width":390,"height":1440}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = "--bg:#121212;--surface:#1a1a1a;--surface2:#242424;--line:#2f2f2f;--text:#f2f2ef;--muted:#9c9c97;--accent:#f26b2a;--accentText:#1a0d05;";
+    const light = "--bg:#f4f3ef;--surface:#ffffff;--surface2:#f1f0ec;--line:#e0dfd9;--text:#1c1c1a;--muted:#66665f;--accent:#d9531a;--accentText:#ffffff;";
+    return {
+      vars: this.props.theme === 'light' ? light : dark,
+      legend: [
+        { name:'Спортзал', share:'31.7%', color:'#f26b2a' },
+        { name:'ChatGPT Plus', share:'24.4%', color:'#f2b24a' },
+        { name:'Netflix', share:'18.9%', color:'#3fb8a5' },
+        { name:'Spotify', share:'13.4%', color:'#5b8def' },
+        { name:'VPN', share:'8.1%', color:'#a182ee' },
+        { name:'iCloud+', share:'3.6%', color:'#8d8d89' }
+      ],
+      bars: [
+        { name:'Спортзал', cost:'$26.00', w:'100%' },
+        { name:'ChatGPT Plus', cost:'$20.00', w:'77%' },
+        { name:'Netflix', cost:'$15.49', w:'60%' },
+        { name:'Spotify', cost:'$10.99', w:'42%' },
+        { name:'VPN', cost:'$6.63', w:'26%' }
+      ],
+      upcoming: [
+        { name:'Спортзал', date:'17 окт', when:'Завтра', amount:'$6.00', whenColor:'var(--accent)' },
+        { name:'Netflix', date:'18 окт', when:'Через 2 дня', amount:'$15.49', whenColor:'var(--accent)' },
+        { name:'ChatGPT Plus', date:'22 окт', when:'Через 6 дней', amount:'$20.00', whenColor:'var(--muted)' },
+        { name:'Spotify', date:'25 окт', when:'Через 9 дней', amount:'$10.99', whenColor:'var(--muted)' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

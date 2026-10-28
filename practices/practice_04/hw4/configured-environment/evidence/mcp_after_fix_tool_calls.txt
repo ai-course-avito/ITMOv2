@@ -1,0 +1,17 @@
+$ python3 probe  # runs the exact command from .mcp.json: node tools/mcp-pg/node_modules/mcp-pg-server/dist/index.js
+initialize -> {'name': 'mcp-server-postgres', 'version': '1.0.0'}
+tools      -> ['query', 'schema', 'table_info', 'explain', 'list_schemas']
+query {'sql': 'SELECT current_user AS usr, current_database() AS db'} -> isError=False
+   Rows: 1
+
+usr        | db        
+-----------+-----------
+subtracker | subtracker
+list_schemas {} -> isError=False
+   Found 1 schema(s):
+
+- public
+query {'sql': 'SELECT * FROM table_that_does_not_exist'} -> isError=True
+   Error: relation "table_that_does_not_exist" does not exist
+query {} -> isError=True
+   MCP error -32602: Input validation error: Invalid arguments for tool query: Required at sql

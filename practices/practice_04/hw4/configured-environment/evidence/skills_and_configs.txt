@@ -1,0 +1,16 @@
+$ ls .claude/skills
+fastapi-arch
+fastapi-ref
+pytest-patterns
+python-backend-expert
+task-decomposition
+
+$ grep "^name:" .claude/skills/*/SKILL.md
+.claude/skills/fastapi-ref/SKILL.md:name: fastapi-ref
+.claude/skills/pytest-patterns/SKILL.md:name: pytest-patterns
+.claude/skills/python-backend-expert/SKILL.md:name: python-backend-expert
+.claude/skills/fastapi-arch/SKILL.md:name: fastapi-arch
+.claude/skills/task-decomposition/SKILL.md:name: task-decomposition
+
+$ python3 -c json.load(.mcp.json / settings.json)
+both valid JSON

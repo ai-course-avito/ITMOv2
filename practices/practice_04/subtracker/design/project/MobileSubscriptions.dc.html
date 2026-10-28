@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Подписки на телефоне</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button,input{font-family:inherit}
+</style>
+</helmet>
+<div style="{{vars}} position:relative; width:390px; height:1400px; box-sizing:border-box; background:var(--bg); color:var(--text); font-family:'Onest',system-ui,sans-serif; padding:0 20px; display:flex; flex-direction:column; gap:12px">
+
+<div style="height:64px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0">
+<div style="display:flex; align-items:center; gap:10px">
+<div style="width:32px; height:32px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accentText)" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 12h10M4 16h6"/></svg></div>
+<span style="font-size:18px; font-weight:500">subtracker</span>
+</div>
+<div style="display:flex; align-items:center; gap:8px">
+<div style="display:flex; padding:3px; border-radius:999px; background:var(--surface); border:1px solid var(--line); font-size:12px">
+<span style="padding:5px 9px; border-radius:999px; background:var(--accent); color:var(--accentText); font-weight:500">RU</span>
+<span style="padding:5px 9px; border-radius:999px; color:var(--muted)">EN</span>
+</div>
+<button aria-label="Сменить тему" style="width:44px; height:44px; border-radius:999px; background:var(--surface); border:1px solid var(--line); color:var(--text); display:flex; align-items:center; justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></button>
+</div>
+</div>
+
+<h1 style="margin:0 0 4px; font-size:30px; font-weight:300; letter-spacing:-0.02em; flex-shrink:0">Все подписки</h1>
+
+<div style="position:relative; flex-shrink:0">
+<svg style="position:absolute; left:16px; top:15px" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+<input aria-label="Поиск" placeholder="Поиск" style="width:100%; box-sizing:border-box; height:48px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--text); padding:0 18px 0 44px; font-size:14px; outline:none">
+</div>
+
+<div style="display:flex; gap:8px; overflow:hidden; font-size:13px; flex-shrink:0">
+<span style="padding:9px 15px; border-radius:999px; background:var(--text); color:var(--bg); font-weight:500; white-space:nowrap">Все</span>
+<span style="padding:9px 15px; border-radius:999px; border:1px solid var(--line); color:var(--muted); white-space:nowrap">Активные</span>
+<span style="padding:9px 15px; border-radius:999px; border:1px solid var(--line); color:var(--muted); white-space:nowrap">Пауза</span>
+<span style="padding:9px 15px; border-radius:999px; border:1px solid var(--line); color:var(--muted); white-space:nowrap">Месяц</span>
+<span style="padding:9px 15px; border-radius:999px; border:1px solid var(--line); color:var(--muted); white-space:nowrap">Год</span>
+</div>
+
+<div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--muted); flex-shrink:0">
+<span>7 подписок</span>
+<span style="display:flex; align-items:center; gap:6px">Ближайшее списание <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
+</div>
+
+<div style="background:linear-gradient(160deg, var(--surface2), var(--surface)); border:1px solid var(--line); border-radius:22px; overflow:hidden; flex-shrink:0">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="11">
+<div>
+<sc-if value="{{r.isHeader}}" hint-placeholder-val="{{ true }}">
+<div style="display:flex; justify-content:space-between; padding:12px 18px 8px; background:var(--bg); border-top:1px solid var(--line); font-size:11px; color:var(--muted)">
+<span style="font-weight:600; letter-spacing:0.04em; text-transform:uppercase">{{r.title}}</span><span>{{r.count}}</span>
+</div>
+</sc-if>
+<sc-if value="{{r.isRow}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex; align-items:center; gap:13px; padding:13px 18px; border-top:1px solid var(--line); opacity:{{r.opacity}}">
+<div style="width:40px; height:40px; border-radius:13px; background:{{r.color}}; color:#14100c; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:16px; flex-shrink:0">{{r.letter}}</div>
+<div style="flex:1; min-width:0">
+<div style="font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{r.name}}</div>
+<div style="font-size:12px; margin-top:3px; color:{{r.whenColor}}">{{r.when}}</div>
+</div>
+<div style="text-align:right">
+<div style="font-size:15px; font-weight:500">{{r.monthly}}</div>
+<div style="font-size:11px; color:var(--muted); margin-top:3px">{{r.billed}}</div>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+
+<div style="height:52px; border:1px dashed var(--line); border-radius:14px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:12px; flex-shrink:0"><span style="font-weight:600; letter-spacing:0.05em; margin-right:8px">РЕКЛАМА</span>блок на тарифе Free</div>
+
+<a href="MobileAddSheet.dc.html" aria-label="Добавить подписку" style="position:absolute; right:20px; bottom:100px; width:60px; height:60px; border-radius:999px; background:var(--accent); color:var(--accentText); display:flex; align-items:center; justify-content:center; text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,0.35)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>
+
+<nav style="margin-top:auto; margin-bottom:16px; height:64px; border-radius:999px; background:var(--surface); border:1px solid var(--line); display:flex; align-items:center; padding:6px; gap:4px; flex-shrink:0">
+<a href="MobileOverview.dc.html" style="flex:1; height:52px; border-radius:999px; color:var(--muted); display:flex; align-items:center; justify-content:center; font-size:13px; text-decoration:none">Обзор</a>
+<a href="MobileSubscriptions.dc.html" style="flex:1; height:52px; border-radius:999px; background:var(--accent); color:var(--accentText); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; text-decoration:none">Подписки</a>
+<span style="flex:1; height:52px; border-radius:999px; color:var(--muted); display:flex; align-items:center; justify-content:center; gap:5px; font-size:13px; opacity:0.75">Календарь<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"Вид"},"$preview":{"width":390,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = "--bg:#121212;--surface:#1a1a1a;--surface2:#242424;--line:#2f2f2f;--text:#f2f2ef;--muted:#9c9c97;--accent:#f26b2a;--accentText:#1a0d05;";
+    const light = "--bg:#f4f3ef;--surface:#ffffff;--surface2:#f1f0ec;--line:#e0dfd9;--text:#1c1c1a;--muted:#66665f;--accent:#d9531a;--accentText:#ffffff;";
+    const h = (title, count) => ({ isHeader: true, isRow: false, title, count });
+    const row = (letter, color, name, when, soon, billed, monthly, opacity) => ({
+      isHeader: false, isRow: true, letter, color, name, when, billed, monthly,
+      opacity: opacity || '1', whenColor: soon ? 'var(--accent)' : 'var(--muted)'
+    });
+    return {
+      vars: this.props.theme === 'light' ? light : dark,
+      rows: [
+        h('На этой неделе', '3'),
+        row('С', '#f26b2a', 'Спортзал', 'Завтра · 17 окт', true, '$6.00 в нед', '$26.00'),
+        row('N', '#3fb8a5', 'Netflix', 'Через 2 дня · 18 окт', true, '$15.49 в мес', '$15.49'),
+        row('C', '#f2b24a', 'ChatGPT Plus', 'Через 6 дней · 22 окт', false, '$20.00 в мес', '$20.00'),
+        h('В ближайший месяц', '2'),
+        row('S', '#5b8def', 'Spotify', 'Через 9 дней · 25 окт', false, '$10.99 в мес', '$10.99'),
+        row('V', '#a182ee', 'VPN', 'Через 25 дней · 10 ноя', false, '$19.90 / 90 дн', '$6.63'),
+        h('Позже', '1'),
+        row('i', '#8d8d89', 'iCloud+', '13 февраля 2027', false, '$35.88 в год', '$2.99'),
+        h('Приостановлены', '1'),
+        row('N', '#8d8d89', 'Notion', 'Не списывается', false, '$8.00 в мес', '$8.00', '0.55')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
