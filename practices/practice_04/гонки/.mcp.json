@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "racing-judge": {
+      "command": "/Users/kamilasalyakhova/Documents/itmo/ai-eng/гонки/backend/.venv/bin/python",
+      "args": ["/Users/kamilasalyakhova/Documents/itmo/ai-eng/ITMOv2/practices/practice_04/гонки/mcp_server.py"]
+    }
+  }
+}

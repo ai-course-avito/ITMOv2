@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Pre-commit hook проекта «Гонки».
+# Устанавливается один раз командой: bash hooks/install.sh
+#
+# Блокирует коммит, если:
+#  - backend/ не проходит ruff (lint + format check)
+#  - тесты backend/tests не зелёные
+
+set -e
+
+export PATH="$HOME/.local/bin:$PATH"
+
+echo "→ pre-commit: ruff check..."
+(cd backend && ruff check .) || { echo "✗ ruff check не прошёл — коммит отменён"; exit 1; }
+
+echo "→ pre-commit: ruff format --check..."
+(cd backend && ruff format --check .) || { echo "✗ код не отформатирован (запусти: cd backend && ruff format .) — коммит отменён"; exit 1; }
+
+echo "→ pre-commit: pytest..."
+(cd backend && python3 -m pytest tests/ -q) || { echo "✗ тесты не прошли — коммит отменён"; exit 1; }
+
+echo "✓ pre-commit: всё ок"
