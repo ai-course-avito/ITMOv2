@@ -289,7 +289,6 @@ function initCars() {
   p2State.finished = false;
 
   winner.value = null;
-  frameFinishers = [];
 }
 
 function runGameLoop() {

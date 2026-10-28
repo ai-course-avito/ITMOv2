@@ -129,3 +129,11 @@ test("nameKey: регистр не учитывается для обычных 
   assert.equal(logic.nameKey("Kamila"), logic.nameKey("kAMILA"));
   assert.deepEqual(logic.validateNames("Kamila", "KAMILA"), { p1: "duplicate", p2: "duplicate" });
 });
+
+test("nameKey совпадает с casefold сервера в особых случаях (контракт §2.1)", () => {
+  assert.equal(logic.nameKey("Straße"), logic.nameKey("STRASSE"));
+  assert.equal(logic.nameKey("ΟΔΟΣ"), logic.nameKey("οδοσ"));
+  assert.equal(logic.nameKey("ﬁle"), logic.nameKey("FILE"));
+  assert.notEqual(logic.nameKey("ı"), logic.nameKey("i")); // casefold различает ı и i
+  assert.deepEqual(logic.validateNames("Straße", "STRASSE"), { p1: "duplicate", p2: "duplicate" });
+});

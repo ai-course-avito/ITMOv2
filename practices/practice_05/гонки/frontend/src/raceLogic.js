@@ -22,8 +22,14 @@ export function normalizeName(name) {
 }
 
 // Ключ сравнения: регистр не учитывается («Камила» и «камила» — один игрок).
+// Эквивалент casefold() сервера: lower → upper → lower сводит «ß»/«SS», «ς»/«σ»,
+// «ﬁ»/«fi» к одному виду. Отдельно — «ı» (U+0131): casefold её не меняет, а
+// toUpperCase превратил бы в «I», поэтому её участки не трогаем.
 export function nameKey(name) {
-  return normalizeName(name).toLowerCase();
+  return normalizeName(name)
+    .split("ı")
+    .map((part) => part.toLowerCase().toUpperCase().toLowerCase())
+    .join("ı");
 }
 
 // null — имя в порядке, "empty" — пустое, "duplicate" — совпадает со вторым игроком.
