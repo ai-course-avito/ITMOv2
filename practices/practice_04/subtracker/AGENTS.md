@@ -17,7 +17,7 @@
 ```
 subtracker/
 ├── backend/        # FastAPI-приложение
-├── frontend/       # React + Vite (пока нет)
+├── frontend/       # React + Vite + TypeScript + Tailwind
 ├── openspec/       # change-ы и спеки (OpenSpec)
 ├── docker-compose.yml  # планируется, пока нет
 ├── SPEC.md         # что строим (фичи, модель, API)
@@ -56,6 +56,7 @@ cp .env.example .env
 
 **Тесты:**
 - Все тесты бэкенда: `cd backend && uv run pytest`
+- Тесты, типы и сборка фронтенда: `cd frontend && npm test && npm run lint && npm run build`
 - Один тест: `cd backend && uv run pytest path/to/test.py::test_name`
 
 **Качество:**

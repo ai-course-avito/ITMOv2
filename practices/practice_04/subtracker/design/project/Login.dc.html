@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Вход в Subtracker</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button,input{font-family:inherit}
+</style>
+</helmet>
+<div style="{{vars}} width:1280px; height:800px; box-sizing:border-box; background:var(--bg); color:var(--text); font-family:'Onest',system-ui,sans-serif; padding:24px; display:grid; grid-template-columns:minmax(0, 1.1fr) minmax(0, 1fr); gap:24px">
+
+<!-- brand panel -->
+<div style="border-radius:32px; border:1px solid var(--line); background:linear-gradient(160deg, var(--surface2), var(--surface)); padding:44px 48px; display:flex; flex-direction:column; justify-content:space-between">
+<div style="display:flex; align-items:center; gap:12px">
+<div style="width:36px; height:36px; border-radius:11px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accentText)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16M4 12h10M4 16h6"/></svg>
+</div>
+<span style="font-size:20px; font-weight:500">subtracker</span>
+</div>
+
+<div>
+<span style="display:inline-block; font-size:12px; color:var(--muted); border:1px solid var(--line); padding:5px 12px; border-radius:999px; margin-bottom:18px">Контроль подписок</span>
+<h1 style="margin:0; font-size:52px; font-weight:300; line-height:1.08; letter-spacing:-0.02em">Знайте, за что<br>вы платите</h1>
+<p style="margin:20px 0 0; font-size:16px; line-height:1.55; color:var(--muted); max-width:420px">Все подписки в одном месте: сколько уходит в месяц и в год, и что спишут на этой неделе.</p>
+<div style="margin-top:32px; display:flex; flex-direction:column; gap:14px">
+<div style="display:flex; align-items:center; gap:12px; font-size:15px; padding-bottom:14px; border-bottom:1px solid var(--line)">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>Расход за месяц и за год одним числом</div>
+<div style="display:flex; align-items:center; gap:12px; font-size:15px; padding-bottom:14px; border-bottom:1px solid var(--line)">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>Напоминание о ближайших списаниях</div>
+<div style="display:flex; align-items:center; gap:12px; font-size:15px">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg>Бесплатно и без ограничения числа подписок</div>
+</div>
+</div>
+
+<div style="font-size:13px; color:var(--muted)">Ваши данные видны только вам</div>
+</div>
+
+<!-- form -->
+<div style="display:flex; flex-direction:column; padding:8px 24px 8px 24px">
+<div style="display:flex; justify-content:flex-end; align-items:center; gap:12px; height:48px">
+<div style="display:flex; padding:3px; border-radius:999px; background:var(--surface); border:1px solid var(--line); font-size:13px">
+<span style="padding:6px 12px; border-radius:999px; background:var(--accent); color:var(--accentText); font-weight:500">RU</span>
+<span style="padding:6px 12px; border-radius:999px; color:var(--muted)">EN</span>
+</div>
+<button aria-label="Сменить тему" style="width:40px; height:40px; border-radius:999px; background:var(--surface); border:1px solid var(--line); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>
+</button>
+</div>
+
+<div style="margin:auto 0; max-width:400px; width:100%; align-self:center">
+<div style="display:flex; padding:4px; border-radius:999px; background:var(--surface); border:1px solid var(--line); margin-bottom:32px">
+<span style="flex:1; text-align:center; padding:11px 0; border-radius:999px; background:var(--accent); color:var(--accentText); font-size:14px; font-weight:500">Вход</span>
+<span style="flex:1; text-align:center; padding:11px 0; border-radius:999px; color:var(--muted); font-size:14px">Регистрация</span>
+</div>
+<h2 style="margin:0 0 8px; font-size:30px; font-weight:300; letter-spacing:-0.01em">С возвращением</h2>
+<p style="margin:0 0 28px; font-size:14px; color:var(--muted)">Войдите, чтобы увидеть свои подписки</p>
+
+<label for="email" style="display:block; font-size:13px; color:var(--muted); margin-bottom:8px">Email</label>
+<input id="email" type="email" value="demo@example.com" style="width:100%; box-sizing:border-box; height:52px; border-radius:16px; border:1px solid var(--line); background:var(--surface); color:var(--text); padding:0 18px; font-size:15px; outline:none">
+
+<label for="pw" style="display:block; font-size:13px; color:var(--muted); margin:18px 0 8px">Пароль</label>
+<input id="pw" type="password" value="password123" style="width:100%; box-sizing:border-box; height:52px; border-radius:16px; border:1px solid var(--accent); background:var(--surface); color:var(--text); padding:0 18px; font-size:15px; outline:none">
+
+<button style="width:100%; height:54px; margin-top:28px; border-radius:999px; border:0; background:var(--accent); color:var(--accentText); font-size:15px; font-weight:600; cursor:pointer">Войти</button>
+<p style="margin:20px 0 0; text-align:center; font-size:13px; color:var(--muted)">Нет аккаунта? <span style="color:var(--accent); font-weight:500">Зарегистрироваться</span></p>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark","section":"Вид"},"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = "--bg:#121212;--surface:#1a1a1a;--surface2:#242424;--line:#2f2f2f;--text:#f2f2ef;--muted:#9c9c97;--accent:#f26b2a;--accentText:#1a0d05;";
+    const light = "--bg:#f4f3ef;--surface:#ffffff;--surface2:#f1f0ec;--line:#e0dfd9;--text:#1c1c1a;--muted:#66665f;--accent:#d9531a;--accentText:#ffffff;";
+    return { vars: this.props.theme === 'light' ? light : dark };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-16T09:00:00Z" },
+  "title": "Subtracker — макеты",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Login.dc.html": { "x": 0, "y": 0, "w": 1280, "h": 800, "title": "1 · Вход и регистрация" },
+    "Main.dc.html": { "x": 1360, "y": 0, "w": 1280, "h": 1000, "title": "2 · Обзор (тёмная, RU)" },
+    "OverviewLight.dc.html": { "x": 2720, "y": 0, "w": 1280, "h": 1000, "title": "3 · Обзор (светлая, EN)" },
+    "Subscriptions.dc.html": { "x": 0, "y": 1120, "w": 1280, "h": 1180, "title": "4 · Подписки" },
+    "AddDrawer.dc.html": { "x": 1360, "y": 1120, "w": 1280, "h": 1180, "title": "5 · Добавление подписки (панель)" },
+    "MobileOverview.dc.html": { "x": 0, "y": 2420, "w": 390, "h": 1440, "title": "6 · Телефон: Обзор" },
+    "MobileSubscriptions.dc.html": { "x": 470, "y": 2420, "w": 390, "h": 1400, "title": "7 · Телефон: Подписки" },
+    "MobileAddSheet.dc.html": { "x": 940, "y": 2420, "w": 390, "h": 844, "title": "8 · Телефон: добавление" }
+  },
+  "order": [
+    "Login.dc.html",
+    "Main.dc.html",
+    "OverviewLight.dc.html",
+    "Subscriptions.dc.html",
+    "AddDrawer.dc.html",
+    "MobileOverview.dc.html",
+    "MobileSubscriptions.dc.html",
+    "MobileAddSheet.dc.html"
+  ],
+  "notes": {},
+  "designSystems": []
+}
