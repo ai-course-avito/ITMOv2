@@ -1,17 +1,3 @@
-<!--
-Sync Impact Report
-- Version change: (template, unversioned) → 1.0.0
-- Modified principles: none (initial adoption; all placeholders filled)
-  - [PRINCIPLE_1_NAME] → I. Фиксированный стек: FastAPI + Vue 3
-  - [PRINCIPLE_2_NAME] → II. Неприкосновенность физики и управления
-  - [PRINCIPLE_3_NAME] → III. Зелёный scripts/check.sh (NON-NEGOTIABLE)
-  - [PRINCIPLE_4_NAME] → IV. Требования как сценарии Given/When/Then
-  - [PRINCIPLE_5_NAME] → V. Человек решает то, чего нет в спеке
-- Added sections: «Технические ограничения», «Процесс разработки»
-- Removed sections: none
-- Follow-up TODOs: none
--->
-
 # Гонки Constitution
 
 ## Core Principles
