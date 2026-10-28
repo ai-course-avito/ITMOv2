@@ -7,7 +7,8 @@
     "test": "tests"
   },
   "scripts": {
-    "test:e2e": "bash scripts/test_e2e.sh"
+    "test:e2e": "bash scripts/test_e2e.sh",
+    "test:ui": "node tests/js/feature_a_mathjax_test.js && node tests/js/feature_b_fourier_partial_sums_test.js"
   },
   "keywords": [],
   "author": "",

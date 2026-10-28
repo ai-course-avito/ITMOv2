@@ -5,5 +5,15 @@ node_modules/
 playwright-report/
 .playwright/
 
+# Python artifacts
+__pycache__/
+*.pyc
+.venv/
+venv/
+dist/
+*.egg-info/
+coverage/
+*.log
+
 # OS
 .DS_Store
