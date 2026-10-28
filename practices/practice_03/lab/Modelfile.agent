@@ -1,4 +1,15 @@
-FROM qwen3.5:4b
-PARAMETER num_ctx 65536
-PARAMETER temperature 0.2
+# Агентская конфигурация той же модели для тестовых прогонов OpenCode.
+#
+# Отличия от Modelfile:
+#   - нет блока SYSTEM: промпт приходит от OpenCode из demo/repo-system.txt.
+#     Зашитый SYSTEM конфликтовал бы с ним.
+#   - те же 32768 контекста: агентный цикл накапливает прочитанные файлы,
+#     но на 8k контекста скорость падает с 24.7 до 3.7 tok/s (см. ../REPORT.md),
+#     поэтому 65536 бесполезны - модель не успеет их обработать.
+#
+# Значения дублируются в demo/opencode.json (limit.context / limit.output).
 
+FROM qwen3.5-9b-mlx
+PARAMETER num_ctx 32768
+PARAMETER num_predict 8192
+PARAMETER temperature 0.2

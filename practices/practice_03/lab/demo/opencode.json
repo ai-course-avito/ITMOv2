@@ -1,20 +1,22 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "ollama/itmo-agent",
-  "small_model": "ollama/itmo-agent",
+  "default_agent": "local-guide",
+  "model": "lmstudio/qwen3.5-9b-mlx",
+  "small_model": "lmstudio/qwen3.5-9b-mlx",
   "provider": {
-    "ollama": {
+    "lmstudio": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "Ollama local",
+      "name": "LM Studio local",
       "options": {
-        "baseURL": "http://localhost:11434/v1"
+        "baseURL": "http://127.0.0.1:1234/v1",
+        "apiKey": "lm-studio"
       },
       "models": {
-        "itmo-agent": {
-          "name": "ITMO local 64k",
+        "qwen3.5-9b-mlx": {
+          "name": "Qwen3.5 9B MLX 4bit (32k)",
           "limit": {
-            "context": 65536,
-            "output": 4096
+            "context": 32768,
+            "output": 8192
           }
         }
       }
@@ -35,4 +37,3 @@
     }
   }
 }
-

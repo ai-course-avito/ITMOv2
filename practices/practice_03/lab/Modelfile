@@ -1,7 +1,20 @@
-FROM qwen3.5:4b
-PARAMETER num_ctx 4096
+# Чат-конфигурация локальной модели (прямые запросы, без инструментов).
+#
+# Исполняющий бэкенд — LM Studio, не Ollama (согласовано с преподавателем).
+# Соответствие параметров:
+#   FROM                -> модель qwen3.5-9b-mlx, файл lmstudio-community/Qwen3.5-9B-MLX-4bit
+#   PARAMETER num_ctx   -> длина контекста при загрузке модели в LM Studio
+#   PARAMETER num_predict -> max_tokens в запросе к /v1/chat/completions
+#   SYSTEM              -> содержимое system.txt, подаётся ролью system
+#
+# num_predict 8192, а не 4096: reasoning у Qwen3.5 неотключаем и съедает
+# 1400-2000 токенов до начала ответа. При малом лимите модель упирается
+# в потолок и возвращает пустой content. Подробности в ../REPORT.md.
+
+FROM qwen3.5-9b-mlx
+PARAMETER num_ctx 32768
+PARAMETER num_predict 8192
 PARAMETER temperature 0.2
 SYSTEM """Ты помощник по учебному проекту. Отвечай по предоставленным фактам.
 Если данных нет, напиши «В предоставленных материалах нет ответа».
 Не выдумывай файлы и настройки. Дай короткий ответ и основание."""
-
