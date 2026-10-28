@@ -1,4 +1,5 @@
 import asyncio
+import json
 from contextlib import contextmanager
 from typing import Callable, Iterator
 
@@ -87,6 +88,31 @@ def test_round_trip_and_empty_result(monkeypatch: pytest.MonkeyPatch) -> None:
         response = client.post("/api/fares/round-trip", json={**BASE, "return_date": "2099-11-15"})
     assert response.status_code == 200
     assert response.json()["itineraries"] == []
+
+
+@pytest.mark.parametrize("endpoint,body,expected", [
+    ("one-way", {"origin": "SVO", "destination": "LED", "departure_date": DATE,
+                 "market": "RU", "direct": True, "max_price": 5000}, "SVO"),
+    ("round-trip", {"origin": "DME", "destination": "VKO", "departure_date": DATE,
+                    "return_date": "2099-11-15", "market": "RU", "direct": False}, "DME"),
+])
+def test_selected_airport_codes_reach_existing_search_once(
+    endpoint: str, body: dict, expected: str, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("IGNAV_API_KEY", "test-key")
+    calls = []
+
+    def upstream(request: httpx.Request) -> httpx.Response:
+        calls.append(json.loads(request.content))
+        return httpx.Response(200, json={"itineraries": []})
+
+    with client_with_upstream(upstream) as client:
+        response = client.post(f"/api/fares/{endpoint}", json=body)
+
+    assert response.status_code == 200
+    assert len(calls) == 1
+    assert calls[0]["origin"] == expected
+    assert calls[0]["destination"] == body["destination"]
 
 
 def test_round_trip_preserves_both_legs(monkeypatch: pytest.MonkeyPatch) -> None:
