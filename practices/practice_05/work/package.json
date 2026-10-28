@@ -1,0 +1,19 @@
+{
+  "name": "practice_04",
+  "version": "1.0.0",
+  "description": "На занятии вы выбираете две небольшие фичи, настраиваете среду агента, реализуете и проверяете A, затем делаете B в отдельном worktree и проверяете объединённый результат. Среда может настраиваться в новом проекте или же в уже существующем, это не столь важно.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test:e2e": "bash scripts/test_e2e.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "playwright": "^1.45.1"
+  }
+}

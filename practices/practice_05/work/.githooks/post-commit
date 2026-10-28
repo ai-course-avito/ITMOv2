@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[git hook] post-commit: running practice_04 E2E tests"
+cd "practices/practice_04"
+
+# Ensure the script is executable (idempotent)
+chmod +x scripts/test_e2e.sh 2>/dev/null || true
+
+scripts/test_e2e.sh

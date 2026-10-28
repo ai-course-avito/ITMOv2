@@ -1,0 +1,9 @@
+# Node artifacts
+node_modules/
+
+# Playwright caches
+playwright-report/
+.playwright/
+
+# OS
+.DS_Store
