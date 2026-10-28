@@ -19,11 +19,29 @@ const base = {
 
 test('catalog has unique airport codes and city prefix suggestions', () => {
   assert.equal(new Set(airports.map(airport => airport.code)).size, airports.length)
+  assert.equal(new Set(airports.map(airport => airport.city)).size, 48)
+  assert.equal(airports.length, 58)
   assert.deepEqual(matchingAirports('  мОС ' ).map(airport => airport.code), ['SVO', 'DME', 'VKO'])
   assert.deepEqual(matchingAirports('оск'), [])
   assert.deepEqual(matchingAirports('кАЗ').map(airport => airport.code), ['KZN'])
+  assert.deepEqual(matchingAirports(' лОн ').map(airport => airport.code), ['LHR', 'LGW', 'LCY', 'STN', 'LTN'])
+  assert.deepEqual(matchingAirports('пар').map(airport => airport.code), ['CDG', 'ORY'])
+  assert.deepEqual(matchingAirports('рим').map(airport => airport.code), ['FCO', 'CIA'])
+  assert.deepEqual(matchingAirports('киш').map(airport => airport.code), ['RMO'])
   assert.deepEqual(matchingAirports(''), [])
   assert.deepEqual(matchingAirports('SVO'), [])
+})
+
+test('European capital choices use their airport codes in the existing request', () => {
+  const origin = airports.find(airport => airport.code === 'LHR')
+  const destination = airports.find(airport => airport.code === 'CDG')
+  assert.ok(origin && destination)
+  const prepared = prepareFareSearch({ ...base, origin: chosen(origin), destination: chosen(destination) }, now)
+  assert.equal(prepared.ok, true)
+  if (!prepared.ok) return
+  assert.equal(prepared.request.body.origin, 'LHR')
+  assert.equal(prepared.request.body.destination, 'CDG')
+  assert.equal(prepared.request.routeLabel, 'Лондон — Хитроу → Париж — Шарль-де-Голль')
 })
 
 test('prepares one-way request using only selected airport codes and existing filters', () => {
