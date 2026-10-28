@@ -181,6 +181,7 @@ class ServiceMetadata(BaseModel):
     tolerance: Tolerance
     duration_ms: float
     cache_status: Literal["hit", "miss"]
+    result: dict[str, Any] = {"ordering": "request_order", "finite": True}
 
 
 class CalculationResponse(BaseModel):
@@ -195,6 +196,7 @@ class ErrorDetail(BaseModel):
     field: str
     message: str
     constraint: str
+    retryable: bool = False
 
 
 class ErrorResponse(BaseModel):

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Project presentation: a spec-driven Fourier and Chebyshev education site.">
+  <title>Approximate / Learn | Project Presentation</title>
+  <style>
+    :root {
+      --ink: #f5f3ff;
+      --muted: #b8b5d4;
+      --deep: #0d1027;
+      --panel: rgba(24, 26, 59, .76);
+      --line: rgba(255, 255, 255, .13);
+      --violet: #9d7bff;
+      --cyan: #58e1e8;
+      --coral: #ff8b86;
+      --lime: #c4ed72;
+      --shadow: 0 24px 80px rgba(0, 0, 0, .35);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--deep);
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+    body::before, body::after {
+      position: fixed; z-index: -1; content: ""; border-radius: 50%; filter: blur(18px); opacity: .62;
+    }
+    body::before { width: 46vw; height: 46vw; top: -15vw; left: -12vw; background: #5439d9; }
+    body::after { width: 42vw; height: 42vw; right: -14vw; top: 38vh; background: #087f9a; }
+    a { color: var(--cyan); }
+    a:hover { color: white; }
+    .shell { width: min(1160px, calc(100% - 40px)); margin: 0 auto; }
+    .topbar { position: sticky; top: 0; z-index: 5; border-bottom: 1px solid var(--line); background: rgba(13, 16, 39, .82); backdrop-filter: blur(18px); }
+    .topbar-inner { display: flex; align-items: center; justify-content: space-between; min-height: 64px; gap: 20px; }
+    .brand { color: white; text-decoration: none; font-weight: 800; letter-spacing: -.04em; }
+    .brand span { color: var(--cyan); }
+    nav { display: flex; gap: 18px; flex-wrap: wrap; justify-content: flex-end; }
+    nav a { color: var(--muted); font-size: .86rem; text-decoration: none; }
+    nav a:hover { color: white; }
+    .hero { min-height: 86vh; display: grid; align-items: center; padding: 90px 0 110px; }
+    .eyebrow { color: var(--lime); text-transform: uppercase; letter-spacing: .16em; font-size: .75rem; font-weight: 800; }
+    h1, h2, h3 { margin: 0; line-height: 1.03; letter-spacing: -.055em; }
+    h1 { max-width: 850px; margin-top: 18px; font-size: clamp(3.5rem, 10vw, 8.6rem); }
+    h1 em { color: var(--cyan); font-style: normal; }
+    .lede { max-width: 700px; margin: 28px 0 0; color: var(--muted); font-size: clamp(1.05rem, 2vw, 1.35rem); }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 34px; }
+    .button { display: inline-flex; align-items: center; min-height: 46px; padding: 0 18px; border: 1px solid var(--line); border-radius: 999px; color: white; text-decoration: none; background: rgba(255,255,255,.08); }
+    .button.primary { border-color: transparent; color: #14132c; background: var(--cyan); font-weight: 800; }
+    .hero-note { display: inline-flex; gap: 8px; margin-top: 42px; color: var(--muted); font-size: .9rem; }
+    .dot { width: 9px; height: 9px; margin-top: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 18px var(--lime); }
+    section { padding: 90px 0; border-top: 1px solid var(--line); }
+    .section-head { display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; margin-bottom: 34px; }
+    h2 { font-size: clamp(2.2rem, 5vw, 4.6rem); }
+    .section-intro { margin: 0; color: var(--muted); font-size: 1.08rem; }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+    .card { grid-column: span 4; min-height: 220px; padding: 24px; border: 1px solid var(--line); border-radius: 22px; background: var(--panel); box-shadow: var(--shadow); }
+    .card.wide { grid-column: span 8; }
+    .card.full { grid-column: 1 / -1; }
+    .card h3 { margin-bottom: 12px; font-size: 1.35rem; }
+    .card p { margin: 0; color: var(--muted); }
+    .number { display: block; margin-bottom: 24px; color: var(--coral); font-size: .82rem; font-weight: 900; letter-spacing: .12em; }
+    .accent-violet { border-color: rgba(157,123,255,.42); background: linear-gradient(145deg, rgba(82, 55, 169, .54), var(--panel)); }
+    .accent-cyan { border-color: rgba(88,225,232,.38); background: linear-gradient(145deg, rgba(20, 108, 126, .5), var(--panel)); }
+    .accent-lime { border-color: rgba(196,237,114,.34); background: linear-gradient(145deg, rgba(77, 101, 41, .38), var(--panel)); }
+    .compare { overflow: hidden; border: 1px solid var(--line); border-radius: 22px; background: var(--panel); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 18px 20px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: white; background: rgba(255,255,255,.06); }
+    td { color: var(--muted); }
+    tr:last-child td { border-bottom: 0; }
+    code, .code { color: var(--lime); font: .9em/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    pre { overflow-x: auto; margin: 0; padding: 20px; border: 1px solid var(--line); border-radius: 16px; color: #e9f6cf; background: #090b1b; }
+    .result { display: inline-block; margin-top: 14px; padding: 5px 10px; border-radius: 999px; color: #15220d; background: var(--lime); font: 800 .82rem ui-monospace, monospace; }
+    .timeline { display: grid; gap: 12px; }
+    .step { display: grid; grid-template-columns: 100px 1fr; gap: 18px; align-items: start; padding: 17px 0; border-bottom: 1px solid var(--line); }
+    .step:last-child { border-bottom: 0; }
+    .step strong { color: var(--cyan); }
+    .step p { margin: 0; color: var(--muted); }
+    footer { padding: 50px 0 70px; color: var(--muted); }
+    .small { font-size: .9rem; }
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 28px, 620px); }
+      .topbar-inner { align-items: flex-start; padding: 14px 0; flex-direction: column; }
+      nav { justify-content: flex-start; gap: 10px 15px; }
+      .hero { min-height: 78vh; padding-top: 64px; }
+      .section-head { display: block; }
+      .section-intro { margin-top: 20px; }
+      .card, .card.wide { grid-column: 1 / -1; }
+      .compare { overflow-x: auto; }
+      table { min-width: 650px; }
+      .step { grid-template-columns: 72px 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="#top">APPROXIMATE<span>/LEARN</span></a>
+      <nav aria-label="Presentation navigation">
+        <a href="#method">Method</a><a href="#specs">Specs</a><a href="#contract">Contract</a><a href="#proof">Proof</a><a href="#start">Start</a>
+      </nav>
+    </div>
+  </header>
+  <main id="top">
+    <div class="shell hero">
+      <div>
+        <div class="eyebrow">Fourier series · Chebyshev polynomials · approximation</div>
+        <h1>Make the math <em>traceable.</em></h1>
+        <p class="lede">A colorful educational web site built with spec-driven development: every page, calculation, demo state, and validation result has a documented contract.</p>
+        <div class="hero-actions"><a class="button primary" href="#proof">See the proof</a><a class="button" href="work/">Open project files</a></div>
+        <div class="hero-note"><span class="dot"></span><span>Final local verification: <strong>32 passed, 1 skipped</strong></span></div>
+      </div>
+    </div>
+
+    <section id="method">
+      <div class="shell">
+        <div class="section-head"><h2>01 / Method</h2><p class="section-intro"><strong>How was SpecKit used?</strong><br>As a spec-driven development framework for an LLM: define intent, research decisions, design contracts, generate executable tasks, implement incrementally, and verify each result.</p></div>
+        <div class="grid">
+          <article class="card accent-violet"><span class="number">SPECIFY</span><h3>Intent before code</h3><p>User stories, functional requirements, edge cases, measurable success criteria.</p></article>
+          <article class="card accent-cyan"><span class="number">PLAN → TASKS</span><h3>Design as a map</h3><p>Technical context, constitution gates, data model, API contracts, quickstart, then file-level tasks.</p></article>
+          <article class="card accent-lime"><span class="number">IMPLEMENT → VERIFY</span><h3>Evidence at every step</h3><p>Focused tests, browser smoke checks, latency checks, and traceable task status instead of “it seems to work.”</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="compare">
+      <div class="shell">
+        <div class="section-head"><h2>02 / SpecKit vs OpenSpec</h2><p class="section-intro">Both make LLM work more deliberate. They differ mainly in how much process and artifact structure they impose.</p></div>
+        <div class="compare"><table><thead><tr><th>Dimension</th><th>SpecKit</th><th>OpenSpec</th></tr></thead><tbody>
+          <tr><th>Core idea</th><td>Structured spec-driven delivery: specification → plan → tasks → implementation.</td><td>Lightweight, change-oriented specifications designed to guide an agent through a focused change.</td></tr>
+          <tr><th>Artifacts</th><td>Explicit feature spec, research, plan, model, contracts, quickstart, tasks.</td><td>Usually a smaller proposal/change specification with less ceremony.</td></tr>
+          <tr><th>Best fit</th><td>Multi-layer work where traceability, gates, dependencies, and acceptance evidence matter.</td><td>Fast iteration, smaller changes, or teams that want a compact specification loop.</td></tr>
+          <tr><th>This project</th><td><strong>Used.</strong> The project needed UI, Logic, and Common Contract alignment.</td><td>Useful alternative, but not the workflow used for this implementation.</td></tr>
+        </tbody></table></div>
+      </div>
+    </section>
+
+    <section id="specs">
+      <div class="shell">
+        <div class="section-head"><h2>03 / Two specifications</h2><p class="section-intro">The project split the product into a visual learning surface and an authoritative numerical service.</p></div>
+        <div class="grid">
+          <article class="card wide accent-violet"><span class="number">001-UI-FRONTEND</span><h3>UI + Frontend</h3><p>In a nutshell: a dark-first, mobile-first educational site with six routes, MathJax, SVG demos, shared preferences, keyboard access, reduced motion, SEO landmarks, and performance budgets.</p><p class="small"><a href="work/specs/001-ui-frontend/spec.md">Open UI specification →</a></p></article>
+          <article class="card accent-cyan"><span class="number">001-LOGIC-BACKEND</span><h3>Logic + Backend</h3><p>In a nutshell: a versioned FastAPI/NumPy service for Fourier partial sums, Chebyshev values/nodes, and safe interpolation comparisons.</p><p class="small"><a href="work/specs/001-logic-backend/spec.md">Open Logic specification →</a></p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="contract">
+      <div class="shell">
+        <div class="section-head"><h2>04 / The common contract</h2><p class="section-intro"><strong>Why?</strong> Because a graph, a label, an accessible description, and a server response must describe the same mathematical state. Without a shared vocabulary, each layer can be locally correct and globally contradictory.</p></div>
+        <div class="grid">
+          <article class="card"><span class="number">PAGE</span><h3>Page identity</h3><p>Route, topic, title, heading, canonical path, sections, breadcrumbs, and navigation for all six destinations.</p></article>
+          <article class="card"><span class="number">DEMO STATE</span><h3>One committed state</h3><p><code>demo_id</code>, normalized parameters, status, time/frame, calculation mode, and structured error. Visual and accessible projections come from the same object.</p></article>
+          <article class="card"><span class="number">MATH API</span><h3>Stable meaning</h3><p><code>v1</code>, operation, normalized input, ordered finite output, domain, tolerance, duration, and cache status.</p></article>
+          <article class="card full accent-lime"><span class="number">ERROR + FALLBACK</span><h3>Graceful degradation is part of the feature</h3><p>Validation errors identify the field and constraint. The last valid demo state is preserved. If JavaScript, SVG, MathJax, or a service is unavailable, the learner still gets a plain-language mathematical explanation.</p><p class="small"><a href="work/specs/001-common-contract/README.md">Open traceability map →</a> · <a href="work/specs/001-common-contract/contracts/math-api.md">Math contract →</a> · <a href="work/specs/001-common-contract/contracts/page-and-demo.md">Page/demo contract →</a></p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="proof">
+      <div class="shell">
+        <div class="section-head"><h2>05 / Implemented + proven</h2><p class="section-intro">The implementation is connected to tests by paths, task IDs, and concrete output. These are the latest provided result messages.</p></div>
+        <div class="timeline">
+          <div class="step"><strong>UI / routes</strong><div><p>Six pages, landmarks, canonical links, complete navigation, 360px overflow protection, Fourier and Chebyshev SVG controls.</p><span class="result">browser smoke: PASS</span></div></div>
+          <div class="step"><strong>Logic / API</strong><div><p>FastAPI v1 endpoint, strict bounded inputs, four allowlisted operations, structured errors, deterministic float64 responses, bounded LRU metadata.</p><span class="result">contract + unit: PASS</span></div></div>
+          <div class="step"><strong>Common contract</strong><div><p>Page, DemoState, MathRequest/Response, vocabulary, error mapping, normalization, fallback, and traceability docs.</p><span class="result">32 passed, 1 skipped</span></div></div>
+          <div class="step"><strong>MathJax</strong><div><p>Fourier formula page checked with a managed server and the configured browser smoke test.</p><span class="result">1 passed</span></div></div>
+          <div class="step"><strong>Performance</strong><div><p>Representative API latency budget and deterministic cache behavior are covered by pytest; browser startup uses the webapp-testing helper.</p><span class="result">p95 budget: PASS</span></div></div>
+        </div>
+        <p class="small" style="margin-top:28px;color:var(--muted)"><a href="work/specs/001-common-contract/tasks.md">See task status T001–T036 →</a> · <a href="work/tests/">Browse test suites →</a></p>
+      </div>
+    </section>
+
+    <section id="start">
+      <div class="shell">
+        <div class="section-head"><h2>06 / Traceable startup</h2><p class="section-intro">The commands below are the same path used by the implementation and validation artifacts.</p></div>
+        <div class="grid">
+          <article class="card wide accent-cyan"><span class="number">FROM work/</span><h3>Run the FastAPI site</h3><pre><code>python3 -m venv .venv
+          <article class="card"><span class="number">VERIFY</span><h3>Run tests</h3><pre><code>PYTHONPATH=. .venv/bin/pytest -q</code></pre><span class="result">32 passed, 1 skipped</span></article>
+          <article class="card full"><span class="number">BROWSER CHECK</span><h3>Use managed server testing</h3><pre><code>python3 .opencode/skills/webapp-testing/scripts/with_server.py \
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="shell"><p><strong>Approximate / Learn</strong> · A spec-driven educational site for seeing how mathematics, interfaces, and evidence fit together.</p><p class="small">Project root: <a href="work/">practices/practice_05/work/</a> · Presentation source: <code>presentation.html</code></p></footer>
+</body>
+</html>

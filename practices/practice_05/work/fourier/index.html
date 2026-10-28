@@ -5,35 +5,13 @@
 <title>Ряды Фурье | Математика приближений</title>
 <meta name="description" content="Интуитивное объяснение рядов Фурье, частичных сумм и эффекта Гиббса.">
 <link rel="canonical" href="/fourier/"><link rel="stylesheet" href="/static/css/tokens.css"><link rel="stylesheet" href="/static/css/site.css">
-<script src="/static/js/mathjax.js"></script><script src="/static/js/prefs.js"></script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script src="/static/js/mathjax.js"></script><script src="/static/js/prefs.js"></script><script src="/static/js/demo-state.js"></script><script defer src="/static/js/demos/fourier.js"></script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
-<body><header class="site"><h1>Ряды Фурье</h1><nav class="site-nav" aria-label="Основная навигация"><a href="/">Главная</a><a href="/chebyshev/">Чебышёв</a><a href="/approximation/">Приближение</a><a href="/demos/">Демонстрации</a><a href="/about/">О проекте</a></nav></header><main>
+<body><header class="site"><h1>Ряды Фурье</h1><nav class="site-nav" aria-label="Основная навигация"><a href="/">Главная</a><a href="/chebyshev/">Чебышёв</a><a href="/approximation/">Приближение</a><a href="/demos/">Демонстрации</a><a href="/about/">О проекте</a><a href="/fourier/">Фурье</a></nav></header><main>
 <section id="hero" class="hero"><h2>Соберите функцию из гармоник</h2><p>Ряд Фурье раскладывает периодический сигнал по синусам и косинусам.</p></section>
 <section id="features" class="section card"><h2>Идея</h2><p>В общем виде $f(x)=\sum_{n=1}^{\infty} a_n\cos(nx)+b_n\sin(nx)$.</p><p>Частичная сумма ограничивает число использованных гармоник.</p></section>
 <section id="highlights" class="section card"><h2>Формула частичной суммы</h2><p>$$S_N(x)=\sum_{n=1}^{N}\big(a_n\cos(nx)+b_n\sin(nx)\big)$$</p><p>У разрывов возникает эффект Гиббса: локальное перерегулирование сохраняется даже при большом $N$.</p></section>
-<section id="demos" class="section card" data-demo-id="fourier-square-wave"><h2>Демонстрация</h2><p>Квадратный сигнал, порядок частичной суммы <span data-testid="fourier-N-label">N = 10</span></p><label>Порядок <input type="range" min="1" max="50" step="1" value="10" aria-label="Порядок частичной суммы" data-testid="fourier-slider"></label><div class="toolbar" role="group" aria-label="Управление демонстрацией"><button type="button" data-action="play" aria-label="Воспроизвести" aria-pressed="false">Пуск</button><button type="button" data-action="step" aria-label="Шаг вперёд">Шаг</button><button type="button" data-action="reset" aria-label="Сбросить">Сброс</button><label>Скорость <select data-speed aria-label="Скорость"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option></select></label></div><p role="status" aria-live="polite" data-status>Готово</p><svg id="fourier-svg" class="demo-svg" viewBox="0 0 600 300" role="img" aria-label="График частичной суммы ряда Фурье квадратного сигнала"><desc>Кривая аппроксимации квадратного сигнала частичной суммой ряда Фурье</desc><path data-testid="fourier-plot" d="" fill="none" stroke="currentColor" stroke-width="2"></path></svg><p class="muted">Текстовая альтернатива: график показывает периодическую кривую, приближающую значения -1 и 1.</p></section>
+<section id="demos" class="section card" data-demo-id="fourier-square-wave" aria-keyshortcuts="ArrowRight ArrowLeft"><h2>Демонстрация</h2><p>Квадратный сигнал, порядок частичной суммы <span data-testid="fourier-N-label">N = 10</span></p><label>Порядок <input type="range" min="1" max="50" step="1" value="10" aria-label="Порядок частичной суммы" data-testid="fourier-slider"></label><div class="toolbar" role="group" aria-label="Управление демонстрацией"><button type="button" data-action="play" aria-label="Воспроизвести" aria-pressed="false">Пуск</button><button type="button" data-action="step" aria-label="Шаг вперёд">Шаг</button><button type="button" data-action="reset" aria-label="Сбросить">Сброс</button><label>Скорость <select data-speed aria-label="Скорость"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option></select></label></div><p role="status" aria-live="polite" data-status>Готово</p><svg id="fourier-svg" class="demo-svg" viewBox="0 0 600 300" role="img" aria-label="График частичной суммы ряда Фурье квадратного сигнала"><desc>Кривая аппроксимации квадратного сигнала частичной суммой ряда Фурье</desc><path data-testid="fourier-plot" d="" fill="none" stroke="currentColor" stroke-width="2"></path></svg><p class="muted">Текстовая альтернатива: график показывает периодическую кривую, приближающую значения -1 и 1.</p></section>
 <section id="cta" class="section"><a href="/chebyshev/">Сравнить с полиномами Чебышёва</a></section></main><footer class="site"><a href="/">На главную</a></footer>
-<script>
-(function(){
-  const root=document.querySelector('[data-demo-id]');
-  const slider=root.querySelector('[data-testid="fourier-slider"]');
-  const label=root.querySelector('[data-testid="fourier-N-label"]');
-  const path=root.querySelector('[data-testid="fourier-plot"]');
-  const status=root.querySelector('[data-status]');
-  const play=root.querySelector('[data-action="play"]');
-  const step=root.querySelector('[data-action="step"]');
-  const reset=root.querySelector('[data-action="reset"]');
-  const speed=root.querySelector('[data-speed]');
-  let timer=null;
-  function sum(x,n){let result=0;for(let k=0;k<n;k++){const odd=2*k+1;result+=Math.sin(odd*x)/odd;}return 4/Math.PI*result;}
-  function render(message){const n=Number(slider.value);let d='';for(let i=0;i<=512;i++){const x=-Math.PI+2*Math.PI*i/512;const y=sum(x,n);d+=(i?'L':'M')+(600*i/512).toFixed(2)+','+(150-y*70).toFixed(2);}label.textContent='N = '+n;path.setAttribute('d',d);status.textContent=message||'Готово: N = '+n;}
-  function stop(){if(timer){clearInterval(timer);timer=null;}play.textContent='Пуск';play.setAttribute('aria-pressed','false');}
-  slider.addEventListener('input',()=>render());
-  step.addEventListener('click',()=>{stop();slider.value=String(Math.min(50,Number(slider.value)+1));render('Шаг: N = '+slider.value);});
-  reset.addEventListener('click',()=>{stop();slider.value='1';render('Сброс: N = 1');});
-  play.addEventListener('click',()=>{if(timer){stop();status.textContent='Пауза';return;}if(document.documentElement.dataset.reducedMotion==='1'){status.textContent='Автовоспроизведение отключено при уменьшенной анимации';return;}play.textContent='Пауза';play.setAttribute('aria-pressed','true');timer=setInterval(()=>{slider.value=String(Math.min(50,Number(slider.value)+1));render('Воспроизведение: N = '+slider.value);if(Number(slider.value)===50)stop();},Math.max(100,400/Number(speed.value)));});
-  speed.addEventListener('change',()=>{if(window.sitePreferences)window.sitePreferences.set({demoSpeed:Number(speed.value)});status.textContent='Скорость: '+speed.value+'x';});
-  root.addEventListener('keydown',(event)=>{if(event.key==='ArrowRight'){step.click();}if(event.key==='ArrowLeft'){stop();slider.value=String(Math.max(1,Number(slider.value)-1));render('Шаг назад: N = '+slider.value);}});
-  render();
-})();
-</script></body></html>
+<script type="application/json" data-contract-version="v1">{"demo_id":"fourier-square-wave","status":"idle","parameters":{"order":10}}</script>
+</body></html>

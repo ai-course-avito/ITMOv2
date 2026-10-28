@@ -11,6 +11,9 @@ router = APIRouter(prefix="/api/v1")
 @router.post("/calculate")
 async def calculate_route(request: Request) -> JSONResponse:
     try:
+        if request.headers.get("content-type", "").split(";", 1)[0].lower() != "application/json":
+            error = CalculationError("INVALID_CONTENT_TYPE", "content-type", "request must use JSON", "Content-Type must be application/json", 400)
+            return JSONResponse(error_response(error).model_dump(mode="json"), status_code=400)
         body = await request.json()
         if not isinstance(body, dict):
             raise CalculationError("MALFORMED_JSON", "body", "request body must be a JSON object", "send a JSON object")

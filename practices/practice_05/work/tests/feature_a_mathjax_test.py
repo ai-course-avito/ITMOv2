@@ -1,15 +1,20 @@
+import os
+
+import pytest
 from playwright.sync_api import sync_playwright
 
 
 def test_mathjax_on_fourier_page():
-    base_url = "http://localhost:8000"
+    base_url = os.environ.get("TEST_BASE_URL")
+    if not base_url:
+        pytest.skip("set TEST_BASE_URL to run the browser smoke test")
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.goto(f"{base_url}/fourier", wait_until="networkidle")
+        response = page.goto(f"{base_url}/fourier/", wait_until="networkidle")
 
         # Smoke: page should be reachable
-        assert page.status == 200 or page.url.endswith("/fourier"), "Page did not load correctly"
+        assert response is not None and response.status == 200, "Page did not load correctly"
 
         # MathJax script present
         scripts = page.locator('script[src*="mathjax"]').all()

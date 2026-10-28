@@ -20,6 +20,7 @@ from app.math.chebyshev import nodes, values
 from app.math.fourier import partial_sum
 from app.math.interpolation import compare
 from app.services.cache import LRUCache
+from app.contract.errors import make_error
 
 
 class CalculationError(Exception):
@@ -40,7 +41,7 @@ def _error_from_validation(exc: ValidationError) -> CalculationError:
 def calculate(operation: str, version: str, raw_parameters: dict[str, Any]) -> CalculationResponse:
     started = perf_counter()
     if version != "v1":
-        raise CalculationError("UNSUPPORTED_OPERATION", "contract_version", "unsupported contract version", "contract_version must be v1")
+        raise CalculationError("UNSUPPORTED_VERSION", "contract_version", "unsupported contract version", "contract_version must be v1", 400)
     try:
         if operation == "fourier_partial_sum":
             parameters = FourierParameters.model_validate(raw_parameters)
@@ -100,5 +101,6 @@ def error_response(error: CalculationError) -> ErrorResponse:
             "field": error.field,
             "message": error.message,
             "constraint": error.constraint,
+            "retryable": error.code in {"SERVICE_UNAVAILABLE", "TIMEOUT"},
         }
     })

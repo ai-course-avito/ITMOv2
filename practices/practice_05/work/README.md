@@ -28,3 +28,5 @@ Backend validation is covered by:
 ```bash
 pytest tests/contract tests/unit tests/performance -q
 ```
+
+The shared v1 contract is documented in `specs/001-common-contract/`. It covers route identity, `DemoState`, `/api/v1/calculate`, stable errors, deterministic numeric metadata, and text fallbacks. Browser smoke tests can be run against a managed server with `TEST_BASE_URL=http://127.0.0.1:PORT`.
