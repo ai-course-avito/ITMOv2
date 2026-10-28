@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UserProfile",
+  "type": "object",
+  "required": ["name", "spins_remaining", "has_multi_emoji"],
+  "properties": {
+    "name": { "type": "string" },
+    "spins_remaining": { "type": "integer", "minimum": 0 },
+    "has_multi_emoji": { "type": "boolean" },
+    "reset_info": {
+      "type": "object",
+      "required": ["next_midnight_utc_offset"],
+      "properties": {
+        "next_midnight_utc_offset": { "type": "string" }
+      }
+    },
+    "emojis": {
+      "type": "array",
+      "items": { "$ref": "./emojiCatalogItem.json" }
+    }
+  }
+}

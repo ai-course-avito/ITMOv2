@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SpinPool",
+  "type": "object",
+  "required": ["segments"],
+  "properties": {
+    "segments": {
+      "type": "array",
+      "minItems": 8,
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": { "type": "string", "enum": ["emoji", "odd_prize"] },
+          "emoji": { "$ref": "./emojiCatalogItem.json" },
+          "label": { "type": "string" }
+        }
+      }
+    }
+  }
+}

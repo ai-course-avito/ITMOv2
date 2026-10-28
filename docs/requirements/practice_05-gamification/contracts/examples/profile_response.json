@@ -1,0 +1,12 @@
+{
+  "name": "alex",
+  "spins_remaining": 3,
+  "has_multi_emoji": true,
+  "reset_info": {
+    "next_midnight_utc_offset": "+03:00"
+  },
+  "emojis": [
+    { "code": "star", "version": "v1", "rarity": "rare" },
+    { "code": "fire", "version": "v1", "rarity": "common" }
+  ]
+}

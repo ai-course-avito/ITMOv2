@@ -1,0 +1,5 @@
+[
+  { "code": "star", "version": "v1", "rarity": "rare", "display_name": "Star", "icon_ref": "star.svg" },
+  { "code": "fire", "version": "v1", "rarity": "common", "display_name": "Fire", "icon_ref": "fire.svg" },
+  { "code": "check", "version": "v1", "rarity": "common", "display_name": "Check", "icon_ref": "check.svg" }
+]

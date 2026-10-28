@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SpinResult",
+  "type": "object",
+  "required": ["outcome_type", "spins_remaining"],
+  "properties": {
+    "outcome_type": { "type": "string", "enum": ["emoji", "odd_prize"] },
+    "emoji": { "$ref": "./emojiCatalogItem.json" },
+    "label": { "type": "string" },
+    "duplicate": { "type": "boolean" },
+    "spins_remaining": { "type": "integer", "minimum": 0 }
+  }
+}

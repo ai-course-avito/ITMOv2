@@ -1,0 +1,12 @@
+{
+  "segments": [
+    { "type": "emoji", "emoji": { "code": "star", "version": "v1", "rarity": "rare", "display_name": "Star", "icon_ref": "star.svg" } },
+    { "type": "emoji", "emoji": { "code": "fire", "version": "v1", "rarity": "common", "display_name": "Fire", "icon_ref": "fire.svg" } },
+    { "type": "odd_prize", "label": "Скидка на задачи" },
+    { "type": "odd_prize", "label": "Участие в розыгрыше" },
+    { "type": "odd_prize", "label": "Промо-код на кофе" },
+    { "type": "emoji", "emoji": { "code": "check", "version": "v1", "rarity": "common", "display_name": "Check", "icon_ref": "check.svg" } },
+    { "type": "odd_prize", "label": "Бессмысленный диплом" },
+    { "type": "odd_prize", "label": "Улыбка от тимлида" }
+  ]
+}

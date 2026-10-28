@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Вход</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="container" style="max-width: 420px; margin-top: 60px;">
+      <h1 style="margin-bottom: 16px;">Вход в аккаунт</h1>
+      <form id="login-form" class="new-task" style="flex-direction: column; align-items: stretch; gap: 12px;">
+        <label>
+          Имя пользователя
+          <input id="login-name" type="text" placeholder="Ваше имя" required />
+        </label>
+        <button type="submit" class="btn primary">Войти</button>
+        <p class="emoji-tip">Создаём профиль, если вы с нами впервые.</p>
+      </form>
+    </main>
+    <script>
+      async function fetchJSON(url, options) {
+        const res = await fetch(url, Object.assign({ headers: { 'Content-Type': 'application/json' } }, options||{}));
+        const data = res.headers.get('content-type')?.includes('application/json') ? await res.json() : await res.text();
+        if (!res.ok) { const msg = (typeof data === 'object' && data && (data.error || data.message)) || String(data); throw new Error(msg || 'Request failed'); }
+        return data;
+      }
+      const form = document.getElementById('login-form');
+      const input = document.getElementById('login-name');
+      const STORAGE_AUTH_NAME = 'auth_name';
+      function setAuthName(name) { try { localStorage.setItem(STORAGE_AUTH_NAME, name || ''); } catch {} }
+      form.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        try {
+          const name = input.value.trim();
+          if (!name) { alert('Введите имя'); return; }
+          try {
+            await fetchJSON('/api/auth/login', { method: 'POST', body: JSON.stringify({ name }) });
+          } catch (e) {
+            // if backend unavailable, store name locally to preserve invariants and proceed
+            if (!(e && (e.message || '').toLowerCase().includes('invalid'))) {
+              setAuthName(name);
+            } else {
+              throw e;
+            }
+          }
+          setAuthName(name);
+          window.location.href = '/static/index.html';
+        } catch (e) {
+          alert('Не удалось выполнить вход: ' + (e?.message || 'unknown'));
+        }
+      });
+    </script>
+  </body>
+  </html>

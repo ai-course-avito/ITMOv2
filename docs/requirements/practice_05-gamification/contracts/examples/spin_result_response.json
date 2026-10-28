@@ -1,0 +1,6 @@
+{
+  "outcome_type": "emoji",
+  "emoji": { "code": "fire", "version": "v1", "rarity": "common", "display_name": "Fire", "icon_ref": "fire.svg" },
+  "duplicate": false,
+  "spins_remaining": 4
+}

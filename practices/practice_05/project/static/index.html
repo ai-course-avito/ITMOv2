@@ -8,7 +8,13 @@
   </head>
   <body>
     <main class="container">
-      <h1>Менеджер задач</h1>
+      <div class="topbar">
+        <h1>Менеджер задач</h1>
+        <div class="topbar-actions">
+          <span id="spins-indicator" class="spins-indicator" aria-live="polite" title="Оставшиеся крутки"></span>
+          <button id="play-button" class="btn play" aria-label="Играть в колесо фортуны">ИГРАТЬ</button>
+        </div>
+      </div>
 
       <nav class="view-switch">
         <button id="view-list" class="btn toggle" aria-pressed="true">Список</button>
@@ -29,6 +35,11 @@
           <input id="new-start" type="datetime-local" aria-label="Начало" hidden />
           <input id="new-end" type="datetime-local" aria-label="Окончание" hidden />
         </span>
+        <div class="emoji-control">
+          <button type="button" id="new-emoji-btn" class="btn" aria-expanded="false" aria-controls="new-emoji-panel">Добавить эмодзи</button>
+          <div id="new-emoji-panel" class="emoji-panel" hidden aria-label="Выбор эмодзи (новая задача)"></div>
+          <div id="new-emoji-chips" class="emoji-chips" aria-live="polite"></div>
+        </div>
         <button type="submit" class="btn primary">Добавить</button>
       </form>
 
@@ -72,12 +83,44 @@
               <input id="edit-start" type="datetime-local" aria-label="Начало" />
               <input id="edit-end" type="datetime-local" aria-label="Окончание" />
             </div>
+            <div class="edit-emoji">
+              <div class="emoji-control">
+                <div class="emoji-chips" id="edit-emoji-chips"></div>
+                <button type="button" id="edit-emoji-add-btn" class="btn" aria-expanded="false" aria-controls="edit-emoji-panel">Добавить ещё эмодзи</button>
+                <div id="edit-emoji-panel" class="emoji-panel" hidden aria-label="Выбор эмодзи (редактирование)"></div>
+              </div>
+            </div>
             <div class="modal-actions">
               <button type="button" id="edit-delete" class="btn danger">Удалить</button>
               <button type="submit" class="btn primary">Сохранить</button>
               <button type="button" id="edit-cancel" class="btn">Отмена</button>
             </div>
           </form>
+        </div>
+      </div>
+
+      <!-- Spins limit banner -->
+      <div id="spins-banner" class="overlay" role="dialog" aria-modal="true" aria-labelledby="spins-banner-title" hidden>
+        <div class="overlay-content">
+          <h2 id="spins-banner-title" style="font-size: 32px; margin-top: 0;">Лимит круток исчерпан</h2>
+          <p style="font-size: 20px; line-height: 1.6;">Чтобы продлить лимит — переведите деньги на наш b2c стартап. Возвращайтесь после полуночи по вашему времени.</p>
+          <button class="btn primary" id="spins-banner-close" style="font-size: 16px; padding: 10px 16px;">Понятно</button>
+        </div>
+      </div>
+
+      <!-- Wheel overlay -->
+      <div id="wheel-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="wheel-title" hidden>
+        <div class="overlay-content wheel-modal">
+          <div class="wheel-header">
+            <h2 id="wheel-title">Колесо фортуны</h2>
+            <button class="btn" id="wheel-close" aria-label="Закрыть">Закрыть</button>
+          </div>
+          <div class="wheel-wrap">
+            <div class="wheel-pointer" aria-hidden="true"></div>
+            <div id="wheel" class="wheel" aria-label="Колесо со списком призов"></div>
+            <button id="wheel-spin" class="btn primary wheel-center" aria-label="Крутить">КРУТИТЬ</button>
+          </div>
+          <div id="wheel-legend" class="wheel-legend" aria-live="polite"></div>
         </div>
       </div>
     </main>
