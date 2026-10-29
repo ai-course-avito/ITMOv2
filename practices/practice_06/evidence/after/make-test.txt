@@ -25,7 +25,7 @@ test_oversized_review_and_query_rejected (test_security.SecurityTest.test_oversi
 test_owner_isolation (test_security.SecurityTest.test_owner_isolation) ... ok
 test_price_is_always_from_catalog (test_security.SecurityTest.test_price_is_always_from_catalog) ... ok
 test_private_endpoints_require_session (test_security.SecurityTest.test_private_endpoints_require_session) ... ok
-test_raw_transport_errors_do_not_disclose_details (test_security.SecurityTest.test_raw_transport_errors_do_not_disclose_details) ... /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 400: 'Bad Request'>
+test_raw_transport_errors_do_not_disclose_details (test_security.SecurityTest.test_raw_transport_errors_do_not_disclose_details) ... /opt/homebrew/Cellar/python@3.14/3.14.4_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 400: 'Bad Request'>
   _warnings.warn(self.warn_message, ResourceWarning)
 ok
 test_review_html_is_escaped (test_security.SecurityTest.test_review_html_is_escaped) ... ok
@@ -47,6 +47,6 @@ test_unknown_product_rejected (test_service.ShopTest.test_unknown_product_reject
 test_wrong_password_rejected (test_service.ShopTest.test_wrong_password_rejected) ... ok
 
 ----------------------------------------------------------------------
-Ran 33 tests in 1.080s
+Ran 33 tests in 1.071s
 
 OK

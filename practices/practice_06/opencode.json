@@ -16,6 +16,18 @@
           "name": "anthropic/claude-sonnet-5"
         }
       }
+    },
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Local Ollama",
+      "options": {
+        "baseURL": "http://127.0.0.1:11434/v1"
+      },
+      "models": {
+        "qwen3.5:9b": {
+          "name": "qwen3.5:9b"
+        }
+      }
     }
   },
   "agent": {

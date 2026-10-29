@@ -1,6 +1,9 @@
 """Reproduce attacks over HTTP and save evidence; no external attack targets."""
 
 import argparse
+import importlib.util
+import tempfile
+import shutil
 import hashlib
 import json
 from pathlib import Path
@@ -67,7 +70,13 @@ class Fixture:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--phase", choices=("before", "after"), required=True)
+    parser.add_argument("--service", default=str(Path(__file__).with_name("service.py")))
     args = parser.parse_args()
+    global Shop, make_handler
+    spec = importlib.util.spec_from_file_location("audit_service", args.service)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    Shop, make_handler = module.Shop, module.make_handler
     out = Path(__file__).resolve().parent.parent / "evidence" / args.phase
     out.mkdir(parents=True, exist_ok=True)
     with Fixture() as f:
@@ -98,11 +107,15 @@ def main():
         ]:
             f.call(label, method, path, body, auth)
         f.save(out / "http-attacks.json", {
-            "base_url": f.base, "service_sha256": hashlib.sha256(Path(__file__).with_name("service.py").read_bytes()).hexdigest(),
+            "base_url": f.base, "service_sha256": hashlib.sha256(Path(args.service).read_bytes()).hexdigest(),
             "requests": f.records, "sandbox_exists_after_delete": f.shop.sandbox.root.exists(),
         })
-    tests = subprocess.run([sys.executable, "-m", "unittest", "-v"], cwd=Path(__file__).parent,
-                           capture_output=True, text=True)
+    with tempfile.TemporaryDirectory(prefix="shop-tests-") as directory:
+        for source in Path(__file__).parent.glob("*.py"):
+            shutil.copy2(source, directory)
+        shutil.copy2(args.service, Path(directory) / "service.py")
+        tests = subprocess.run([sys.executable, "-B", "-m", "unittest", "-v"], cwd=directory,
+                               capture_output=True, text=True)
     (out / "tests.txt").write_text(f"exit_code={tests.returncode}\n" + tests.stdout + tests.stderr)
     print(f"Evidence: {out}; tests exit={tests.returncode}")
 
