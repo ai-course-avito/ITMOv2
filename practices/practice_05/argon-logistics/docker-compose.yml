@@ -1,0 +1,41 @@
+# Всё одной командой: docker compose up --build
+# Интерфейс: http://localhost:3000   API напрямую (для curl): http://localhost:5281
+name: argon
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: src/Argonum.Logistics.Api/Dockerfile
+    environment:
+      ConnectionStrings__Argon: "Data Source=/data/argon.db"
+      # Симуляция движения: 1 секунда = 3 минуты пути, отгрузка через 6 секунд после заказа
+      Simulation__Enabled: "true"
+      Simulation__SpeedFactor: "3"
+      Simulation__DispatchDelaySeconds: "6"
+    volumes:
+      - argon-data:/data
+    ports:
+      - "127.0.0.1:5281:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/simulation"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+    environment:
+      API_URL: "http://api:8080"
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  argon-data:

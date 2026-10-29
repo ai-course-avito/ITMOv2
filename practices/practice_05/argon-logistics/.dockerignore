@@ -1,0 +1,13 @@
+**/bin
+**/obj
+**/node_modules
+**/.next
+web
+tests
+openspec
+docs
+.git
+.claude
+*.db
+*.db-wal
+*.db-shm

@@ -1,0 +1,177 @@
+@host = http://localhost:5281
+@json = application/json
+
+### Каталог
+POST {{host}}/api/products
+Content-Type: {{json}}
+
+{ "sku": "MILK-1L", "name": "Молоко 1 л", "description": "Пастеризованное" }
+
+###
+POST {{host}}/api/products
+Content-Type: {{json}}
+
+{ "sku": "BREAD", "name": "Хлеб" }
+
+###
+GET {{host}}/api/products
+
+### Склады
+POST {{host}}/api/warehouses
+Content-Type: {{json}}
+
+{ "name": "Склад Север", "address": "Москва, ул. Северная, 1" }
+
+###
+POST {{host}}/api/warehouses
+Content-Type: {{json}}
+
+{ "name": "Склад Хаб", "address": "Тверь, Промзона, 5" }
+
+###
+POST {{host}}/api/warehouses
+Content-Type: {{json}}
+
+{ "name": "Склад Юг", "address": "Тула, ул. Южная, 9" }
+
+### Остатки (склад 1 и 3)
+POST {{host}}/api/warehouses/1/stock
+Content-Type: {{json}}
+
+{ "productId": 1, "quantity": 4 }
+
+###
+POST {{host}}/api/warehouses/3/stock
+Content-Type: {{json}}
+
+{ "productId": 1, "quantity": 4 }
+
+###
+POST {{host}}/api/warehouses/3/stock
+Content-Type: {{json}}
+
+{ "productId": 2, "quantity": 2 }
+
+###
+GET {{host}}/api/warehouses/3/stock
+
+### Пути между складами: Север -> Хаб 60 мин, Юг <-> Хаб 90 мин
+POST {{host}}/api/routes
+Content-Type: {{json}}
+
+{ "fromWarehouseId": 1, "toWarehouseId": 2, "minutes": 60 }
+
+###
+POST {{host}}/api/routes
+Content-Type: {{json}}
+
+{ "fromWarehouseId": 3, "toWarehouseId": 2, "minutes": 90, "bidirectional": true }
+
+###
+GET {{host}}/api/routes
+
+### ПВЗ и привязка Хаб -> ПВЗ 15 мин
+POST {{host}}/api/pickup-points
+Content-Type: {{json}}
+
+{ "name": "ПВЗ Арбат", "address": "Москва, Арбат, 1" }
+
+###
+PUT {{host}}/api/pickup-points/1/links/2
+Content-Type: {{json}}
+
+{ "minutes": 15 }
+
+### Планирование (dry-run): что, откуда, куда и по каким путям
+POST {{host}}/api/plans
+Content-Type: {{json}}
+
+{
+  "pickupPointId": 1,
+  "items": [
+    { "productId": 1, "quantity": 6 },
+    { "productId": 2, "quantity": 1 }
+  ]
+}
+
+### Клиент
+POST {{host}}/api/users
+Content-Type: {{json}}
+
+{ "name": "Иван", "email": "ivan@example.com" }
+
+### Заказ клиента (резервирует остатки)
+POST {{host}}/api/me/orders
+Content-Type: {{json}}
+X-User-Id: 1
+
+{
+  "pickupPointId": 1,
+  "items": [
+    { "productId": 1, "quantity": 6 },
+    { "productId": 2, "quantity": 1 }
+  ]
+}
+
+###
+GET {{host}}/api/me/orders
+X-User-Id: 1
+
+###
+POST {{host}}/api/me/orders/1/cancel
+X-User-Id: 1
+
+### Оператор: отгрузка, доставка, выдача
+POST {{host}}/api/shipments/1/dispatch
+
+###
+POST {{host}}/api/shipments/1/deliver
+
+###
+POST {{host}}/api/orders/1/pickup
+
+###
+GET {{host}}/api/orders?status=InTransit
+
+### Веб-интерфейс: снимок карты и настройки симуляции
+GET {{host}}/api/network
+
+###
+GET {{host}}/api/simulation
+
+### Позиция объекта на карте
+PUT {{host}}/api/warehouses/1/position
+Content-Type: application/json
+
+{ "x": 320, "y": 180 }
+
+###
+PUT {{host}}/api/pickup-points/1/position
+Content-Type: application/json
+
+{ "x": 640, "y": 240 }
+
+### Вместимость склада
+PUT {{host}}/api/warehouses/1
+Content-Type: application/json
+
+{ "name": "North", "address": "Moscow", "capacity": 500 }
+
+### Отказ от товара (заказ должен быть в статусе ReadyForPickup)
+POST {{host}}/api/me/orders/1/returns
+Content-Type: application/json
+X-User-Id: 1
+
+{ "items": [ { "productId": 1, "quantity": 1 } ] }
+
+### Предпросмотр возврата
+POST {{host}}/api/return-plans
+Content-Type: application/json
+
+{ "pickupPointId": 1, "items": [ { "productId": 1, "quantity": 2 } ] }
+
+### Оператор: отгрузка и доставка возврата
+POST {{host}}/api/returns/1/dispatch
+
+###
+POST {{host}}/api/returns/1/deliver
