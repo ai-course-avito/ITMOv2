@@ -1,0 +1,77 @@
+{
+  "model": "qwen3.5:9b",
+  "system_prompt_sha256": "14d155a8da3c0f0a531b008394454da443538217ae519483918aeffec9915120",
+  "raw_response": {
+    "model": "qwen3.5:9b",
+    "created_at": "2026-10-29T11:20:35.683312Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\n  \"overall_verdict\": \"pass\",\n  \"score\": 85,\n  \"criteria\": [\n    {\n      \"id\": \"scope\",\n      \"status\": \"pass\",\n      \"evidence\": \"Раздел 1. Область и допущения\",\n      \"comment\": \"Чётко определены границы (сервис, sandbox, LLM-контур) и исключения (хост-машина, провайдер). Указано, что внешние URL отсутствуют.\"\n    },\n    {\n      \"id\": \"trust\",\n      \"status\": \"pass\",\n      \"evidence\": \"Раздел 3. Активы и границы доверия\",\n      \"comment\": \"Прозрачно описаны границы доверия (HTTP-клиент, API, LLM, исполнитель). Выделены недоверенные зоны (LLM, отзывы) и доверенные (серверная логика).\"\n    },\n    {\n      \"id\": \"stride\",\n      \"status\": \"pass\",\n      \"evidence\": \"Раздел 5. STRIDE-угрозы\",\n      \"comment\": \"Все классические угрозы покрыты: Spoofing (T01, T02), Tampering (T03), Repudiation (T05), Info disclosure (T06-T08), DoS (T09), Elevation (T10, T11). Привязаны к конкретным мерам и тестам.\"\n    },\n    {\n      \"id\": \"ai\",\n      \"status\": \"pass\",\n      \"evidence\": \"Раздел 6. Угрозы AI-контура\",\n      \"comment\": \"Присутствуют специфичные AI-угрозы: Indirect prompt injection (A01), Excessive agency (A02), Insecure output handling (A03), Sensitive info disclosure (A04). Меры включают allowlist инструментов и серверную проверку.\"\n    },\n    {\n      \"id\": \"mitigations\",\n      \"status\": \"pass\",\n      \"evidence\": \"Разделы 5, 6, 7\",\n      \"comment\": \"Меры защиты конкретны: параметризованные запросы (V03), проверка владельца файла (V06), allowlist инструментов для LLM (A02), экранирование HTML и CSP (раздел 7). Связь «угроза → мера» прослеживается.\"\n    },\n    {\n      \"id\": \"verification\",\n      \"status\": \"pass\",\n      \"evidence\": \"Разделы 5, 7\",\n      \"comment\": \"Для каждой угрозы указан код проверки (V01-V12) и ссылки на тесты. Указаны директории с evidence (`evidence/before/`, `evidence/after/`) и отчёты.\"\n    },\n    {\n      \"id\": \"residual\",\n      \"status\": \"pass\",\n      \"evidence\": \"Раздел 8. Остаточные риски\",\n      \"comment\": \"Честно признаны ограничения: учебные пароли, отсутствие TLS/rate limiting, in-memory БД, отсутствие аудита staff. Это зафиксировано как допустимое для учебного стенда.\"\n    }\n  ],\n  \"missing_threats\": [],\n  \"missing_mitigations\": [],\n  \"unproven_claims\": [],\n  \"recommendations\": [\n    \"Добавить тесты на проверку целостности сессий (refresh/rotate) для защиты от кражи токена.\",\n    \"Рекомендуется добавить механизм ротации ключей или коротких TTL для учебных токенов, даже в локальной среде.\"\n  ],\n  \"summary\": \"Модель угроз Mini Shop демонстрирует высокое качество: чётко определены границы, покрыты как классические (STRIDE), так и специфичные AI-угрозы. Каждая угроза имеет конкретную меру защиты и план проверки с ссылками на тесты. Остаточные риски честно документированы.\"\n}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 56681850625,
+    "load_duration": 6456833,
+    "prompt_eval_count": 2994,
+    "prompt_eval_cached_count": 0,
+    "prompt_eval_duration": 8853827000,
+    "eval_count": 916,
+    "eval_duration": 47746294000
+  },
+  "parsed": {
+    "overall_verdict": "pass",
+    "score": 85,
+    "criteria": [
+      {
+        "id": "scope",
+        "status": "pass",
+        "evidence": "Раздел 1. Область и допущения",
+        "comment": "Чётко определены границы (сервис, sandbox, LLM-контур) и исключения (хост-машина, провайдер). Указано, что внешние URL отсутствуют."
+      },
+      {
+        "id": "trust",
+        "status": "pass",
+        "evidence": "Раздел 3. Активы и границы доверия",
+        "comment": "Прозрачно описаны границы доверия (HTTP-клиент, API, LLM, исполнитель). Выделены недоверенные зоны (LLM, отзывы) и доверенные (серверная логика)."
+      },
+      {
+        "id": "stride",
+        "status": "pass",
+        "evidence": "Раздел 5. STRIDE-угрозы",
+        "comment": "Все классические угрозы покрыты: Spoofing (T01, T02), Tampering (T03), Repudiation (T05), Info disclosure (T06-T08), DoS (T09), Elevation (T10, T11). Привязаны к конкретным мерам и тестам."
+      },
+      {
+        "id": "ai",
+        "status": "pass",
+        "evidence": "Раздел 6. Угрозы AI-контура",
+        "comment": "Присутствуют специфичные AI-угрозы: Indirect prompt injection (A01), Excessive agency (A02), Insecure output handling (A03), Sensitive info disclosure (A04). Меры включают allowlist инструментов и серверную проверку."
+      },
+      {
+        "id": "mitigations",
+        "status": "pass",
+        "evidence": "Разделы 5, 6, 7",
+        "comment": "Меры защиты конкретны: параметризованные запросы (V03), проверка владельца файла (V06), allowlist инструментов для LLM (A02), экранирование HTML и CSP (раздел 7). Связь «угроза → мера» прослеживается."
+      },
+      {
+        "id": "verification",
+        "status": "pass",
+        "evidence": "Разделы 5, 7",
+        "comment": "Для каждой угрозы указан код проверки (V01-V12) и ссылки на тесты. Указаны директории с evidence (`evidence/before/`, `evidence/after/`) и отчёты."
+      },
+      {
+        "id": "residual",
+        "status": "pass",
+        "evidence": "Раздел 8. Остаточные риски",
+        "comment": "Честно признаны ограничения: учебные пароли, отсутствие TLS/rate limiting, in-memory БД, отсутствие аудита staff. Это зафиксировано как допустимое для учебного стенда."
+      }
+    ],
+    "missing_threats": [],
+    "missing_mitigations": [],
+    "unproven_claims": [],
+    "recommendations": [
+      "Добавить тесты на проверку целостности сессий (refresh/rotate) для защиты от кражи токена.",
+      "Рекомендуется добавить механизм ротации ключей или коротких TTL для учебных токенов, даже в локальной среде."
+    ],
+    "summary": "Модель угроз Mini Shop демонстрирует высокое качество: чётко определены границы, покрыты как классические (STRIDE), так и специфичные AI-угрозы. Каждая угроза имеет конкретную меру защиты и план проверки с ссылками на тесты. Остаточные риски честно документированы."
+  }
+}
