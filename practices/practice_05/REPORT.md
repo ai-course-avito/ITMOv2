@@ -19,11 +19,11 @@
 
 ## Часть 2. Правило проекта
 
-В `openspec/config.yaml` добавлено `rules.design: Объясни взаимодействие диаграммой Mermaid`, `openspec instructions design` возвращает его в `rules`. Правило проверено на следующем связанном change `add-event-edit-ui` (редактирование события в админ-панели), design до правила, после правила с sequence-диаграммой и diff. Затем change доведён до apply: в админ-панели у события есть кнопка «изменить», форма с выбором планеты переносит событие между планетами.
+В `openspec/config.yaml` добавлено `rules.design: Объясни взаимодействие диаграммой Mermaid`, `openspec instructions design` возвращает его в `rules`. Правило проверено на следующем связанном change `add-event-edit-ui` (редактирование события в админ-панели), design до правила, после правила с sequence-диаграммой и diff. Затем change доведён до apply: в админ-панели у события есть кнопка «изменить», форма с выбором планеты переносит событие между планетами. Сценарии спеки проверены в браузере, change заархивирован, главная спека [event-admin-ui](openspec/specs/event-admin-ui/spec.md).
 
-- [design-before.md](openspec/changes/add-event-edit-ui/evidence/design-before.md)
-- [design.md](openspec/changes/add-event-edit-ui/design.md)
-- [design.diff](openspec/changes/add-event-edit-ui/evidence/design.diff)
+- [design-before.md](openspec/changes/archive/2026-10-29-add-event-edit-ui/evidence/design-before.md)
+- [design.md](openspec/changes/archive/2026-10-29-add-event-edit-ui/design.md)
+- [design.diff](openspec/changes/archive/2026-10-29-add-event-edit-ui/evidence/design.diff)
 
 ## Выводы
 
