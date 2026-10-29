@@ -6,6 +6,41 @@ Mini Shop принимает HTTP-запросы от клиентов, хран
 
 Активы: персональные данные профилей, адреса, заказы, чеки и служебная заметка. Угрозы: подмена владельца и роли, SQL-инъекция, чтение чужих данных, изменение цены, XSS в отзывах, утечка токенов в журнале и выполнение опасного решения AI-помощника. Атакующий имеет доступ только к своему локальному HTTP-процессу и синтетическим данным.
 
+```mermaid
+flowchart LR
+    client[Клиент: alice, bob, staff]
+    subgraph server[Mini Shop API]
+        auth[Сессия X-Token: владелец и роль]
+        api[Маршруты: profile, search, orders, files, reviews, admin, logs]
+        exec[assistant/execute]
+    end
+    db[(SQLite: профили, заказы, отзывы)]
+    files[(Sandbox: чеки, служебная заметка)]
+    llm[LLM shop-planner]
+
+    client -->|HTTP| auth
+    auth --> api
+    api --> db
+    api --> files
+    api -->|контекст: заказ, отзывы, вопрос| llm
+    llm -->|решение tool + arguments| exec
+    exec --> files
+    exec --> db
+
+    T1{{T1 SQL-инъекция в profile, search, context}} -.-> db
+    T2{{T2 IDOR: чужой профиль и заказы}} -.-> api
+    T3{{T3 подмена цены в заказе}} -.-> api
+    T4{{T4 поддельный X-Role: staff}} -.-> auth
+    T5{{T5 чтение чужих файлов и заметки}} -.-> files
+    T6{{T6 XSS в отзывах}} -.-> api
+    T7{{T7 токены и пароли в debug/logs}} -.-> api
+    T8{{T8 execute без проверки прав}} -.-> exec
+    T9{{T9 prompt injection через отзыв}} -.-> llm
+
+    classDef threat fill:#fde2e2,stroke:#c0392b,color:#000
+    class T1,T2,T3,T4,T5,T6,T7,T8,T9 threat
+```
+
 ## Найденные и воспроизведённые проблемы
 
 1. `/profile`, `/search` и `/assistant/context` строили SQL через f-string. Запрос `id=1 OR 1=1` возвращал чужие строки, а специальные значения ломали запрос.
