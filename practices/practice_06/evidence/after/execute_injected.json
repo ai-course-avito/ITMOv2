@@ -1,0 +1,6 @@
+{
+  "status": 403,
+  "body": {
+    "error": "path not granted for this session"
+  }
+}
