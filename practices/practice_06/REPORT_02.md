@@ -121,10 +121,10 @@ make test
 ## 5. Проверка промпта LLM-судьи
 
 Промпт `judge-system-prompt.md` был проверен отдельным запуском локальной модели
-`qwen3.5:9b` на `THREAT_MODEL.md`. Судья вернул валидный JSON с вердиктом `pass`:
-все критерии (`scope`, `trust`, `stride`, `ai`, `mitigations`, `verification`,
-`residual`) получили статус `pass`, а в рекомендациях остались TTL/ротация сессий.
-Сырой ответ и SHA-256 промпта сохранены в
+`qwen3.5:9b` на `THREAT_MODEL.md`. Судья вернул валидный JSON с вердиктом `pass`,
+`score: 9/10`; все критерии (`scope`, `trust`, `stride`, `ai`, `mitigations`,
+`verification`, `residual`) получили статус `pass`, а в рекомендациях остались WAF
+и circuit breaker для внешней LLM. Сырой ответ и SHA-256 промпта сохранены в
 `evidence/judge/threat-model-review.json`. Промпт явно требует трактовать
 проверяемый текст как данные, чтобы инструкции внутри модели угроз не могли
 изменить оценку.
