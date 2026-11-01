@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subscription Service UI</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script defer src="/script.js"></script>
+  <style>
+    /* Fallback minimal styles if CSS not loaded */
+    body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:0;background:#fafafa;color:#222}
+    header{padding:16px;background:#1f2937;color:#fff}
+    main{padding:16px;max-width:840px;margin:0 auto}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:16px}
+    label{display:block;margin-bottom:8px}
+    input{padding:8px;border:1px solid #cbd5e1;border-radius:6px;width:100%;}
+    button{padding:8px 12px;border:1px solid #1f2937;background:#1f2937;color:#fff;border-radius:6px;cursor:pointer}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:left}
+    .row-actions button{margin-right:8px}
+    .toast{padding:8px 12px;border-radius:6px;background:#e5f6ff;color:#0369a1;border:1px solid #bae6fd}
+  </style>
+  <script>
+    // Base path in case app is mounted at root
+    window.API_BASE = '';
+  </script>
+  
+  
+</head>
+<body>
+  <header>
+    <h1>Subscription Service</h1>
+  </header>
+  <main>
+    <section class="card">
+      <h2>Добавить подписчика</h2>
+      <form id="form-subscribe">
+        <label>
+          Email
+          <input type="email" id="email" required placeholder="user@example.com" />
+        </label>
+        <label>
+          Имя (необязательно)
+          <input type="text" id="name" placeholder="Имя" />
+        </label>
+        <button id="btn-subscribe" type="submit">Подписать</button>
+      </form>
+      <div id="toast" class="toast" style="display:none;margin-top:8px"></div>
+    </section>
+
+    <section class="card">
+      <h2>Подписчики</h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Имя</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="subs-body">
+            <tr><td colspan="3">Загрузка…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,10 +1,12 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 import json
 from pathlib import Path
 
 APP_VERSION = "0.1.0"
+# Persisted JSON storage lives alongside the service code
 DATA_DIR = Path(__file__).parent / "data"
 DATA_FILE = DATA_DIR / "subscribers.json"
 
@@ -67,3 +69,10 @@ def unsubscribe(email: str):
         raise HTTPException(status_code=404, detail="not found")
     save_subscribers(items)
     return
+
+# Serve UI static files from practices/practice_05/ui
+# We compute the UI directory relative to this file to keep repo structure flexible.
+UI_DIR = Path(__file__).resolve().parents[1] / "ui"
+if UI_DIR.exists():
+    # Mount at root so opening http://localhost:8000/ serves the UI
+    app.mount("/", StaticFiles(directory=UI_DIR, html=True), name="ui")

@@ -1,0 +1,17 @@
+/* Minimal styles for UI */
+:root{
+  --bg:#fafafa;--fg:#222;--card:#fff;--border:#e5e7eb;--muted:#6b7280;--accent:#1f2937
+}
+*{box-sizing:border-box}
+body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:0;background:var(--bg);color:var(--fg)}
+header{padding:16px;background:var(--accent);color:#fff}
+main{padding:16px;max-width:840px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px}
+label{display:block;margin-bottom:8px}
+input{padding:8px;border:1px solid #cbd5e1;border-radius:6px;width:100%}
+button{padding:8px 12px;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:6px;cursor:pointer}
+button:disabled{opacity:.6;cursor:not-allowed}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px;border-bottom:1px solid var(--border);text-align:left}
+.row-actions button{margin-right:8px}
+.toast{padding:8px 12px;border-radius:6px;background:#e5f6ff;color:#0369a1;border:1px solid #bae6fd}
