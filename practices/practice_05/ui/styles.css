@@ -15,3 +15,14 @@ table{width:100%;border-collapse:collapse}
 th,td{padding:8px;border-bottom:1px solid var(--border);text-align:left}
 .row-actions button{margin-right:8px}
 .toast{padding:8px 12px;border-radius:6px;background:#e5f6ff;color:#0369a1;border:1px solid #bae6fd}
+
+/* Search */
+.search-bar{margin:12px 0}
+.search-input-wrap{display:flex;gap:8px;align-items:center}
+#search-input{flex:1}
+#search-clear{background:#6b7280;border-color:#6b7280}
+#search-clear:focus, #search-input:focus, .pager button:focus{outline:3px solid #60a5fa;outline-offset:2px}
+.muted{color:var(--muted)}
+.counter{display:inline-block;margin-left:8px;padding:2px 8px;border:1px solid var(--border);border-radius:999px;font-size:12px}
+.empty-state{margin:8px 0;padding:12px;border:1px dashed var(--border);border-radius:8px;color:var(--muted)}
+.pager{display:flex;gap:12px;align-items:center;justify-content:flex-end;margin-top:8px}

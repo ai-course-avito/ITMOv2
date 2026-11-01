@@ -51,13 +51,25 @@
 
     <section class="card">
       <h2>Подписчики</h2>
+      <div class="search-bar" id="search-bar">
+        <label for="search-input">Поиск по нику (username)</label>
+        <div class="search-input-wrap">
+          <input type="text" id="search-input" placeholder="Введите ник" maxlength="100" aria-describedby="search-help" />
+          <button id="search-clear" type="button" aria-label="Очистить поиск">×</button>
+        </div>
+        <div class="search-meta">
+          <small id="search-help" class="muted">Минимум 2 символа. Пустая строка — снять фильтр.</small>
+          <span id="results-counter" class="counter" aria-live="polite" aria-atomic="true"></span>
+        </div>
+      </div>
+      <div id="empty-state" class="empty-state" style="display:none" role="status" aria-live="polite"></div>
       <div style="overflow-x:auto">
         <table>
           <thead>
             <tr>
-              <th>Email</th>
-              <th>Имя</th>
-              <th></th>
+              <th id="col1-header">Email</th>
+              <th id="col2-header">Имя</th>
+              <th id="col3-header"></th>
             </tr>
           </thead>
           <tbody id="subs-body">
@@ -65,7 +77,12 @@
           </tbody>
         </table>
       </div>
+      <nav class="pager" id="pager" aria-label="Навигация по страницам" style="display:none">
+        <button id="page-prev" type="button">← Предыдущая</button>
+        <span id="page-info" class="muted"></span>
+        <button id="page-next" type="button">Следующая →</button>
+      </nav>
     </section>
   </main>
-</body>
+ </body>
 </html>

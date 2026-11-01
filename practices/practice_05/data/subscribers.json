@@ -1,0 +1,14 @@
+[
+  {
+    "email": "user@example.com",
+    "name": "Денис"
+  },
+  {
+    "email": "user2@example.com",
+    "name": "Данил"
+  },
+  {
+    "email": "user3@example.com",
+    "name": "Даша"
+  }
+]

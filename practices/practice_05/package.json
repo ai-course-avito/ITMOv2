@@ -1,0 +1,11 @@
+{
+  "name": "practice_05-ui-tests",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "test:ui": "node tests/ui/search.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0"
+  }
+}
