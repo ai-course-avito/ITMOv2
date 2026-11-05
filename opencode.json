@@ -1,6 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "build",
+  "model": "ollama/itmo-agent",
+  "small_model": "local-ollama/gemma3-270m",
   "provider": {
     "vsellm": {
       "npm": "@ai-sdk/openai-compatible",
@@ -10,13 +12,68 @@
         "apiKey": "{env:VSELLM_API_KEY}"
       },
       "models": {
-        "openai/gpt-5": {
-          "name": "openai/gpt-5"
-        },
-        "anthropic/claude-sonnet-4": {
-          "name": "anthropic/claude-sonnet-4"
+        "openai/gpt-5": { "name": "openai/gpt-5" },
+        "anthropic/claude-sonnet-4": { "name": "anthropic/claude-sonnet-4" }
+      }
+    },
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama local",
+      "options": { "baseURL": "http://localhost:11434/v1" },
+      "models": {
+        "itmo-agent": {
+          "name": "ITMO local",
+          "limit": { "context": 2048, "output": 768 }
         }
       }
+    },
+    "local-ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": { "baseURL": "http://localhost:11434/v1", "timeout": 600000 },
+      "models": {
+        "itmo-agent": {
+          "name": "ITMO local",
+          "limit": { "context": 2048, "output": 768 }
+        },
+        "gemma3-270m": {
+          "name": "gemma3:270m",
+          "limit": { "context": 2048, "output": 256 }
+        }
+      }
+    }
+  },
+  "hooks": {
+    "onWrite": [
+      {
+        "name": "practice_04_check",
+        "shell": true,
+        "command": "printf '\n[onWrite %s]\n' '$(date -Is)' >> practices/practice_04/evidence/02-hook-feedback.log && bash practices/practice_04/scripts/check.sh | tee -a practices/practice_04/evidence/02-hook-feedback.log",
+        "cwd": ".",
+        "patterns": [
+          "practices/practice_04/src/**",
+          "practices/practice_04/tests/**",
+          "practices/practice_04/scripts/**"
+        ]
+      }
+    ]
+  },
+  "mcp": {
+    "Local": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-everything"
+      ]
+    },
+    "file-summary": {
+      "type": "local",
+      "command": [
+        "/usr/bin/env",
+        "python3",
+        "practices/practice_04/mcp/file_summary_server.py"
+      ]
     }
   }
 }

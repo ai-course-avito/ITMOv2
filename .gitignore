@@ -82,8 +82,9 @@ coverage.xml
 *.mo
 *.pot
 
-# Django stuff:
+text
 *.log
+!practices/practice_04/evidence/*.log
 local_settings.py
 db.sqlite3
 

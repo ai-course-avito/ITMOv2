@@ -1,0 +1,10 @@
+Agent chat
+User: Call MCP tool file_summary with path="practices/practice_04/scripts/check.sh"
+Assistant: MCP(file-summary.tools/call) → OK
+Result:
+{
+  "path": "practices/practice_04/scripts/check.sh",
+  "size_bytes": 215,
+  "line_count": 6,
+  "sha256": "993b5a4d6dfec960210935b168387f678037d6d6721f02e7ff7f6653f2f247ce"
+}

@@ -1,0 +1,3 @@
+SKILL: test-runner invoked
+Command: bash practices/practice_04/scripts/check.sh
+Summary: 8 tests, OK

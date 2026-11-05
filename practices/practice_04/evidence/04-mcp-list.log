@@ -1,0 +1,10 @@
+┌  MCP Servers
+│
+●  ✓ Local [90mconnected
+│      [90mnpx -y @modelcontextprotocol/server-everything
+│
+●  ✓ file-summary [90mconnected
+│      [90m/usr/bin/env python3 practices/practice_04/mcp/file_summary_server.py
+│
+└  2 server(s)
+

@@ -1,0 +1,22 @@
+======================================================================
+FAIL: test_add_numbers (practices.practice_04.tests.test_calc.TestCalc.test_add_numbers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/tyrt/ITMOv2-feature-b/practices/practice_04/tests/test_calc.py", line 8, in test_add_numbers
+    self.assertEqual(add(2, 3), 5.0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: -1.0 != 5.0
+
+======================================================================
+FAIL: test_add_numeric_strings (practices.practice_04.tests.test_calc.TestCalc.test_add_numeric_strings)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/tyrt/ITMOv2-feature-b/practices/practice_04/tests/test_calc.py", line 11, in test_add_numeric_strings
+    self.assertEqual(add("2", "3.5"), 5.5)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1.5 != 5.5
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.001s
+
+FAILED (failures=2)
