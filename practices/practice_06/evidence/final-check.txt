@@ -1,0 +1,83 @@
+# make step6
+Standard library only: ready
+test_health_and_not_found (test_http.HttpTest.test_health_and_not_found) ... ok
+test_login_and_purchase_over_http (test_http.HttpTest.test_login_and_purchase_over_http) ... ok
+test_transport_only_binds_loopback (test_http.HttpTest.test_transport_only_binds_loopback) ... ok
+test_t01_role_header_grants_nothing (test_security.AccessControlTest.test_t01_role_header_grants_nothing) ... ok
+test_t02_customer_cannot_read_foreign_profile (test_security.AccessControlTest.test_t02_customer_cannot_read_foreign_profile) ... ok
+test_t02_profile_requires_login (test_security.AccessControlTest.test_t02_profile_requires_login) ... ok
+test_t04_orders_list_is_scoped_to_caller (test_security.AccessControlTest.test_t04_orders_list_is_scoped_to_caller) ... ok
+test_t04_staff_sees_all_orders (test_security.AccessControlTest.test_t04_staff_sees_all_orders) ... ok
+test_t06_customer_cannot_read_foreign_receipt (test_security.AccessControlTest.test_t06_customer_cannot_read_foreign_receipt) ... ok
+test_t06_files_requires_login (test_security.AccessControlTest.test_t06_files_requires_login) ... ok
+test_t06_path_cannot_reach_private_notes (test_security.AccessControlTest.test_t06_path_cannot_reach_private_notes) ... ok
+test_t07_debug_logs_not_public_and_without_secrets (test_security.AccessControlTest.test_t07_debug_logs_not_public_and_without_secrets) ... ok
+test_t07_logs_hold_no_passwords_from_login_bodies (test_security.AccessControlTest.test_t07_logs_hold_no_passwords_from_login_bodies) ... ok
+test_t17_search_and_assistant_context_require_login (test_security.AccessControlTest.test_t17_search_and_assistant_context_require_login) ... ok
+test_t10_read_file_is_limited_to_own_receipt (test_security.AssistantTest.test_t10_read_file_is_limited_to_own_receipt) ... ok
+test_t11_customer_cannot_export_profiles (test_security.AssistantTest.test_t11_customer_cannot_export_profiles) ... ok
+test_t11_staff_can_export_profiles (test_security.AssistantTest.test_t11_staff_can_export_profiles) ... ok
+test_t12_malformed_decision_is_400 (test_security.AssistantTest.test_t12_malformed_decision_is_400) ... ok
+test_t12_nobody_deletes_files_through_assistant (test_security.AssistantTest.test_t12_nobody_deletes_files_through_assistant) ... ok
+test_t18_execute_requires_login (test_security.AssistantTest.test_t18_execute_requires_login) ... ok
+test_t14_bad_content_length_is_400 (test_security.HttpHardeningTest.test_t14_bad_content_length_is_400) ... ok
+test_t14_errors_do_not_leak_internals (test_security.HttpHardeningTest.test_t14_errors_do_not_leak_internals) ... ok
+test_t15_json_must_be_an_object (test_security.HttpHardeningTest.test_t15_json_must_be_an_object) ... ok
+test_t20_stalled_request_is_cut_off (test_security.HttpHardeningTest.test_t20_stalled_request_is_cut_off) ... ok
+test_t22_foreign_host_header_is_refused (test_security.HttpHardeningTest.test_t22_foreign_host_header_is_refused) ... ok
+test_t22_simple_cross_site_post_is_refused (test_security.HttpHardeningTest.test_t22_simple_cross_site_post_is_refused) ... ok
+test_t03_assistant_context_for_foreign_order_denied (test_security.InjectionTest.test_t03_assistant_context_for_foreign_order_denied) ... ok
+test_t03_assistant_order_id_is_not_sql (test_security.InjectionTest.test_t03_assistant_order_id_is_not_sql) ... ok
+test_t03_profile_id_is_not_sql (test_security.InjectionTest.test_t03_profile_id_is_not_sql) ... ok
+test_t03_search_does_not_expose_foreign_profiles (test_security.InjectionTest.test_t03_search_does_not_expose_foreign_profiles) ... ok
+test_t03_search_is_not_sql (test_security.InjectionTest.test_t03_search_is_not_sql) ... ok
+test_t08_review_html_is_escaped (test_security.InjectionTest.test_t08_review_html_is_escaped) ... ok
+test_t08_review_requires_login_and_known_product (test_security.InjectionTest.test_t08_review_requires_login_and_known_product) ... ok
+test_t09_prompt_marks_reviews_as_untrusted (test_security.InjectionTest.test_t09_prompt_marks_reviews_as_untrusted) ... ok
+test_t05_owner_comes_from_session (test_security.IntegrityTest.test_t05_owner_comes_from_session) ... ok
+test_t05_price_comes_from_catalog (test_security.IntegrityTest.test_t05_price_comes_from_catalog) ... ok
+test_t15_malformed_bodies_are_400_not_500 (test_security.IntegrityTest.test_t15_malformed_bodies_are_400_not_500) ... ok
+test_t09_prompt_has_only_reviews_of_the_ordered_product (test_security.PromptScopeTest.test_t09_prompt_has_only_reviews_of_the_ordered_product) ... ok
+test_t09_prompt_review_count_is_bounded (test_security.PromptScopeTest.test_t09_prompt_review_count_is_bounded) ... ok
+test_t20_expired_sessions_are_purged (test_security.ResourceLimitTest.test_t20_expired_sessions_are_purged) ... ok
+test_t20_failed_login_tracking_is_bounded (test_security.ResourceLimitTest.test_t20_failed_login_tracking_is_bounded) ... ok
+test_t20_one_customer_cannot_evict_the_staff_session (test_security.ResourceLimitTest.test_t20_one_customer_cannot_evict_the_staff_session) ... ok
+test_t20_request_log_is_bounded (test_security.ResourceLimitTest.test_t20_request_log_is_bounded) ... ok
+test_t20_reviews_are_bounded (test_security.ResourceLimitTest.test_t20_reviews_are_bounded) ... ok
+test_t20_sessions_are_bounded_per_account (test_security.ResourceLimitTest.test_t20_sessions_are_bounded_per_account) ... ok
+test_t13_failed_logins_are_rate_limited (test_security.SessionTest.test_t13_failed_logins_are_rate_limited) ... ok
+test_t13_token_expires (test_security.SessionTest.test_t13_token_expires) ... ok
+test_t13_unknown_names_are_limited_like_known_ones (test_security.SessionTest.test_t13_unknown_names_are_limited_like_known_ones) ... ok
+test_t16_actions_are_audited_without_secrets (test_security.SessionTest.test_t16_actions_are_audited_without_secrets) ... ok
+test_t21_non_ascii_password_is_401_not_500 (test_security.SessionTest.test_t21_non_ascii_password_is_401_not_500) ... ok
+test_delete_of_fixture_root_stays_inside_exercise (test_service.SandboxTest.test_delete_of_fixture_root_stays_inside_exercise) ... ok
+test_external_directory_cannot_be_deleted (test_service.SandboxTest.test_external_directory_cannot_be_deleted) ... ok
+test_parent_paths_cannot_escape_exercise (test_service.SandboxTest.test_parent_paths_cannot_escape_exercise) ... ok
+test_symlink_cannot_escape_exercise (test_service.SandboxTest.test_symlink_cannot_escape_exercise) ... ok
+test_assistant_can_return_own_receipt (test_service.ShopTest.test_assistant_can_return_own_receipt) ... ok
+test_customer_can_buy_at_catalog_price (test_service.ShopTest.test_customer_can_buy_at_catalog_price) ... ok
+test_health_and_catalog (test_service.ShopTest.test_health_and_catalog) ... ok
+test_own_profile_and_receipt (test_service.ShopTest.test_own_profile_and_receipt) ... ok
+test_review_can_be_submitted_and_viewed (test_service.ShopTest.test_review_can_be_submitted_and_viewed) ... ok
+test_staff_can_export_with_staff_session (test_service.ShopTest.test_staff_can_export_with_staff_session) ... ok
+test_tokens_identify_distinct_users (test_service.ShopTest.test_tokens_identify_distinct_users) ... ok
+test_unknown_product_rejected (test_service.ShopTest.test_unknown_product_rejected) ... ok
+test_wrong_password_rejected (test_service.ShopTest.test_wrong_password_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 63 tests in 1.882s
+
+OK
+
+# make test (корень: step1, step2, step3, step6)
+test_tokens_identify_distinct_users (test_service.ShopTest.test_tokens_identify_distinct_users) ... ok
+test_unknown_product_rejected (test_service.ShopTest.test_unknown_product_rejected) ... ok
+test_wrong_password_rejected (test_service.ShopTest.test_wrong_password_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 63 tests in 1.880s
+
+OK
+
+# sandbox.py относительно main
+(пусто — файл не менялся)

@@ -1,0 +1,58 @@
+@startuml threat-model
+!pragma layout smetana
+title Mini Shop: диаграмма потоков данных и границы доверия
+skinparam shadowing false
+skinparam defaultTextAlignment center
+
+actor "Клиент\n(alice, bob)" as Customer
+actor "Сотрудник\n(staff)" as Staff
+actor "Аноним\n(токена нет)" as Anon
+
+rectangle "Граница доверия 1: клиентская сторона (недоверенная)" as TB1 {
+  rectangle "HTTP-клиент или браузер (любая вкладка)\nзаголовки Host, Content-Type, X-Token, query, JSON" as Client
+}
+
+rectangle "Граница доверия 2: процесс Mini Shop (127.0.0.1:8066)" as TB2 {
+  rectangle "HTTP-слой\nmake_handler" as Http
+  rectangle "Маршрутизатор и правила\nShop.dispatch" as Core
+  database "SQLite в памяти\nprofiles, orders" as Db
+  rectangle "Сессии и журнал запросов\nsessions, logs" as State
+  rectangle "Отзывы\nreviews" as Reviews
+  rectangle "Исполнитель инструментов\n/assistant/execute" as Exec
+}
+
+rectangle "Граница доверия 3: файловая песочница (Sandbox)" as TB3 {
+  folder "files/alice, files/bob\nчеки" as Receipts
+  folder "private/\nслужебная заметка" as Private
+}
+
+rectangle "Граница доверия 4: AI-помощник (вне процесса)" as TB4 {
+  rectangle "LLM-планировщик\nполучает prompt, возвращает tool+arguments" as Llm
+}
+
+Customer --> Client
+Staff --> Client
+Anon --> Client
+Client --> Http : запросы (X-Token, X-Role, query, JSON)
+Http --> Core
+Core --> Db : SQL
+Core --> State : токены, журнал
+Core --> Reviews : текст отзыва
+Core --> Receipts : чтение чеков\n(user, path)
+Core --> Llm : контекст:\nзаказ + отзывы + вопрос
+Llm --> Exec : решение (tool, arguments)
+Exec --> Receipts : read_file
+Exec --> Private : read_file / delete_tree
+Exec --> Db : export_profiles
+
+note right of Reviews
+  Отзыв — недоверенный текст (писать может
+  и аноним), попадает в HTML-страницу
+  и в prompt модели
+end note
+
+note bottom of Llm
+  Решение модели — тоже недоверенные данные:
+  на него действуют права вызвавшего, а не права модели
+end note
+@enduml
