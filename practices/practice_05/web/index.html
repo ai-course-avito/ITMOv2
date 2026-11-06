@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>review-mini</title>
+  <style>
+    :root { color-scheme: light dark; --accent: #2f6fde; --ok: #1f8a4c; --warn: #b5651d; --bad: #c0392b; }
+    body { font: 16px/1.5 system-ui, sans-serif; max-width: 52rem; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.4rem; margin-bottom: .25rem; }
+    p.hint { margin-top: 0; opacity: .75; }
+    textarea { width: 100%; box-sizing: border-box; min-height: 14rem; font: 14px/1.4 ui-monospace, monospace; padding: .5rem; }
+    .actions { display: flex; align-items: center; gap: 1rem; margin: .75rem 0; }
+    button { font-size: 1rem; padding: .45rem 1.4rem; border: 0; border-radius: .35rem; background: var(--accent); color: #fff; cursor: pointer; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    #message { padding: .6rem .8rem; border-left: 4px solid var(--bad); background: color-mix(in srgb, var(--bad) 10%, transparent); }
+    #message[data-kind="rejected"] { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 10%, transparent); }
+    #stats { display: flex; gap: 1.5rem; font-weight: 600; margin: .5rem 0; }
+    .added { color: var(--ok); } .removed { color: var(--bad); }
+    #review { white-space: pre-wrap; padding: .75rem; border-radius: .35rem; background: color-mix(in srgb, currentColor 6%, transparent); }
+    details { margin-top: .5rem; opacity: .8; } details pre { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Ревью диффа</h1>
+  <p class="hint">Вставьте unified diff и нажмите «Ревью». Лимит — 8192 байта.</p>
+
+  <label for="diff" hidden>Дифф</label>
+  <textarea id="diff" spellcheck="false" placeholder="--- a/file.py&#10;+++ b/file.py&#10;+print(1)"></textarea>
+
+  <div class="actions">
+    <button id="submit" type="button" disabled>Ревью</button>
+    <span id="loading" role="status" hidden>Идёт ревью…</span>
+  </div>
+
+  <div id="message" role="alert" hidden></div>
+  <details id="details" hidden><summary>Подробнее</summary><pre id="details-text"></pre></details>
+
+  <section id="result" hidden>
+    <div id="stats" hidden>
+      <span>Файлов: <span id="stat-files">0</span></span>
+      <span class="added">+<span id="stat-added">0</span></span>
+      <span class="removed">−<span id="stat-removed">0</span></span>
+    </div>
+    <div id="review" hidden></div>
+  </section>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

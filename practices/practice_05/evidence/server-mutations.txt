@@ -1,0 +1,12 @@
+Мутационная проверка tests/test_server.py (копия проекта, 2026-10-22)
+M1 error→200 в STATUS_TO_HTTP               FAILED (failures=2)
+M2 без проверки лимита тела (413)           FAILED (errors=1)
+M3 слушать 0.0.0.0 вместо 127.0.0.1         FAILED (failures=1)
+M4 однопоточный HTTPServer                  FAILED (errors=1)
+M5 query string не отбрасывается            FAILED (failures=1)
+M6 без проверки, что тело — объект          FAILED (errors=2)
+M7 нет do_PUT (405 для PUT)                 FAILED (failures=1)
+M8 без close_connection при 413             OK — эквивалентная мутация:
+   BaseHTTPRequestHandler.protocol_version = "HTTP/1.0", соединение
+   закрывается после каждого ответа и без флага; флаг оставлен как защита
+   на случай HTTP/1.1, тест проверяет наблюдаемое свойство (will_close).
