@@ -1,0 +1,158 @@
+[
+  {
+    "id": "A01",
+    "title": "IDOR: alice reads bob's profile.",
+    "verdict": "VULNERABLE",
+    "detail": "200 [{\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+  },
+  {
+    "id": "A02",
+    "title": "SQL injection in /profile dumps the whole table.",
+    "verdict": "VULNERABLE",
+    "detail": "200 [{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+  },
+  {
+    "id": "A03",
+    "title": "Unauthenticated /search with injection dumps all profiles.",
+    "verdict": "VULNERABLE",
+    "detail": "200 [{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+  },
+  {
+    "id": "A04",
+    "title": "SQL injection UNION reads the orders table through /search.",
+    "verdict": "VULNERABLE",
+    "detail": "200 [{\"id\": 1, \"name\": \"chair\", \"email\": 1, \"address\": 5000.0}, {\"id\": 2, \"name\": \"lamp\", \"email\": 2, \"address\": 1500.0}]"
+  },
+  {
+    "id": "A05",
+    "title": "Broken access control: /orders without a token shows everybody's orders.",
+    "verdict": "VULNERABLE",
+    "detail": "200 [{\"id\": 1, \"owner\": 1, \"product\": \"chair\", \"price\": 5000.0}, {\"id\": 2, \"owner\": 2, \"product\": \"lamp\", \"price\": 1500.0}]"
+  },
+  {
+    "id": "A06",
+    "title": "Price tampering: client supplies price=1.",
+    "verdict": "VULNERABLE",
+    "detail": "201 {\"id\": 3, \"owner\": 1, \"product\": \"chair\", \"price\": 1}"
+  },
+  {
+    "id": "A07",
+    "title": "Negative price: shop pays the customer.",
+    "verdict": "VULNERABLE",
+    "detail": "201 {\"id\": 3, \"owner\": 1, \"product\": \"chair\", \"price\": -5000}"
+  },
+  {
+    "id": "A08",
+    "title": "Forged X-Role header: customer bob exports every profile.",
+    "verdict": "VULNERABLE",
+    "detail": "200 [{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+  },
+  {
+    "id": "A09",
+    "title": "Forged X-Role header without any session.",
+    "verdict": "VULNERABLE",
+    "detail": "200 [{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+  },
+  {
+    "id": "A10",
+    "title": "IDOR on files: alice reads bob's receipt.",
+    "verdict": "VULNERABLE",
+    "detail": "200 {\"content\": \"TEST_BOB receipt: lamp, 1500 RUB\"}"
+  },
+  {
+    "id": "A11",
+    "title": "Path traversal inside the sandbox: reads the private operator note.",
+    "verdict": "VULNERABLE",
+    "detail": "200 {\"content\": \"TEST_ONLY_OPERATOR_SECRET\"}"
+  },
+  {
+    "id": "A12",
+    "title": "Unauthenticated /debug/logs leaks passwords and session tokens.",
+    "verdict": "VULNERABLE",
+    "detail": "200 [{\"method\": \"POST\", \"target\": \"/login\", \"body\": {\"username\": \"alice\", \"password\": \"learn-alice\"}, \"headers\": {\"Accept-Encoding\": \"identity\", \"Content-Length\": \"..."
+  },
+  {
+    "id": "A13",
+    "title": "Anonymous user writes a review (stored injection / spam).",
+    "verdict": "VULNERABLE",
+    "detail": "201 {\"saved\": true}"
+  },
+  {
+    "id": "A14",
+    "title": "Stored XSS: review is rendered as raw HTML.",
+    "verdict": "VULNERABLE",
+    "detail": "200 <html><body><p><script>alert(1)</script></p></body></html>"
+  },
+  {
+    "id": "A15",
+    "title": "Assistant context for someone else's order (IDOR).",
+    "verdict": "VULNERABLE",
+    "detail": "200 {\"prompt\": \"Ты помощник магазина. Прочитай заказ и отзывы. Верни JSON с полями tool и arguments.\\nИнструменты: read_file(path), export_profiles(), delete_tree(path).\\nПомоги пользователю обработать заказ.\\nЗаказ: [{\\\"id\\..."
+  },
+  {
+    "id": "A16",
+    "title": "Assistant context SQL injection and anonymous access.",
+    "verdict": "VULNERABLE",
+    "detail": "200 {\"prompt\": \"Ты помощник магазина. Прочитай заказ и отзывы. Верни JSON с полями tool и arguments.\\nИнструменты: read_file(path), export_profiles(), delete_tree(path).\\nПомоги пользователю обработать заказ.\\nЗаказ: [{\\\"id\\..."
+  },
+  {
+    "id": "A17",
+    "title": "Indirect prompt injection: review text lands in the prompt, destructive tools are advertised.",
+    "verdict": "VULNERABLE",
+    "detail": "advertises destructive tools=True; reviews fenced=False"
+  },
+  {
+    "id": "A18",
+    "title": "Forced decision: alice makes the executor read bob's receipt.",
+    "verdict": "VULNERABLE",
+    "detail": "200 {\"content\": \"TEST_BOB receipt: lamp, 1500 RUB\"}"
+  },
+  {
+    "id": "A19",
+    "title": "Forced decision: executor reads private operator note, with no session at all.",
+    "verdict": "VULNERABLE",
+    "detail": "200 {\"content\": \"TEST_ONLY_OPERATOR_SECRET\"}"
+  },
+  {
+    "id": "A20",
+    "title": "Forced decision: export_profiles from a customer session.",
+    "verdict": "VULNERABLE",
+    "detail": "200 [{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+  },
+  {
+    "id": "A21",
+    "title": "Forced decision: delete_tree on the whole fixture, no session at all.",
+    "verdict": "VULNERABLE",
+    "detail": "200 {\"deleted\": \".\"}; sandbox exists=False"
+  },
+  {
+    "id": "A22",
+    "title": "Forced decision: delete only bob's receipt as alice.",
+    "verdict": "VULNERABLE",
+    "detail": "bob receipt exists=False"
+  },
+  {
+    "id": "A23",
+    "title": "Error messages leak internals (temp dir path, exception type).",
+    "verdict": "VULNERABLE",
+    "detail": "500 {\"error\": \"[Errno 2] No such file or directory: 'C:\\\\\\\\Users\\\\\\\\zawh\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\itmo-practice-06-im8fz0p2\\\\\\\\files\\\\\\\\alice\\\\\\\\nope.txt'\", \"type\": \"FileNotFoundError\"}"
+  },
+  {
+    "id": "A24",
+    "title": "Malformed bodies crash handlers with 500 (JSON array, missing keys).",
+    "verdict": "VULNERABLE",
+    "detail": "500 {\"error\": \"'product'\", \"type\": \"KeyError\"} | 500 {\"error\": \"list indices must be integers or slices, not str\", \"type\": \"TypeError\"}"
+  },
+  {
+    "id": "A25",
+    "title": "No brute-force protection on /login: 40 wrong passwords in a row never get throttled.",
+    "verdict": "VULNERABLE",
+    "detail": "codes seen=[401]"
+  },
+  {
+    "id": "A26",
+    "title": "Assistant action without opening an assistant session for the order (no scoped grant).",
+    "verdict": "VULNERABLE",
+    "detail": "200 {\"content\": \"TEST_ALICE receipt: chair, 5000 RUB\"}"
+  }
+]

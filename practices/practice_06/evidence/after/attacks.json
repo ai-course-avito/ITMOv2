@@ -1,0 +1,158 @@
+[
+  {
+    "id": "A01",
+    "title": "IDOR: alice reads bob's profile.",
+    "verdict": "BLOCKED",
+    "detail": "200 [{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}]"
+  },
+  {
+    "id": "A02",
+    "title": "SQL injection in /profile dumps the whole table.",
+    "verdict": "BLOCKED",
+    "detail": "200 [{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}]"
+  },
+  {
+    "id": "A03",
+    "title": "Unauthenticated /search with injection dumps all profiles.",
+    "verdict": "BLOCKED",
+    "detail": "403 {\"error\": \"staff only\"}"
+  },
+  {
+    "id": "A04",
+    "title": "SQL injection UNION reads the orders table through /search.",
+    "verdict": "BLOCKED",
+    "detail": "403 {\"error\": \"staff only\"}"
+  },
+  {
+    "id": "A05",
+    "title": "Broken access control: /orders without a token shows everybody's orders.",
+    "verdict": "BLOCKED",
+    "detail": "401 {\"error\": \"login required\"}"
+  },
+  {
+    "id": "A06",
+    "title": "Price tampering: client supplies price=1.",
+    "verdict": "BLOCKED",
+    "detail": "201 {\"id\": 3, \"owner\": 1, \"product\": \"chair\", \"price\": 5000}"
+  },
+  {
+    "id": "A07",
+    "title": "Negative price: shop pays the customer.",
+    "verdict": "BLOCKED",
+    "detail": "201 {\"id\": 3, \"owner\": 1, \"product\": \"chair\", \"price\": 5000}"
+  },
+  {
+    "id": "A08",
+    "title": "Forged X-Role header: customer bob exports every profile.",
+    "verdict": "BLOCKED",
+    "detail": "403 {\"error\": \"staff only\"}"
+  },
+  {
+    "id": "A09",
+    "title": "Forged X-Role header without any session.",
+    "verdict": "BLOCKED",
+    "detail": "403 {\"error\": \"staff only\"}"
+  },
+  {
+    "id": "A10",
+    "title": "IDOR on files: alice reads bob's receipt.",
+    "verdict": "BLOCKED",
+    "detail": "403 {\"error\": \"customers may only read their own receipt\"}"
+  },
+  {
+    "id": "A11",
+    "title": "Path traversal inside the sandbox: reads the private operator note.",
+    "verdict": "BLOCKED",
+    "detail": "403 {\"error\": \"customers may only read their own receipt\"}"
+  },
+  {
+    "id": "A12",
+    "title": "Unauthenticated /debug/logs leaks passwords and session tokens.",
+    "verdict": "BLOCKED",
+    "detail": "403 {\"error\": \"staff only\"}"
+  },
+  {
+    "id": "A13",
+    "title": "Anonymous user writes a review (stored injection / spam).",
+    "verdict": "BLOCKED",
+    "detail": "401 {\"error\": \"login required\"}"
+  },
+  {
+    "id": "A14",
+    "title": "Stored XSS: review is rendered as raw HTML.",
+    "verdict": "BLOCKED",
+    "detail": "200 <html><body><p>&lt;script&gt;alert(1)&lt;/script&gt;</p></body></html>"
+  },
+  {
+    "id": "A15",
+    "title": "Assistant context for someone else's order (IDOR).",
+    "verdict": "BLOCKED",
+    "detail": "403 {\"error\": \"not your order\"}"
+  },
+  {
+    "id": "A16",
+    "title": "Assistant context SQL injection and anonymous access.",
+    "verdict": "BLOCKED",
+    "detail": "401 {\"error\": \"login required\"}"
+  },
+  {
+    "id": "A17",
+    "title": "Indirect prompt injection: review text lands in the prompt, destructive tools are advertised.",
+    "verdict": "BLOCKED",
+    "detail": "advertises destructive tools=False; reviews fenced=True"
+  },
+  {
+    "id": "A18",
+    "title": "Forced decision: alice makes the executor read bob's receipt.",
+    "verdict": "BLOCKED",
+    "detail": "403 {\"error\": \"path not granted for this session\"}"
+  },
+  {
+    "id": "A19",
+    "title": "Forced decision: executor reads private operator note, with no session at all.",
+    "verdict": "BLOCKED",
+    "detail": "401 {\"error\": \"login required\"}"
+  },
+  {
+    "id": "A20",
+    "title": "Forced decision: export_profiles from a customer session.",
+    "verdict": "BLOCKED",
+    "detail": "403 {\"error\": \"staff only\"}"
+  },
+  {
+    "id": "A21",
+    "title": "Forced decision: delete_tree on the whole fixture, no session at all.",
+    "verdict": "BLOCKED",
+    "detail": "401 {\"error\": \"login required\"}; sandbox exists=True"
+  },
+  {
+    "id": "A22",
+    "title": "Forced decision: delete only bob's receipt as alice.",
+    "verdict": "BLOCKED",
+    "detail": "bob receipt exists=True"
+  },
+  {
+    "id": "A23",
+    "title": "Error messages leak internals (temp dir path, exception type).",
+    "verdict": "BLOCKED",
+    "detail": "403 {\"error\": \"customers may only read their own receipt\"}"
+  },
+  {
+    "id": "A24",
+    "title": "Malformed bodies crash handlers with 500 (JSON array, missing keys).",
+    "verdict": "BLOCKED",
+    "detail": "400 {\"error\": \"unknown product\"} | 400 {\"error\": \"body must be a JSON object\"}"
+  },
+  {
+    "id": "A25",
+    "title": "No brute-force protection on /login: 40 wrong passwords in a row never get throttled.",
+    "verdict": "BLOCKED",
+    "detail": "codes seen=[401, 429]"
+  },
+  {
+    "id": "A26",
+    "title": "Assistant action without opening an assistant session for the order (no scoped grant).",
+    "verdict": "BLOCKED",
+    "detail": "403 {\"error\": \"path not granted for this session\"}"
+  }
+]

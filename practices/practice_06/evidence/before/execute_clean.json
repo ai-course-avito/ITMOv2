@@ -1,0 +1,7 @@
+{
+  "status": 500,
+  "body": {
+    "error": "[Errno 2] No such file or directory: 'C:\\\\Users\\\\zawh\\\\AppData\\\\Local\\\\Temp\\\\itmo-practice-06-66ytebv2\\\\receipts\\\\order_1.txt'",
+    "type": "FileNotFoundError"
+  }
+}
