@@ -1,0 +1,20 @@
+include:
+  - component: $CI_SERVER_FQDN/internal/ci-components/docker-registry-auth@v2.9.0
+    inputs:
+      user: $AUTH_REGISTRY_USER
+      password: $AUTH_REGISTRY_PASSWORD
+      job_name: .registry_auth_by_token
+  - component: $CI_SERVER_FQDN/internal/ci-components/swarm-deploy@v2.9.0
+    inputs:
+      stage_name: prod-deploy
+      job_name: prod-deploy-job
+      environment_name: production
+      runner_tag: [ "swarm" ]
+      compose_name: docker/docker-compose.prod-deploy.yml
+      run_on_tag: true
+      stack_name: unilink
+      exports: |
+        REGISTRY=$CI_REGISTRY_IMAGE
+        API_IMAGE_TAG=$CI_COMMIT_TAG
+      registry_login_job_name: .registry_auth_by_token
+      job_needs: [ "unilink_promote_job" ]

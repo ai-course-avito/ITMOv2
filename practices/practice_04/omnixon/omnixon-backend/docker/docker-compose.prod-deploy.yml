@@ -1,0 +1,62 @@
+services:
+  omnixon_api:
+    image: ${REGISTRY}/api:${API_IMAGE_TAG}
+    command: ["uvicorn", "--app-dir", "app", "main:app", "--host", "0.0.0.0", "--port", "80"]
+    environment:
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_DB
+      - POSTGRES_PASSWORD
+      - POSTGRES_USER
+
+      - INITIAL_API_KEY
+      - LOGFIRE_TOKEN
+      - OPENROUTER_API_KEY
+      # replicas of the api reach each other's streams (Stop) through it; see ai/interrupt_bus.py
+      - REDIS_URL=redis://omnixon_redis:6379/0
+    networks:
+      - production
+    logging:
+      driver: json-file
+      options:
+        max-size: "25m"
+        max-file: "5"
+    deploy:
+      replicas: ${API_REPLICAS:-1}  # more than one is fine: streams are stopped across replicas, background jobs are safe to run twice
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 0
+        window: 120s
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.role == standart
+
+  # Only coordination (who runs which stream, the Stop signal): nothing is stored, so no volume and a restart loses nothing
+  omnixon_redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    networks:
+      - production
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 5s
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.role == standart
+
+networks:
+  production:
+    external: true

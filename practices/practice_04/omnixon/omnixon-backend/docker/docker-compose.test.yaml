@@ -1,0 +1,132 @@
+name: ${APP_NAME:-omnixon_test}
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: ${APP_NAME:-omnixon_test}-api
+    command: ["uvicorn", "--app-dir", "app", "main:app", "--host", "0.0.0.0", "--port", "80"]
+    env_file: .env
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST:-db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      # Route all OpenRouter traffic through the local SOCKS5 proxy so tests cover it
+      - OPENROUTER_PROXY=socks5://socks5-proxy:1080
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      socks5-proxy:
+        condition: service_started
+      redis:
+        condition: service_started
+    ports:
+      - "${UPSTREAM_PORT:-8000}:80"
+    restart: unless-stopped
+    tty: true
+
+  # A second replica of the api on the same database and Redis: the tests stop on one what runs on the other
+  api2:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: ${APP_NAME:-omnixon_test}-api2
+    command: ["uvicorn", "--app-dir", "app", "main:app", "--host", "0.0.0.0", "--port", "80"]
+    env_file: .env
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST:-db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - OPENROUTER_PROXY=socks5://socks5-proxy:1080
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    tty: true
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    container_name: ${APP_NAME:-omnixon_test}-redis
+    restart: unless-stopped
+
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: ${APP_NAME:-omnixon_test}-postgres-db
+    env_file: .env
+    environment:
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        - POSTGRES_DB=${POSTGRES_DB}
+        - PGDATA=/data/postgres
+    ports:
+        - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+        - postgres-data:/data/postgres
+        - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+        test:
+            [
+                "CMD-SHELL",
+                "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
+            ]
+        interval: 5s
+        timeout: 10s
+        retries: 5
+
+    restart: unless-stopped
+    tty: true
+
+  tests:
+      build:
+        context: ..
+        dockerfile: docker/Dockerfile.test
+      env_file: .env
+      environment:
+        - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+        - API_URL=http://api:80
+        # the second replica of the api (same database, same Redis)
+        - API_URL_2=http://api2:80
+        - MCP_CALCULATOR_URL=http://mcp-calculator:9100/mcp
+        # an OpenAI-compatible server that answers without a provider (docker/fake-llm): models with their own base_url point at it
+        - FAKE_LLM_URL=http://fake-llm:8000/v1
+      depends_on:
+        api:
+          condition: service_healthy
+        api2:
+          condition: service_healthy
+        mcp-calculator:
+          condition: service_started
+        fake-llm:
+          condition: service_started
+
+  fake-llm:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.fake-llm
+    container_name: ${APP_NAME:-omnixon_test}-fake-llm
+    restart: unless-stopped
+    tty: true
+
+  mcp-calculator:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.mcp-calculator
+    container_name: ${APP_NAME:-omnixon_test}-mcp-calculator
+    restart: unless-stopped
+    tty: true
+
+  socks5-proxy:
+    image: serjs/go-socks5-proxy
+    container_name: ${APP_NAME:-omnixon_test}-socks5-proxy
+    environment:
+      - REQUIRE_AUTH=false
+    restart: unless-stopped
+    tty: true
+
+volumes:
+  postgres-data:
+    name: ${APP_NAME:-omnixon_test}-postgres-data

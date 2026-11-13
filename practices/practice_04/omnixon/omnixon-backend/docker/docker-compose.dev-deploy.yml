@@ -1,0 +1,33 @@
+services:
+  omnixon_api:
+    image: ${REGISTRY}/api:${API_IMAGE_TAG}
+    command: ["uvicorn", "--app-dir", "app", "main:app", "--host", "0.0.0.0", "--port", "80"]
+    ports:
+      - "8093:80"
+    environment:
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_DB
+      - POSTGRES_PASSWORD
+      - POSTGRES_USER
+
+      - INITIAL_API_KEY
+      - LOGFIRE_TOKEN
+      - OPENROUTER_API_KEY
+      - REDIS_URL=redis://omnixon_redis:6379/0
+    networks:
+      - node-net
+    restart: unless-stopped
+    depends_on:
+      - omnixon_redis
+
+  omnixon_redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    networks:
+      - node-net
+    restart: unless-stopped
+
+networks:
+  node-net:
+    external: true

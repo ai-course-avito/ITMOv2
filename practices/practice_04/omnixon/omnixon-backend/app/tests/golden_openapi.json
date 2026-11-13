@@ -1,0 +1,5398 @@
+{
+  "components": {
+    "schemas": {
+      "Agent": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "model_id": {
+            "title": "Model Id",
+            "type": "integer"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "prompt",
+          "model_id",
+          "timestamp"
+        ],
+        "title": "Agent",
+        "type": "object"
+      },
+      "AgentConfig": {
+        "description": "The JSON in agents.config. A limit that is not set uses the DEFAULT_* env value.",
+        "properties": {
+          "auto_memory": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Memory"
+          },
+          "memo_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memo Limit"
+          },
+          "message_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Limit"
+          },
+          "parallel_tool_calls": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parallel Tool Calls"
+          },
+          "rag_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rag Limit"
+          },
+          "tools": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tools",
+            "type": "array"
+          }
+        },
+        "title": "AgentConfig",
+        "type": "object"
+      },
+      "AgentConfigInput": {
+        "additionalProperties": false,
+        "description": "Settings of an agent (agents.config). On update only the given keys change,\nand a key set to null goes back to its default.",
+        "properties": {
+          "auto_memory": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Memory"
+          },
+          "memo_limit": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memo Limit"
+          },
+          "message_limit": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Limit"
+          },
+          "parallel_tool_calls": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parallel Tool Calls"
+          },
+          "rag_limit": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rag Limit"
+          },
+          "tools": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tools"
+          }
+        },
+        "title": "AgentConfigInput",
+        "type": "object"
+      },
+      "AgentConnection": {
+        "description": "agent1 may call agent2 (tools list_agents / ask_agent); the description tells agent1 what agent2 is for.",
+        "properties": {
+          "agent1_id": {
+            "title": "Agent1 Id",
+            "type": "integer"
+          },
+          "agent2_id": {
+            "title": "Agent2 Id",
+            "type": "integer"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "agent1_id",
+          "agent2_id",
+          "description",
+          "timestamp"
+        ],
+        "title": "AgentConnection",
+        "type": "object"
+      },
+      "AgentConnectionCreate": {
+        "properties": {
+          "agent1_id": {
+            "title": "Agent1 Id",
+            "type": "integer"
+          },
+          "agent2_id": {
+            "title": "Agent2 Id",
+            "type": "integer"
+          },
+          "description": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "agent1_id",
+          "agent2_id",
+          "description"
+        ],
+        "title": "AgentConnectionCreate",
+        "type": "object"
+      },
+      "AgentConnectionUpdate": {
+        "properties": {
+          "description": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "title": "AgentConnectionUpdate",
+        "type": "object"
+      },
+      "AgentCreate": {
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentConfigInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model_id": {
+            "title": "Model Id",
+            "type": "integer"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "prompt",
+          "model_id"
+        ],
+        "title": "AgentCreate",
+        "type": "object"
+      },
+      "AgentUpdate": {
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentConfigInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expected_version": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Version"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt"
+          }
+        },
+        "title": "AgentUpdate",
+        "type": "object"
+      },
+      "AgentVersion": {
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "integer"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "created_by_token_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By Token Id"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "snapshot": {
+            "additionalProperties": true,
+            "title": "Snapshot",
+            "type": "object"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "agent_id",
+          "number",
+          "snapshot",
+          "timestamp"
+        ],
+        "title": "AgentVersion",
+        "type": "object"
+      },
+      "Attachment": {
+        "description": "A file for the model: give either `url` or `data` (base64).",
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "the file, base64-encoded",
+            "title": "Data"
+          },
+          "media_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "e.g. image/png or application/pdf; required with `data`, guessed from the URL otherwise",
+            "title": "Media Type"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "a file name, shown in the history",
+            "title": "Name"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "http(s) URL the model provider can fetch",
+            "title": "Url"
+          }
+        },
+        "title": "Attachment",
+        "type": "object"
+      },
+      "Chat": {
+        "description": "One conversation of a user with the agent. Its messages are its own thread: the model sees only them.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_default": {
+            "default": false,
+            "title": "Is Default",
+            "type": "boolean"
+          },
+          "messages": {
+            "default": 0,
+            "title": "Messages",
+            "type": "integer"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "timestamp",
+          "updated_at"
+        ],
+        "title": "Chat",
+        "type": "object"
+      },
+      "ChatCreate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "ChatCreate",
+        "type": "object"
+      },
+      "ChatUpdate": {
+        "properties": {
+          "title": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "ChatUpdate",
+        "type": "object"
+      },
+      "DailyUsage": {
+        "properties": {
+          "cost": {
+            "title": "Cost",
+            "type": "number"
+          },
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "duration_ms_sum": {
+            "title": "Duration Ms Sum",
+            "type": "integer"
+          },
+          "errors": {
+            "title": "Errors",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "requests": {
+            "title": "Requests",
+            "type": "integer"
+          },
+          "token_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Id"
+          },
+          "token_name": {
+            "title": "Token Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token_name",
+          "model",
+          "requests",
+          "errors",
+          "input_tokens",
+          "output_tokens",
+          "cost",
+          "duration_ms_sum",
+          "day"
+        ],
+        "title": "DailyUsage",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Interrupted": {
+        "properties": {
+          "interrupted": {
+            "title": "Interrupted",
+            "type": "boolean"
+          },
+          "text": {
+            "default": "",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "interrupted"
+        ],
+        "title": "Interrupted",
+        "type": "object"
+      },
+      "MCPServer": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "title": "Config",
+            "type": "object"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "config",
+          "timestamp"
+        ],
+        "title": "MCPServer",
+        "type": "object"
+      },
+      "MCPServerCreate": {
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "config": {
+            "additionalProperties": true,
+            "title": "Config",
+            "type": "object"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "config"
+        ],
+        "title": "MCPServerCreate",
+        "type": "object"
+      },
+      "MCPServerUpdate": {
+        "properties": {
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "MCPServerUpdate",
+        "type": "object"
+      },
+      "Memory": {
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "integer"
+          },
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "agent_id",
+          "content",
+          "timestamp"
+        ],
+        "title": "Memory",
+        "type": "object"
+      },
+      "MemoryCreate": {
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "content": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "content"
+        ],
+        "title": "MemoryCreate",
+        "type": "object"
+      },
+      "MemoryUpdate": {
+        "properties": {
+          "content": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "title": "MemoryUpdate",
+        "type": "object"
+      },
+      "Message": {
+        "properties": {
+          "agent_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Version"
+          },
+          "chat_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chat Id"
+          },
+          "content": {
+            "additionalProperties": true,
+            "title": "Content",
+            "type": "object"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          }
+        },
+        "required": [
+          "id",
+          "content",
+          "timestamp"
+        ],
+        "title": "Message",
+        "type": "object"
+      },
+      "MessageRequest": {
+        "properties": {
+          "attachments": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/Attachment"
+            },
+            "title": "Attachments",
+            "type": "array"
+          },
+          "chat_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chat Id"
+          },
+          "request": {
+            "title": "Request",
+            "type": "string"
+          },
+          "save_message": {
+            "default": true,
+            "title": "Save Message",
+            "type": "boolean"
+          },
+          "trace": {
+            "default": false,
+            "title": "Trace",
+            "type": "boolean"
+          },
+          "use_memo": {
+            "default": true,
+            "title": "Use Memo",
+            "type": "boolean"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          }
+        },
+        "required": [
+          "request"
+        ],
+        "title": "MessageRequest",
+        "type": "object"
+      },
+      "MessageResponse": {
+        "properties": {
+          "chat_id": {
+            "title": "Chat Id",
+            "type": "integer"
+          },
+          "response": {
+            "title": "Response",
+            "type": "string"
+          },
+          "trace": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/TraceStep"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trace"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "required": [
+          "response",
+          "user",
+          "chat_id"
+        ],
+        "title": "MessageResponse",
+        "type": "object"
+      },
+      "Model": {
+        "properties": {
+          "base_url": {
+            "default": "https://openrouter.ai/api/v1",
+            "title": "Base Url",
+            "type": "string"
+          },
+          "has_api_token": {
+            "description": "Whether the model has a key of its own (the key itself is never shown).",
+            "readOnly": true,
+            "title": "Has Api Token",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "request_json": {
+            "additionalProperties": true,
+            "title": "Request Json",
+            "type": "object"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          },
+          "use_proxy": {
+            "default": true,
+            "title": "Use Proxy",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "request_json",
+          "timestamp",
+          "has_api_token"
+        ],
+        "title": "Model",
+        "type": "object"
+      },
+      "ModelCreate": {
+        "properties": {
+          "api_token": {
+            "anyOf": [
+              {
+                "maxLength": 512,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Token"
+          },
+          "base_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Url"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "request_json": {
+            "additionalProperties": true,
+            "title": "Request Json",
+            "type": "object"
+          },
+          "use_proxy": {
+            "default": true,
+            "title": "Use Proxy",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "request_json"
+        ],
+        "title": "ModelCreate",
+        "type": "object"
+      },
+      "ModelUpdate": {
+        "properties": {
+          "api_token": {
+            "anyOf": [
+              {
+                "maxLength": 512,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Token"
+          },
+          "base_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Url"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "request_json": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Json"
+          },
+          "use_proxy": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Use Proxy"
+          }
+        },
+        "title": "ModelUpdate",
+        "type": "object"
+      },
+      "MonthlyUsage": {
+        "properties": {
+          "cost": {
+            "title": "Cost",
+            "type": "number"
+          },
+          "duration_ms_sum": {
+            "title": "Duration Ms Sum",
+            "type": "integer"
+          },
+          "errors": {
+            "title": "Errors",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "month": {
+            "format": "date",
+            "title": "Month",
+            "type": "string"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "requests": {
+            "title": "Requests",
+            "type": "integer"
+          },
+          "token_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Id"
+          },
+          "token_name": {
+            "title": "Token Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token_name",
+          "model",
+          "requests",
+          "errors",
+          "input_tokens",
+          "output_tokens",
+          "cost",
+          "duration_ms_sum",
+          "month"
+        ],
+        "title": "MonthlyUsage",
+        "type": "object"
+      },
+      "NewToken": {
+        "description": "The answer to making a token: the only time the secret is shown.",
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_initial": {
+            "description": "The token of INITIAL_API_KEY: an owner that cannot be deleted or lowered.",
+            "readOnly": true,
+            "title": "Is Initial",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "agent_id",
+          "role",
+          "timestamp",
+          "token",
+          "is_initial"
+        ],
+        "title": "NewToken",
+        "type": "object"
+      },
+      "RAG": {
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "integer"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          },
+          "embedding": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Metadata",
+            "type": "object"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "agent_id",
+          "timestamp"
+        ],
+        "title": "RAG",
+        "type": "object"
+      },
+      "RAGCreate": {
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "embedding_content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Content"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "title": "RAGCreate",
+        "type": "object"
+      },
+      "RAGUpdate": {
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "embedding_content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Content"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "title": "RAGUpdate",
+        "type": "object"
+      },
+      "RecentUser": {
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "integer"
+          },
+          "external_id": {
+            "title": "External Id",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "last_active": {
+            "format": "date-time",
+            "title": "Last Active",
+            "type": "string"
+          },
+          "messages": {
+            "title": "Messages",
+            "type": "integer"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "agent_id",
+          "external_id",
+          "timestamp",
+          "last_active",
+          "messages"
+        ],
+        "title": "RecentUser",
+        "type": "object"
+      },
+      "RollbackRequest": {
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "to": {
+            "minimum": 1.0,
+            "title": "To",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "to"
+        ],
+        "title": "RollbackRequest",
+        "type": "object"
+      },
+      "Token": {
+        "description": "A credential bound to an agent. The secret itself is never stored or returned again.",
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_initial": {
+            "description": "The token of INITIAL_API_KEY: an owner that cannot be deleted or lowered.",
+            "readOnly": true,
+            "title": "Is Initial",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "agent_id",
+          "role",
+          "timestamp",
+          "is_initial"
+        ],
+        "title": "Token",
+        "type": "object"
+      },
+      "TokenCreate": {
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "regular",
+              "user",
+              "admin",
+              "owner"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "role"
+        ],
+        "title": "TokenCreate",
+        "type": "object"
+      },
+      "TokenUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "enum": [
+                  "regular",
+                  "user",
+                  "admin",
+                  "owner"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          }
+        },
+        "title": "TokenUpdate",
+        "type": "object"
+      },
+      "TraceStep": {
+        "properties": {
+          "args": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Args"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "input_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Tokens"
+          },
+          "kind": {
+            "enum": [
+              "model",
+              "tool"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "output_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Tokens"
+          },
+          "result": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "step": {
+            "title": "Step",
+            "type": "integer"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "required": [
+          "step",
+          "kind",
+          "name"
+        ],
+        "title": "TraceStep",
+        "type": "object"
+      },
+      "User": {
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "integer"
+          },
+          "external_id": {
+            "title": "External Id",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "agent_id",
+          "external_id",
+          "timestamp"
+        ],
+        "title": "User",
+        "type": "object"
+      },
+      "UserCreate": {
+        "properties": {
+          "external_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "External Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "external_id"
+        ],
+        "title": "UserCreate",
+        "type": "object"
+      },
+      "UserUpdate": {
+        "properties": {
+          "external_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Id"
+          }
+        },
+        "title": "UserUpdate",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VersionDiff": {
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "integer"
+          },
+          "changes": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Changes",
+            "type": "object"
+          },
+          "from_version": {
+            "title": "From Version",
+            "type": "integer"
+          },
+          "to_version": {
+            "title": "To Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "agent_id",
+          "from_version",
+          "to_version",
+          "changes"
+        ],
+        "title": "VersionDiff",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerToken": {
+        "description": "A token of the service (`Authorization: Bearer <token>`). Its role decides which routes it may call.",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/": {
+      "get": {
+        "description": "Needs any token.",
+        "operationId": "read_root_api_v1__get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Health check",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/api/v1/admin/agent-connections": {
+      "get": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "get_agent_connections_api_v1_admin_agent_connections_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AgentConnection"
+                  },
+                  "title": "Response Get Agent Connections Api V1 Admin Agent Connections Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "List the connections between agents (or those going out of one agent)",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      },
+      "post": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "create_agent_connection_api_v1_admin_agent_connections_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentConnectionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentConnection"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Let one agent call another",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      }
+    },
+    "/api/v1/admin/agent-connections/{connection_id}": {
+      "delete": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "delete_agent_connection_api_v1_admin_agent_connections__connection_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentConnection"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Stop one agent from calling another",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      },
+      "get": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "get_agent_connection_api_v1_admin_agent_connections__connection_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentConnection"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Get a connection between agents",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      },
+      "patch": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "update_agent_connection_api_v1_admin_agent_connections__connection_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentConnectionUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentConnection"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Change what a connection tells the calling agent",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      }
+    },
+    "/api/v1/admin/agents": {
+      "get": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "get_agents_api_v1_admin_agents_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Agent"
+                  },
+                  "title": "Response Get Agents Api V1 Admin Agents Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "List all agents",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      },
+      "post": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "create_agent_api_v1_admin_agents_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Agent"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Create a new agent",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      }
+    },
+    "/api/v1/admin/agents/{agent_id}": {
+      "delete": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "delete_agent_api_v1_admin_agents__agent_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "title": "Agent Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Agent"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Delete an agent",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      },
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_agent_api_v1_admin_agents__agent_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "title": "Agent Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Agent"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Get an agent by ID",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "patch": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "update_agent_api_v1_admin_agents__agent_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "title": "Agent Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Agent"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Update an agent",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/agents/{agent_id}/mcp-servers": {
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_agent_mcp_servers_api_v1_admin_agents__agent_id__mcp_servers_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "title": "Agent Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MCPServer"
+                  },
+                  "title": "Response Get Agent Mcp Servers Api V1 Admin Agents  Agent Id  Mcp Servers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "List MCP servers attached to an agent",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/agents/{agent_id}/mcp-servers/{mcp_server_id}": {
+      "delete": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "remove_agent_mcp_server_api_v1_admin_agents__agent_id__mcp_servers__mcp_server_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "title": "Agent Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "mcp_server_id",
+            "required": true,
+            "schema": {
+              "title": "Mcp Server Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MCPServer"
+                  },
+                  "title": "Response Remove Agent Mcp Server Api V1 Admin Agents  Agent Id  Mcp Servers  Mcp Server Id  Delete",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Detach an MCP server from an agent",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "post": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "add_agent_mcp_server_api_v1_admin_agents__agent_id__mcp_servers__mcp_server_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "title": "Agent Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "mcp_server_id",
+            "required": true,
+            "schema": {
+              "title": "Mcp Server Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MCPServer"
+                  },
+                  "title": "Response Add Agent Mcp Server Api V1 Admin Agents  Agent Id  Mcp Servers  Mcp Server Id  Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Attach an existing MCP server to an agent",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      }
+    },
+    "/api/v1/admin/agents/{agent_id}/rollback": {
+      "post": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "rollback_agent_api_v1_admin_agents__agent_id__rollback_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "title": "Agent Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RollbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentVersion"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Make an agent what one of its versions was (recorded as a new version)",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/agents/{agent_id}/versions": {
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_agent_versions_api_v1_admin_agents__agent_id__versions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "title": "Agent Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AgentVersion"
+                  },
+                  "title": "Response Get Agent Versions Api V1 Admin Agents  Agent Id  Versions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "History of an agent (newest first)",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/agents/{agent_id}/versions/{number}": {
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_agent_version_api_v1_admin_agents__agent_id__versions__number__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "title": "Agent Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "number",
+            "required": true,
+            "schema": {
+              "title": "Number",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentVersion"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "One version of an agent",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/agents/{agent_id}/versions/{number}/diff": {
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "diff_agent_versions_api_v1_admin_agents__agent_id__versions__number__diff_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "title": "Agent Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "number",
+            "required": true,
+            "schema": {
+              "title": "Number",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Default: the latest version",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the latest version",
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionDiff"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "What changed between two versions of an agent",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/mcp-servers": {
+      "get": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "get_mcp_servers_api_v1_admin_mcp_servers_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MCPServer"
+                  },
+                  "title": "Response Get Mcp Servers Api V1 Admin Mcp Servers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "List all MCP servers",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      },
+      "post": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "create_mcp_server_api_v1_admin_mcp_servers_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MCPServerCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MCPServer"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Create a new MCP server",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/mcp-servers/{mcp_server_id}": {
+      "delete": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "delete_mcp_server_api_v1_admin_mcp_servers__mcp_server_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mcp_server_id",
+            "required": true,
+            "schema": {
+              "title": "Mcp Server Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MCPServer"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Delete an MCP server",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_mcp_server_api_v1_admin_mcp_servers__mcp_server_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mcp_server_id",
+            "required": true,
+            "schema": {
+              "title": "Mcp Server Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MCPServer"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Get an MCP server by ID",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "patch": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "update_mcp_server_api_v1_admin_mcp_servers__mcp_server_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mcp_server_id",
+            "required": true,
+            "schema": {
+              "title": "Mcp Server Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MCPServerUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MCPServer"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Update an MCP server",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/memories": {
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_memories_api_v1_admin_memories_get",
+        "parameters": [
+          {
+            "description": "The user's external id",
+            "in": "query",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "description": "The user's external id",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Agent ID",
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Agent ID",
+              "title": "Agent Id"
+            }
+          },
+          {
+            "description": "Maximum number of results",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "description": "Maximum number of results",
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Search by meaning (and by the words it contains) instead of listing the newest; the closest first",
+            "in": "query",
+            "name": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by meaning (and by the words it contains) instead of listing the newest; the closest first",
+              "title": "Query"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Memory"
+                  },
+                  "title": "Response Get Memories Api V1 Admin Memories Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "List the memories of a user (newest first)",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "post": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "create_memory_api_v1_admin_memories_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemoryCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Memory"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Create a memory",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/memories/{memory_id}": {
+      "delete": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "delete_memory_api_v1_admin_memories__memory_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memory_id",
+            "required": true,
+            "schema": {
+              "title": "Memory Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Memory"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Delete a memory",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_memory_api_v1_admin_memories__memory_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memory_id",
+            "required": true,
+            "schema": {
+              "title": "Memory Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Memory"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Get a memory by ID",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "patch": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "update_memory_api_v1_admin_memories__memory_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "memory_id",
+            "required": true,
+            "schema": {
+              "title": "Memory Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemoryUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Memory"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Update a memory",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/models": {
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_models_api_v1_admin_models_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Model"
+                  },
+                  "title": "Response Get Models Api V1 Admin Models Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "List all models",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "post": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "create_model_api_v1_admin_models_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Model"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Create a new model",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      }
+    },
+    "/api/v1/admin/models/{model_id}": {
+      "delete": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "delete_model_api_v1_admin_models__model_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Model"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Delete a model",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      },
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_model_api_v1_admin_models__model_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Model"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Get a model by ID",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "patch": {
+        "description": "Needs a token with the **admin** role or higher.",
+        "operationId": "update_model_api_v1_admin_models__model_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Model"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Update a model",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "admin"
+      }
+    },
+    "/api/v1/admin/rag": {
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "search_rag_api_v1_admin_rag_get",
+        "parameters": [
+          {
+            "description": "Search query text. Without it the entries of the agent are listed (newest last), paged by limit/offset",
+            "in": "query",
+            "name": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search query text. Without it the entries of the agent are listed (newest last), paged by limit/offset",
+              "title": "Query"
+            }
+          },
+          {
+            "description": "Agent ID",
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Agent ID",
+              "title": "Agent Id"
+            }
+          },
+          {
+            "description": "Maximum number of results",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "description": "Maximum number of results",
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Skip entries (listing without a query only)",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "description": "Skip entries (listing without a query only)",
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Include embedding in results",
+            "in": "query",
+            "name": "include_embedding",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Include embedding in results",
+              "title": "Include Embedding",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RAG"
+                  },
+                  "title": "Response Search Rag Api V1 Admin Rag Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "List RAG entries: all of the agent's, or the ones nearest to a query",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "post": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "create_rag_api_v1_admin_rag_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RAGCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RAG"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Create a RAG entry",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/rag/{rag_id}": {
+      "delete": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "delete_rag_api_v1_admin_rag__rag_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rag_id",
+            "required": true,
+            "schema": {
+              "title": "Rag Id",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Agent ID",
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Agent ID",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RAG"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Delete a RAG entry",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_rag_api_v1_admin_rag__rag_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rag_id",
+            "required": true,
+            "schema": {
+              "title": "Rag Id",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Agent ID",
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Agent ID",
+              "title": "Agent Id"
+            }
+          },
+          {
+            "description": "Include embedding vector in response",
+            "in": "query",
+            "name": "include_embedding",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Include embedding vector in response",
+              "title": "Include Embedding",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RAG"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Get a RAG entry by ID",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "patch": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "update_rag_api_v1_admin_rag__rag_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rag_id",
+            "required": true,
+            "schema": {
+              "title": "Rag Id",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Agent ID",
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Agent ID",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RAGUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RAG"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Update a RAG entry",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/tokens": {
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_tokens_api_v1_admin_tokens_get",
+        "parameters": [
+          {
+            "description": "Only the tokens of this agent. Below admin: always the own agent",
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only the tokens of this agent. Below admin: always the own agent",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Token"
+                  },
+                  "title": "Response Get Tokens Api V1 Admin Tokens Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "List tokens (of one agent, or of all for an admin)",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "post": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "create_token_api_v1_admin_tokens_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewToken"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Make a token. Its secret is in the answer, and only there",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/tokens/{token_id}": {
+      "delete": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "delete_token_api_v1_admin_tokens__token_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token_id",
+            "required": true,
+            "schema": {
+              "title": "Token Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Delete a token (it stops working at once)",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      },
+      "patch": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "update_token_api_v1_admin_tokens__token_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token_id",
+            "required": true,
+            "schema": {
+              "title": "Token Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Rename a token and/or change its role",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/usage": {
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_usage_api_v1_admin_usage_get",
+        "parameters": [
+          {
+            "description": "How many days back, counting today",
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "description": "How many days back, counting today",
+              "maximum": 366,
+              "minimum": 1,
+              "title": "Days",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Only this token",
+            "in": "query",
+            "name": "token_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this token",
+              "title": "Token Id"
+            }
+          },
+          {
+            "description": "Only the tokens of this agent",
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only the tokens of this agent",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DailyUsage"
+                  },
+                  "title": "Response Get Usage Api V1 Admin Usage Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Recent usage by day, token and model (the last USAGE_TTL_DAYS days are in detail)",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/admin/usage/monthly": {
+      "get": {
+        "description": "Needs a token with the **user** role or higher.",
+        "operationId": "get_usage_monthly_api_v1_admin_usage_monthly_get",
+        "parameters": [
+          {
+            "description": "Only this token",
+            "in": "query",
+            "name": "token_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this token",
+              "title": "Token Id"
+            }
+          },
+          {
+            "description": "Only the tokens of this agent",
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only the tokens of this agent",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MonthlyUsage"
+                  },
+                  "title": "Response Get Usage Monthly Api V1 Admin Usage Monthly Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Older usage, folded into one row per token, month and model",
+        "tags": [
+          "Admin API"
+        ],
+        "x-min-role": "user"
+      }
+    },
+    "/api/v1/agents/self": {
+      "get": {
+        "description": "Needs any token.",
+        "operationId": "get_self_agent_api_v1_agents_self_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Agent"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Get the agent of the token (or the one acted as)",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/api/v1/request": {
+      "post": {
+        "description": "Needs any token.",
+        "operationId": "request_api_v1_request_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Send a message and get an AI response",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/api/v1/request-stream": {
+      "post": {
+        "description": "Server-sent events: `event: user` with the user, then one `data:` event per\ntext chunk (a JSON string), then `event: done` with the user, or `event: error`\nwith `{\"detail\": ...}`. With `trace: true`, `event: trace` events (one step of the\nchain of calls each) come in between, as the steps finish. A stream that is stopped (by `POST /users/{id}/interrupt`, or because the same user\nsent a new request) ends with `event: interrupted` (the user) instead of `done`; what was said so far is in the history.\n\nNeeds any token.",
+        "operationId": "request_stream_api_v1_request_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Send a message and get an AI response via SSE",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/api/v1/tokens/self": {
+      "get": {
+        "description": "Needs any token.",
+        "operationId": "get_self_token_api_v1_tokens_self_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Get the token in use: its role and its agent",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "description": "Needs any token.",
+        "operationId": "search_users_api_v1_users_get",
+        "parameters": [
+          {
+            "description": "The start of the external ID (at least 3 characters: there is no list of all users)",
+            "in": "query",
+            "name": "query",
+            "required": true,
+            "schema": {
+              "description": "The start of the external ID (at least 3 characters: there is no list of all users)",
+              "maxLength": 64,
+              "minLength": 3,
+              "title": "Query",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum number of results",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "description": "Maximum number of results",
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  },
+                  "title": "Response Search Users Api V1 Users Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Find users by the start of their external ID",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      },
+      "post": {
+        "description": "Needs any token.",
+        "operationId": "create_user_api_v1_users_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Create a new user",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/api/v1/users/recent": {
+      "get": {
+        "description": "Latest first, by the latest message that has not expired (`MESSAGE_TTL_DAYS`, 7 by default). Not a list of all users: a user\nwith no kept messages is not in it, but can still be found by `GET /users?query=`.\n\nNeeds any token.",
+        "operationId": "recent_users_api_v1_users_recent_get",
+        "parameters": [
+          {
+            "description": "Maximum number of users",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "description": "Maximum number of users",
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RecentUser"
+                  },
+                  "title": "Response Recent Users Api V1 Users Recent Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "The users of the agent who wrote lately (their messages are still kept)",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/api/v1/users/{user_id}": {
+      "delete": {
+        "description": "Needs any token.",
+        "operationId": "delete_user_api_v1_users__user_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Delete a user",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      },
+      "get": {
+        "description": "Needs any token.",
+        "operationId": "get_user_api_v1_users__user_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Get a user by external ID",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      },
+      "patch": {
+        "description": "Needs any token.",
+        "operationId": "update_user_api_v1_users__user_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Update a user",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/api/v1/users/{user_id}/chats": {
+      "get": {
+        "description": "Needs any token.",
+        "operationId": "get_chats_api_v1_users__user_id__chats_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Chat"
+                  },
+                  "title": "Response Get Chats Api V1 Users  User Id  Chats Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "The chats of a user, the latest first",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      },
+      "post": {
+        "description": "Needs any token.",
+        "operationId": "create_chat_api_v1_users__user_id__chats_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ChatCreate"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chat"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Start a chat",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/api/v1/users/{user_id}/chats/{chat_id}": {
+      "delete": {
+        "description": "The default chat can be deleted too: it is made again when a request without `chat_id` needs it.\n\nNeeds any token.",
+        "operationId": "delete_chat_api_v1_users__user_id__chats__chat_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "chat_id",
+            "required": true,
+            "schema": {
+              "title": "Chat Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chat"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Delete a chat with its messages",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      },
+      "get": {
+        "description": "Needs any token.",
+        "operationId": "get_chat_api_v1_users__user_id__chats__chat_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "chat_id",
+            "required": true,
+            "schema": {
+              "title": "Chat Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chat"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "One chat of a user",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      },
+      "patch": {
+        "description": "Needs any token.",
+        "operationId": "rename_chat_api_v1_users__user_id__chats__chat_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "chat_id",
+            "required": true,
+            "schema": {
+              "title": "Chat Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chat"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Rename a chat",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/api/v1/users/{user_id}/chats/{chat_id}/history": {
+      "delete": {
+        "description": "Needs any token.",
+        "operationId": "clear_chat_history_api_v1_users__user_id__chats__chat_id__history_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "chat_id",
+            "required": true,
+            "schema": {
+              "title": "Chat Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Clear a chat (it stays, its messages go)",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      },
+      "get": {
+        "description": "Needs any token.",
+        "operationId": "get_chat_history_api_v1_users__user_id__chats__chat_id__history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "chat_id",
+            "required": true,
+            "schema": {
+              "title": "Chat Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Message"
+                  },
+                  "title": "Response Get Chat History Api V1 Users  User Id  Chats  Chat Id  History Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "The messages of a chat",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/api/v1/users/{user_id}/history": {
+      "delete": {
+        "description": "Needs any token.",
+        "operationId": "delete_history_api_v1_users__user_id__history_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Clear the message history of the default chat of a user",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      },
+      "get": {
+        "description": "Needs any token.",
+        "operationId": "get_history_api_v1_users__user_id__history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Message"
+                  },
+                  "title": "Response Get History Api V1 Users  User Id  History Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Get the message history of the default chat of a user",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/api/v1/users/{user_id}/interrupt": {
+      "post": {
+        "description": "Ends the stream of this user with the agent of the token: the stream gets `event: interrupted`, what was said so far is\nsaved to the history (marked `interrupted`) and to the memory, and then this returns. A new request of the same user does\nthe same by itself, so this is for stopping without saying anything new.\n\nNeeds any token.",
+        "operationId": "interrupt_user_api_v1_users__user_id__interrupt_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Interrupted"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Stop the answer that is being streamed to a user",
+        "tags": [
+          "Main API"
+        ],
+        "x-min-role": "regular"
+      }
+    },
+    "/healthz": {
+      "get": {
+        "operationId": "healthz_healthz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [],
+        "summary": "Liveness: the process answers",
+        "tags": [
+          "Operations"
+        ],
+        "x-min-role": "none"
+      }
+    },
+    "/readyz": {
+      "get": {
+        "operationId": "readyz_readyz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [],
+        "summary": "Readiness: the database answers and is migrated",
+        "tags": [
+          "Operations"
+        ],
+        "x-min-role": "none"
+      }
+    }
+  }
+}

@@ -1,0 +1,79 @@
+# Omnixon, the whole stack: Postgres (pgvector) + API (omnixon-backend) + admin panel (omnixon-frontend)
+# + MCP server (omnixon-mcp).
+#
+#   docker compose up -d --build
+#   docker compose down        # keeps the data; add -v to wipe it
+#
+# Panel: http://localhost:${PANEL_PORT:-8080}   API: http://localhost:${UPSTREAM_PORT:-8083}
+# MCP: http://localhost:${MCP_PORT:-8090}/mcp (from an agent of this stack: http://mcp:8090/mcp), token in the
+# `Authorization: Bearer` header or `?token=`.
+# Sign in to the panel with INITIAL_API_KEY from .env. Settings come from .env next to this file.
+name: omnixon
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    env_file: .env
+    environment:
+      PGDATA: /data/postgres
+    volumes:
+      - postgres-data:/data/postgres
+      - ./omnixon-backend/docker/init-db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./omnixon-backend
+      dockerfile: docker/Dockerfile.api
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      # more than one api (scale it) can stop each other's streams through Redis
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "${UPSTREAM_PORT:-8083}:80"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    restart: unless-stopped
+
+  panel:
+    build:
+      context: ./omnixon-frontend
+      dockerfile: docker/Dockerfile.panel
+    environment:
+      OMNIXON_URL: http://api:80
+    ports:
+      - "${PANEL_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mcp:
+    build:
+      context: ./omnixon-mcp
+    environment:
+      OMNIXON_URL: http://api:80
+    ports:
+      - "${MCP_PORT:-8090}:8090"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

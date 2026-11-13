@@ -1,0 +1,1403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Omnixon Product Film</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=block" rel="stylesheet">
+<style>
+  :root { --bg: #050507; --fg: #fafafa; --mute: #8b8b96; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #000; color: var(--fg); font-family: 'Inter Tight', system-ui, sans-serif; }
+  body { min-height: 100svh; display: grid; place-items: center; padding: 16px; }
+  .wrap { width: min(100%, calc((100svh - 110px) * 16 / 9)); }
+  canvas { display: block; width: 100%; aspect-ratio: 16 / 9; background: var(--bg); border-radius: 10px; }
+  .bar { display: flex; align-items: center; gap: 14px; margin-top: 14px; font: 500 13px 'JetBrains Mono', monospace; color: var(--mute); }
+  .bar button { all: unset; cursor: pointer; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--fg); color: #000; }
+  .bar input { flex: 1; accent-color: var(--fg); }
+  .bar .t { min-width: 92px; text-align: right; font-variant-numeric: tabular-nums; }
+  body.render { padding: 0; display: block; }
+  body.render .wrap { width: 1920px; }
+  body.render canvas { width: 1920px; height: 1080px; border-radius: 0; }
+  body.render .bar { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <canvas id="c"></canvas>
+  <div class="bar">
+    <button id="play" aria-label="Play"><svg width="14" height="14" viewBox="0 0 14 14"><path id="icon" d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg></button>
+    <input id="scrub" type="range" min="0" max="74.4" step="0.001" value="0" aria-label="Timeline">
+    <span class="t" id="tc">00.00 / 74.40</span>
+  </div>
+</div>
+<audio id="music" preload="auto"></audio>
+<script>
+'use strict';
+// =====================================================================================
+//  OMNIXON — product film v6: one continuous shot. Nothing cuts: every scene grows out of the
+//  last one (a dive, a zoom, a card that becomes a window, a window that becomes a query, tiles
+//  that become agents). Motion has weight: letters drop and bounce, cards ride on springs,
+//  heavy landings dip the camera. Flat fills only; white is the interface accent.
+//  Everything is a pure function of time t, so it previews live and renders frame-exact.
+// =====================================================================================
+const W = 1920, H = 1080, DUR = 74.4, FPS = 60, BEAT = 0.6;
+const params = new URLSearchParams(location.search);
+const RENDER_MODE = params.has('render');
+const SUB = Math.max(1, +(params.get('sub') || 1)); // sub-frames per frame (motion blur)
+
+const mk = (w = W, h = H) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+const main = document.getElementById('c'); main.width = W; main.height = H;
+const mainCtx = main.getContext('2d');
+const frameC = mk(), fctx = frameC.getContext('2d');
+const accC = mk(), actx = accC.getContext('2d');
+const bufA = mk(), bufB = mk(), bctxA = bufA.getContext('2d'), bctxB = bufB.getContext('2d');
+const mctx = mk(8, 8).getContext('2d'); // for measuring text outside a scene
+let ctx = fctx;
+
+const COL = {
+  bg: '#050507', fg: '#fafafa', ink: '#050507', card: '#111116', line: '#2a2a33',
+  mute: 'rgba(250,250,250,0.55)', dim: 'rgba(250,250,250,0.18)', faint: 'rgba(250,250,250,0.07)',
+  link: '#7c8cff', // the one blue accent: the link at the very end
+};
+const PAL = { blue: '#229ED9', green: '#25D366', blurple: '#5865F2', coral: '#FF5A36', yellow: '#FFC83D', pink: '#FF6FB1' };
+// ---------- copy: one film, two languages (?lang=ru) ----------
+const LANG = params.get('lang') === 'ru' ? 'ru' : 'en';
+const T = {
+  en: {
+    bp: ['32 × 32', 'R 7.0', 'STROKE 3.5', 'RADIUS 8'],
+    channel: 'CHANNEL', yourSite: 'YOUR SITE',
+    qs: ['remind me what we decided?', 'is my booking still on?', 'summarise the docs for me', 'which plan fits my team?'],
+    oneApi: 'ONE API.', oneApiMk: [4, 6],
+    few: 'A FEW', lines: 'LINES.', linesMk: [0, 4],
+    oneClient: 'ONE CLIENT · ANY AGENT · JSON OR STREAM',
+    codeQ: '"What did we decide about pricing?"',
+    answer: 'You said the team plan stays at $20 a seat, and the free tier gets 100 requests a month. I also remember you prefer yearly billing.',
+    stream: 'STREAM', chunks: 'chunk by chunk', okMs: '200 OK · 1.2 s',
+    anyModel: 'ANY MODEL.', anyMk: [0, 2], ownServer: 'YOUR OWN SERVER',
+    know1: 'KNOWLEDGE,', know2: 'FOUND BY MEANING.', know2Mk: [9, 15],
+    capIdx: 'PGVECTOR · HNSW INDEX · 2 LAYERS', capTop: 'TOP 5 BY COSINE SIMILARITY',
+    query: 'what did we decide about pricing?',
+    msgs: [['pricing.md · §2', 'Team plan stays at $20 a seat.'], ['chat · 12 sep', 'Free tier: 100 requests a month.'], ['billing.md', 'Yearly billing = 2 months free.'], ['call notes · 03 oct', 'Pricing call moved to Friday.'], ['faq.md', 'Students get 50% off.']],
+    tools: 'PLUG IN ANY TOOL.', toolsMk: [12, 15], toolsSub: 'MCP SERVERS · PER AGENT · LIVE TOOL CALLS',
+    search: 'ramen near the office', meta: ['450 m · open till 23:00', '900 m · tables free', '1.2 km · lunch set'],
+    crmHead: ['NAME', 'EMAIL', 'STAGE'], crmRows: [['Mark Olsen', 'mark@nwind.io', 'client'], ['Lina Park', 'lina@orbit.dev', 'lead'], ['Sam Reyes', 'sam@hello.co', 'client']],
+    crmNew: ['Anna Ivanova', 'anna@studio.io', 'new'], plusContact: '+1 CONTACT',
+    fileSt: ['signed', 'paid', 'ok', 'ok'], checked: 'CHECKED',
+    demos: [['"ramen near the office"', '3 places found', '200 · 3 results'], ['"Anna Ivanova"', 'contact added', '201 · created'], ['"contracts/"', 'all 4 files ok', '200 · 4 ok']],
+    agents: ['AGENTS', 'THAT ASK', 'AGENTS.'], agentsMk: [1, 5, 7], agentsCap: ['list_agents() · ask_agent() — built in.', 'connect them in the panel, no code.'],
+    notes: ['knows the docs', 'answers from docs', 'reads the web', 'remembers clients', 'books by chat', 'knows the plans'], answerChip: '✓ answer',
+    speaks: 'OMNIXON SPEAKS MCP.', speaksMk: [15, 17], speaksRing: true, toolsN: n => `${n} TOOLS BUILT IN · DRIVE IT FROM ANY MCP CLIENT`,
+    prompt: '› make a pirate agent and ask it to say hello', reply: 'pirate › Ahoy! Yer new agent be ready, captain.', hello: '"say hello"',
+    strobe: ['MEMORY', 'VERSIONS', 'ROLES', 'USAGE', 'STREAMING', 'VOICE'], also: 'ALSO INSIDE',
+    tagline: 'One API for every model, memory and tool.', tagHi: 4,
+  },
+  ru: {
+    bp: ['32 × 32', 'R 7.0', 'ОБВОДКА 3.5', 'РАДИУС 8'],
+    channel: 'КАНАЛ', yourSite: 'ВАШ САЙТ',
+    qs: ['напомни, о чём договорились?', 'моя бронь ещё в силе?', 'перескажи документацию', 'какой тариф нам подойдёт?'],
+    oneApi: 'ОДИН API.', oneApiMk: [5, 7],
+    few: 'ПАРА', lines: 'СТРОК.', linesMk: [0, 4],
+    oneClient: 'ОДИН КЛИЕНТ · ЛЮБОЙ АГЕНТ · JSON ИЛИ СТРИМ',
+    codeQ: '"О чём мы договорились по ценам?"',
+    answer: 'Вы решили: командный тариф остаётся $20 за место, а бесплатный — 100 запросов в месяц. Ещё я помню, что вы предпочитаете годовую оплату.',
+    stream: 'СТРИМ', chunks: 'по кусочкам', okMs: '200 OK · 1,2 с',
+    anyModel: 'ЛЮБАЯ МОДЕЛЬ.', anyMk: [0, 4], ownServer: 'ВАШ СЕРВЕР',
+    know1: 'ЗНАНИЯ,', know2: 'ИЩУТСЯ ПО СМЫСЛУ.', know2Mk: [10, 15],
+    capIdx: 'PGVECTOR · HNSW-ИНДЕКС · 2 СЛОЯ', capTop: 'ТОП-5 ПО КОСИНУСНОЙ БЛИЗОСТИ',
+    query: 'о чём мы договорились по ценам?',
+    msgs: [['pricing.md · §2', 'Командный тариф — $20 за место.'], ['чат · 12 сен', 'Бесплатно: 100 запросов в месяц.'], ['billing.md', 'Годовая оплата = 2 месяца в подарок.'], ['заметки · 03 окт', 'Созвон по ценам — в пятницу.'], ['faq.md', 'Студентам скидка 50%.']],
+    tools: 'ЛЮБЫЕ ИНСТРУМЕНТЫ.', toolsMk: [6, 16], toolsSub: 'MCP-СЕРВЕРЫ · У КАЖДОГО АГЕНТА · ЖИВЫЕ ВЫЗОВЫ',
+    search: 'рамен рядом с офисом', meta: ['450 м · до 23:00', '900 м · есть столики', '1,2 км · бизнес-ланч'],
+    crmHead: ['ИМЯ', 'EMAIL', 'СТАДИЯ'], crmRows: [['Марк Олсен', 'mark@nwind.io', 'клиент'], ['Лина Пак', 'lina@orbit.dev', 'лид'], ['Сэм Рейес', 'sam@hello.co', 'клиент']],
+    crmNew: ['Анна Иванова', 'anna@studio.io', 'новый'], plusContact: '+1 КОНТАКТ',
+    fileSt: ['подписан', 'оплачен', 'ok', 'ok'], checked: 'ПРОВЕРЕНО',
+    demos: [['"рамен рядом с офисом"', 'найдено 3 места', '200 · 3 результата'], ['"Анна Иванова"', 'контакт добавлен', '201 · создан'], ['"contracts/"', 'все 4 файла в порядке', '200 · 4 ok']],
+    agents: ['АГЕНТЫ', 'СПРАШИВАЮТ', 'АГЕНТОВ.'], agentsMk: [1, 0, 9], agentsCap: ['list_agents() · ask_agent() — встроены.', 'связи настраиваются в панели, без кода.'],
+    notes: ['знает документацию', 'отвечает по докам', 'читает интернет', 'помнит клиентов', 'бронирует в чате', 'знает тарифы'], answerChip: '✓ ответ',
+    speaks: 'OMNIXON ГОВОРИТ НА MCP.', speaksMk: [19, 21], speaksRing: [0, 5], toolsN: n => `${n} ИНСТРУМЕНТА ВНУТРИ · УПРАВЛЯЙТЕ ИЗ ЛЮБОГО MCP-КЛИЕНТА`,
+    prompt: '› создай агента-пирата и попроси поздороваться', reply: 'pirate › Йо-хо-хо! Новый агент готов, капитан.', hello: '"поздоровайся"',
+    strobe: ['ПАМЯТЬ', 'ВЕРСИИ', 'РОЛИ', 'РАСХОД', 'СТРИМИНГ', 'ГОЛОС'], also: 'А ЕЩЁ ВНУТРИ',
+    tagline: 'Один API для любых моделей, памяти и инструментов.', tagHi: 3,
+  },
+}[LANG];
+const SANS = "'Inter Tight'", MONO = "'JetBrains Mono'";
+const TAU = Math.PI * 2;
+
+// ---------- math & easing ----------
+const clamp = (x, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
+const lerp = (a, b, t) => a + (b - a) * t;
+const P = (t, a, b) => clamp((t - a) / (b - a));
+const ease = {
+  inCubic: x => x * x * x,
+  outCubic: x => 1 - (1 - x) ** 3,
+  inOutCubic: x => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2),
+  outQuart: x => 1 - (1 - x) ** 4,
+  inExpo: x => (x === 0 ? 0 : 2 ** (10 * x - 10)),
+  outExpo: x => (x === 1 ? 1 : 1 - 2 ** (-10 * x)),
+  inOutExpo: x => (x === 0 ? 0 : x === 1 ? 1 : x < 0.5 ? 2 ** (20 * x - 10) / 2 : (2 - 2 ** (-20 * x + 10)) / 2),
+};
+const E = (t, a, b, fn = 'outExpo') => ease[fn](P(t, a, b));
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+const mix = (h1, h2, k) => { const a = parseInt(h1.slice(1), 16), b = parseInt(h2.slice(1), 16); const c = s => Math.round(lerp((a >> s) & 255, (b >> s) & 255, clamp(k))); return '#' + ((c(16) << 16) | (c(8) << 8) | c(0)).toString(16).padStart(6, '0'); };
+const lerpRect = (a, b, k) => ({ x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k), w: lerp(a.w, b.w, k), h: lerp(a.h, b.h, k) });
+
+// ---------- physics: everything that moves has mass ----------
+// a damped spring's step response, 0 → 1 with an overshoot; a low frequency reads as weight
+function spring(t, t0, f = 1.8, z = 0.5) {
+  const x = t - t0; if (x <= 0) return 0;
+  const w = TAU * f, wd = w * Math.sqrt(1 - z * z);
+  return 1 - Math.exp(-z * w * x) * (Math.cos(wd * x) + ((z * w) / wd) * Math.sin(wd * x));
+}
+const landT = (h, g = 7000) => Math.sqrt((2 * h) / g);
+// a dropped weight: falls (stretching), lands (squashing), bounces twice and settles. y is its offset.
+function drop(t, t0, h, o = {}) {
+  let x = t - t0; if (x < 0) return null;
+  const g = o.g ?? 7000, e = o.e ?? 0.3, vRef = Math.sqrt(2 * g * 760), T1 = landT(h, g);
+  const sq = (x, vi) => 0.26 * Math.min(1, vi / vRef) * Math.exp(-x * 15) * Math.cos(x * 28);
+  if (x < T1) { const s = (0.16 * g * x) / vRef; return { y: -h + 0.5 * g * x * x, sx: 1 - s * 0.45, sy: 1 + s }; }
+  x -= T1;
+  let vi = g * T1, v = vi * e;
+  for (let k = 0; k < 2; k++) {
+    const Tb = (2 * v) / g;
+    if (x < Tb) { const s = sq(x, vi); return { y: -(v * x - 0.5 * g * x * x), sx: 1 + s * 0.7, sy: 1 - s }; }
+    x -= Tb; vi = v; v *= e;
+  }
+  const s = sq(x, vi); return { y: 0, sx: 1 + s * 0.7, sy: 1 - s };
+}
+// leaving with weight: a crouch, a small hop, then gravity takes it and it tumbles away
+function fall(t, t0, o = {}) {
+  const x = t - t0, dir = o.dir ?? 1; if (x <= 0) return { y: 0, rot: 0, sx: 1, sy: 1 };
+  const g = o.g ?? 6500;
+  if (x < 0.1) { const k = Math.sin((x / 0.1) * Math.PI); return { y: 5 * k, rot: 0, sx: 1 + 0.06 * k, sy: 1 - 0.09 * k }; }
+  if (x < 0.24) { const k = Math.sin(((x - 0.1) / 0.14) * (Math.PI / 2)); return { y: -34 * k, rot: dir * 0.04 * k, sx: 1 - 0.04 * k, sy: 1 + 0.07 * k }; }
+  const u = x - 0.24; return { y: -34 + 0.5 * g * u * u, rot: dir * (0.04 + 2.4 * u * u), sx: 0.97, sy: 1.05 };
+}
+// a short damped wobble after an impact (squash = +, stretch = −)
+const wobble = (t, t0, a = 0.1, k = 8, w = 26) => { const x = t - t0; return x > 0 ? a * Math.exp(-x * k) * Math.cos(x * w) : 0; };
+
+// ---------- audio cue sheet (read by music.py) ----------
+const EVENTS = [];
+const cue = (t, type, o = {}) => EVENTS.push({ t: +t.toFixed(4), type, ...o });
+const SCALE = [65, 68, 70, 72, 75, 77, 80, 82, 84]; // F minor pentatonic: every landing letter plays a note
+
+// ---------- impacts push the dot field; heavy landings dip the camera ----------
+const IMPACTS = [], BUMPS = [];
+function impact(t, k = 1, x = W / 2, y = H / 2) { IMPACTS.push({ t, k, x, y }); }
+function bump(t, a = 8) { BUMPS.push({ t, a }); }
+function camBump(t) { let y = 0; for (const b of BUMPS) { const x = t - b.t; if (x > 0 && x < 1.6) y += b.a * Math.exp(-x * 6) * Math.sin(x * 20); } return y; }
+
+// ---------- drawing helpers ----------
+function setFont(size, weight = 800, fam = SANS, ls = 0, ws = 0) { ctx.font = `${weight} ${size}px ${fam}`; ctx.letterSpacing = `${ls}px`; ctx.wordSpacing = `${ws}px`; }
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, Math.max(0, w), Math.max(0, h), Math.max(0, Math.min(r, w / 2, h / 2))); }
+function rrPerimeter(w, h, r) { return 2 * (w + h - 4 * r) + TAU * r; }
+function withAlpha(a, fn) { if (a <= 0) return; ctx.save(); ctx.globalAlpha *= Math.min(1, a); fn(); ctx.restore(); }
+function disc(x, y, r, col) { if (r <= 0) return; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = col; ctx.fill(); }
+// run fn with a transform about a pivot: move, rotate, scale
+function about(px, py, o, fn) { ctx.save(); ctx.translate(px + (o.dx || 0), py + (o.dy || 0)); ctx.rotate(o.rot || 0); ctx.scale(o.sx ?? 1, o.sy ?? 1); ctx.translate(-px, -py); fn(); ctx.restore(); }
+
+// The mark: the favicon (32×32: a rounded black square, a white ring r=7 with a 3.5 stroke).
+function logo(cx, cy, s, o = {}) {
+  const u = s / 32, ring = o.ring ?? 1, sq = o.sq ?? 1, fill = o.fill ?? 1;
+  if (sq > 0) {
+    const x = cx - 15.5 * u, y = cy - 15.5 * u, w = 31 * u, r = 8 * u;
+    if (fill > 0) withAlpha(fill, () => { rr(x, y, w, w, r); ctx.fillStyle = o.bg || '#000'; ctx.fill(); });
+    const per = rrPerimeter(w, w, r);
+    ctx.save(); rr(x, y, w, w, r);
+    ctx.setLineDash([per * sq, per + 1]);
+    ctx.strokeStyle = o.sqCol || 'rgba(255,255,255,0.2)'; ctx.lineWidth = Math.max(1, u * (o.sqW || 1)); ctx.stroke(); ctx.restore();
+  }
+  if (ring > 0) {
+    ctx.beginPath(); ctx.arc(cx, cy, 7 * u, -Math.PI / 2, -Math.PI / 2 + TAU * ring);
+    ctx.strokeStyle = o.ringCol || COL.fg; ctx.lineWidth = 3.5 * u; ctx.lineCap = ring < 1 ? 'round' : 'butt'; ctx.stroke(); ctx.lineCap = 'butt';
+  }
+}
+// The ring alone, as a letter O at a given cap height.
+function ringGlyph(cx, cy, capH, col) {
+  const R = capH * 0.53, sw = R * 2 * 0.2;
+  ctx.beginPath(); ctx.arc(cx, cy, R - sw / 2, 0, TAU); ctx.strokeStyle = col; ctx.lineWidth = sw; ctx.stroke();
+}
+
+// A heavy headline: letters drop in one by one, land with a squash and bounce; on exit each crouches,
+// hops and falls away tumbling. A marked word is a solid block: its fill springs in behind the letters
+// (which turn dark) and on exit the whole block falls as one piece.
+function heavy(str, x, y, size, t, tIn, o = {}) {
+  const weight = o.weight ?? 900;
+  setFont(size, weight, SANS, -0.03 * size, 0.17 * size);
+  if (o.maxW && ctx.measureText(str).width > o.maxW) size *= o.maxW / ctx.measureText(str).width;
+  const ls = -0.03 * size;
+  setFont(size, weight, SANS, ls, 0.17 * size);
+  const total = ctx.measureText(str).width - ls;
+  const x0 = o.align === 'center' ? x - total / 2 : x;
+  const capH = size * 0.73, col = o.color || COL.fg, st = o.stagger ?? 0.04, h = o.h ?? 760, g = o.g ?? 7000, outSt = o.outSt ?? 0.03;
+  const cxs = []; for (let i = 0; i <= str.length; i++) cxs.push(x0 + ctx.measureText(str.slice(0, i)).width);
+  const m = o.marker, inMk = i => !!m && i >= m.from && i <= m.to;
+  const L = [];
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i]; if (ch === ' ') continue;
+    const d = drop(t, tIn + i * st, h, { g }); if (!d) continue;
+    const l = { i, ch, w: ctx.measureText(ch).width - ls, x: cxs[i], y: y + d.y, sx: d.sx, sy: d.sy, rot: 0,
+      ring: o.ringO === true ? ch === 'O' || ch === 'О' : Array.isArray(o.ringO) && o.ringO.includes(i) };
+    if (o.out != null && !inMk(i)) { const f = fall(t, o.out + i * outSt, { g, dir: i % 2 ? 1 : -1 }); l.y += f.y; l.rot = f.rot; l.sx *= f.sx; l.sy *= f.sy; }
+    if (l.y - capH * 1.6 > H) continue;
+    L.push(l);
+  }
+  const draw = (l, c) => {
+    ctx.save(); ctx.translate(l.x + l.w / 2, l.y); ctx.rotate(l.rot); ctx.scale(l.sx, l.sy);
+    if (l.ring) ringGlyph(0, -capH / 2, capH, c); else { ctx.fillStyle = c; ctx.fillText(l.ch, -l.w / 2, 0); }
+    ctx.restore();
+  };
+  for (const l of L) if (!inMk(l.i)) draw(l, col);
+  if (m) {
+    const mx0 = cxs[m.from] - size * 0.07, mx1 = cxs[m.to + 1] - ls + size * 0.07, my = y - capH - size * 0.13, mh = capH + size * 0.26;
+    const wi = spring(t, m.t, 1.5, 0.55);
+    ctx.save();
+    if (o.out != null) { const f = fall(t, o.out + m.from * outSt, { g, dir: 1 }); const cx = (mx0 + mx1) / 2, cy = my + mh / 2; ctx.translate(cx, cy + f.y); ctx.rotate(f.rot * 0.6); ctx.scale(f.sx, f.sy); ctx.translate(-cx, -cy); }
+    if (wi > 0) { ctx.fillStyle = m.col; ctx.fillRect(mx0, my, (mx1 - mx0) * wi, mh); }
+    for (const l of L) if (inMk(l.i)) draw(l, col);
+    if (wi > 0) { ctx.save(); ctx.beginPath(); ctx.rect(mx0, my, (mx1 - mx0) * wi, mh); ctx.clip(); for (const l of L) if (inMk(l.i)) draw(l, m.ink || COL.ink); ctx.restore(); }
+    ctx.restore();
+  }
+  return { x0, w: total, capH, cxs };
+}
+// the cues for a heavy headline: a soft thump on the first landing, a marimba note for every letter
+function cueHeavy(str, tIn, o = {}) {
+  const st = o.stagger ?? 0.04, lt = landT(o.h ?? 760, o.g ?? 7000); let k = 0, last = tIn;
+  for (let i = 0; i < str.length; i++) if (str[i] !== ' ') { last = tIn + i * st + lt; if (k % (o.every ?? 1) === 0) cue(last, 'tok', { n: SCALE[(k + (o.n0 ?? 0)) % SCALE.length] + (o.oct ?? 0), g: o.gain ?? 0.28 }); k++; }
+  cue(tIn + lt, 'thump', { g: o.thump ?? 0.45 });
+  bump(last, o.bump ?? 6);
+}
+function cueFall(t0) { cue(t0 + 0.24, 'fall', { n: 72 }); }
+
+// Monospace typewriter. Returns the number of typed characters.
+function typed(str, x, y, size, t, t0, cps, o = {}) {
+  const n = Math.max(0, Math.min(str.length, Math.floor((t - t0) * cps)));
+  setFont(size, o.weight ?? 500, MONO, o.ls ?? 0);
+  ctx.fillStyle = o.color || COL.mute;
+  const s = str.slice(0, n); ctx.fillText(s, x, y);
+  const w = ctx.measureText(s).width;
+  if (o.cursor && (n < str.length || Math.floor(t * 3.2) % 2 === 0) && (o.cursorUntil == null || t < o.cursorUntil)) {
+    ctx.fillStyle = o.cursorCol || COL.fg; ctx.fillRect(x + w + 3, y - size * 0.8, size * 0.5, size * 0.95);
+  }
+  return n;
+}
+function cueTyping(str, t0, cps, every = 2, gain = 1) {
+  for (let i = 1; i <= str.length; i += every) if (str[i - 1] !== ' ') cue(t0 + i / cps, 'key', { g: gain, v: (i * 7919) % 5 });
+}
+// an outlined pill with a status dot
+function pill(x, y, label, o = {}) {
+  setFont(o.size || 24, o.weight || 500, MONO, 0);
+  const w = ctx.measureText(label).width + (o.dot === false ? 44 : 70), h = o.h || 62;
+  const left = o.align === 'center' ? x - w / 2 : o.align === 'right' ? x - w : x;
+  rr(left, y - h / 2, w, h, h / 2); ctx.fillStyle = o.bg || COL.card; ctx.fill();
+  ctx.strokeStyle = o.border || COL.dim; ctx.lineWidth = o.lw || 1.5; ctx.stroke();
+  let tx = left + 22;
+  if (o.dot !== false) { disc(left + 30, y, 6, o.dotCol || COL.fg); tx = left + 48; }
+  ctx.fillStyle = o.color || COL.fg; ctx.textBaseline = 'middle'; ctx.fillText(label, tx, y + 1); ctx.textBaseline = 'alphabetic';
+  return { left, w, h, right: left + w };
+}
+// a solid chip: the way calls and results travel
+function chip(x, y, label, o = {}) {
+  const sz = o.size || 17, px = o.padX ?? 18;
+  setFont(sz, o.weight || 700, MONO, 0);
+  const tw = ctx.measureText(label).width, dotW = o.dot ? sz * 0.9 : 0;
+  const w = tw + px * 2 + dotW, h = o.h || sz * 2.2;
+  const left = o.align === 'left' ? x : o.align === 'right' ? x - w : x - w / 2;
+  rr(left, y - h / 2, w, h, h / 2); ctx.fillStyle = o.bg || COL.fg; ctx.fill();
+  if (o.border) { ctx.strokeStyle = o.border; ctx.lineWidth = 1.5; ctx.stroke(); }
+  if (o.dot) disc(left + px + sz * 0.25, y, sz * 0.25, o.dot);
+  ctx.fillStyle = o.fg || COL.ink; ctx.textBaseline = 'middle'; ctx.fillText(label, left + px + dotW, y + 1); ctx.textBaseline = 'alphabetic';
+  return { left, w, h };
+}
+function bez(p0, p1, p2, p3, k) {
+  const u = 1 - k;
+  return { x: u * u * u * p0.x + 3 * u * u * k * p1.x + 3 * u * k * k * p2.x + k * k * k * p3.x, y: u * u * u * p0.y + 3 * u * u * k * p1.y + 3 * u * k * k * p2.y + k * k * k * p3.y };
+}
+function strokeBez(p0, p1, p2, p3, from, to, col, lw) {
+  if (to <= from) return;
+  ctx.beginPath(); const n = 48;
+  for (let i = 0; i <= n; i++) { const k = lerp(from, to, i / n), p = bez(p0, p1, p2, p3, k); i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); }
+  ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.stroke(); ctx.lineCap = 'butt';
+}
+// a flat travelling packet: a solid dot with a straight tail
+function packet(pts, k, col, r = 7, tail = 0.2) {
+  ctx.beginPath(); const n = 10;
+  for (let i = 0; i <= n; i++) { const p = pts(Math.max(0, k - tail * (1 - i / n))); i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); }
+  ctx.strokeStyle = col; ctx.lineWidth = r * 0.9; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); ctx.lineCap = 'butt';
+  const p = pts(k); disc(p.x, p.y, r, col);
+}
+// a polyline drawn up to a fraction of its length, with rounded corners
+function polyLen(pts) { let s = 0; for (let i = 1; i < pts.length; i++) s += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); return s; }
+function polyAt(pts, k) {
+  let need = polyLen(pts) * clamp(k);
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i], l = Math.hypot(b.x - a.x, b.y - a.y);
+    if (need <= l) return { x: lerp(a.x, b.x, l ? need / l : 0), y: lerp(a.y, b.y, l ? need / l : 0) };
+    need -= l;
+  }
+  return pts[pts.length - 1];
+}
+function strokePoly(pts, k, col, lw, r = 22) {
+  if (k <= 0) return;
+  let need = polyLen(pts) * clamp(k);
+  const out = [pts[0]];
+  for (let i = 1; i < pts.length && need > 0; i++) {
+    const a = pts[i - 1], b = pts[i], l = Math.hypot(b.x - a.x, b.y - a.y);
+    if (need >= l) { out.push(b); need -= l; } else { out.push({ x: lerp(a.x, b.x, need / l), y: lerp(a.y, b.y, need / l) }); need = 0; }
+  }
+  ctx.beginPath(); ctx.moveTo(out[0].x, out[0].y);
+  for (let i = 1; i < out.length - 1; i++) ctx.arcTo(out[i].x, out[i].y, out[i + 1].x, out[i + 1].y, r);
+  ctx.lineTo(out[out.length - 1].x, out[out.length - 1].y);
+  ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); ctx.lineCap = 'butt';
+}
+function bubble(x, y, text, o = {}) {
+  setFont(o.size || 24, 500, MONO, 0);
+  const w = ctx.measureText(text).width + 48, h = o.h || 56, left = o.align === 'right' ? x - w : x;
+  const tx = o.align === 'right' ? left + w - 40 : left + 26;
+  ctx.beginPath(); ctx.roundRect(left, y - h / 2, w, h, 18);
+  ctx.moveTo(tx + 18, y + h / 2 - 1); ctx.lineTo(tx + 2, y + h / 2 + 16); ctx.lineTo(tx - 2, y + h / 2 - 1);
+  ctx.fillStyle = o.bg; ctx.fill();
+  ctx.fillStyle = o.fg; ctx.textBaseline = 'middle'; ctx.fillText(text, left + 24, y + 1); ctx.textBaseline = 'alphabetic';
+  return { left, w };
+}
+
+// ---------- background: the landing page's dot field, pushed by every impact ----------
+function dotField(t, o = {}) {
+  const sp = 40, r = 1.35;
+  let fx = W / 2, fy = H / 2, push = 0;
+  for (const im of IMPACTS) { const d = t - im.t; if (d >= 0 && d < 1.2) { const a = im.k * Math.exp(-d * 5) * Math.sin(Math.min(d * 18, Math.PI / 2)); if (a > push) { push = a; fx = im.x; fy = im.y; } } }
+  const drift = (t * 14) % sp;
+  ctx.fillStyle = rgba(o.col || '#fafafa', o.a ?? 0.085); ctx.beginPath();
+  for (let gy = -2 * sp; gy < H + 2 * sp; gy += sp) for (let gx = -sp; gx < W + sp; gx += sp) {
+    let px = gx + drift, py = gy + drift * 0.35;
+    if (push > 0.001) { const dx = px - fx, dy = py - fy, d = Math.hypot(dx, dy) || 1, br = 900; if (d < br) { const k = ((1 - d / br) ** 2) * push * 120; px += (dx / d) * k; py += (dy / d) * k; } }
+    ctx.moveTo(px + r, py); ctx.arc(px, py, r, 0, TAU);
+  }
+  ctx.fill();
+}
+function background(t) { ctx.fillStyle = COL.bg; ctx.fillRect(-100, -100, W + 200, H + 200); dotField(t); }
+function flood(col) { ctx.fillStyle = col; ctx.fillRect(-100, -100, W + 200, H + 200); }
+
+// =====================================================================================
+//  TIMELINE — 100 BPM (a beat is 0.6 s, a bar 2.4 s); every section is a whole number of bars.
+//  Sections overlap: the next one is already growing out of the last before it ends.
+// =====================================================================================
+const S = { intro: 0, ch: 4.8, code: 12.0, model: 21.6, rag: 28.8, mcp: 40.8, agents: 52.8, builtin: 60.0, outro: 67.2, slam: 69.6, end: 74.4 };
+const SC = { code: PAL.coral, model: PAL.yellow, rag: PAL.pink, mcp: PAL.green, agents: PAL.blue, builtin: PAL.blurple };
+// the hand-offs: the moments one scene's object becomes the next scene's object
+const MORPH_CM = 21.15; // the code editor card → the model slot
+const MORPH_MR = 28.45; // the model slot → the query pill; the model ids → the vector cloud
+const MORPH_MA = 52.35; // the tool tiles → the agents
+const MERGE_AB = 60.15; // the agents → the mark
+const LOGO_BO = 67.0;   // the mark → the finale
+
+// =====================================================================================
+//  SCENE 1 — INTRO (0 → 4.8): particles gather into a dot, the mark is constructed, we dive through it
+// =====================================================================================
+const SEEDS = []; { const r = mulberry32(21); for (let i = 0; i < 150; i++) { const a = r() * TAU, d = 350 + r() * 900; SEEDS.push({ a, d, t: 0.02 + r() * 0.25, w: 1 + r() * 2 }); } }
+const DOT_T = 0.6;
+cue(0.0, 'drone'); cue(0.0, 'reverse', { d: DOT_T }); cue(DOT_T, 'pop', { n: 72 }); impact(DOT_T, 0.4);
+cue(0.8, 'sweep', { d: 1.0 }); cue(1.35, 'sweep', { d: 1.0, hi: 1 });
+cue(1.8, 'tick', { g: 0.5 }); cue(2.0, 'tick', { g: 0.5 }); cue(2.2, 'tick', { g: 0.5 });
+cue(3.0, 'thump', { g: 0.9 }); impact(3.0, 0.6); bump(3.0, 10); cue(3.6, 'riser', { d: 1.2 }); cue(4.1, 'swell', { d: 0.7 });
+
+function sIntro(t, hole) {
+  const cx = W / 2, cy = H / 2;
+  const z = 1 + ease.inExpo(P(t, 3.9, 4.8)) * 70;
+  const s = 340 * z, u = s / 32;
+  if (hole) {
+    ctx.save(); ctx.beginPath(); ctx.rect(-100, -100, W + 200, H + 200); ctx.arc(cx, cy, 5.25 * u, 0, TAU, true); ctx.clip();
+    ctx.fillStyle = COL.bg; ctx.fillRect(-100, -100, W + 200, H + 200);
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(z, z); ctx.translate(-cx, -cy); dotField(t); ctx.restore();
+    ctx.restore();
+  }
+  if (t < DOT_T + 0.04) {
+    ctx.lineCap = 'round';
+    for (const p of SEEDS) {
+      const k = ease.inExpo(P(t, p.t, DOT_T)); if (k >= 1) continue;
+      const d = p.d * (1 - k), d2 = p.d * (1 - Math.max(0, k - 0.06));
+      ctx.strokeStyle = `rgba(250,250,250,${0.25 + 0.65 * k})`; ctx.lineWidth = p.w;
+      ctx.beginPath(); ctx.moveTo(cx + Math.cos(p.a) * d, cy + Math.sin(p.a) * d); ctx.lineTo(cx + Math.cos(p.a) * d2, cy + Math.sin(p.a) * d2); ctx.stroke();
+    }
+    ctx.lineCap = 'butt';
+  }
+  // blueprint construction: straight lines only
+  const cl = E(t, 0.75, 1.7, 'inOutExpo'), clOut = 1 - E(t, 2.7, 3.3, 'outCubic');
+  if (clOut > 0 && cl > 0) withAlpha(clOut, () => {
+    ctx.strokeStyle = 'rgba(250,250,250,0.35)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx - (W / 2) * cl, cy); ctx.lineTo(cx + (W / 2) * cl, cy);
+    ctx.moveTo(cx, cy - (H / 2) * cl); ctx.lineTo(cx, cy + (H / 2) * cl); ctx.stroke();
+    const d = 15.5 * u * cl;
+    ctx.strokeStyle = 'rgba(250,250,250,0.2)'; ctx.beginPath(); ctx.moveTo(cx - d, cy - d); ctx.lineTo(cx + d, cy + d); ctx.moveTo(cx + d, cy - d); ctx.lineTo(cx - d, cy + d); ctx.stroke();
+    withAlpha(E(t, 1.6, 2.0, 'outCubic'), () => {
+      setFont(15, 500, MONO, 1.5); ctx.fillStyle = COL.mute;
+      ctx.fillText(T.bp[0], cx + 15.5 * u + 18, cy - 15.5 * u + 6);
+      ctx.fillText(T.bp[1], cx + 7 * u + 22, cy - 7 * u - 12);
+      ctx.fillText(T.bp[2], cx + 7 * u + 22, cy + 18 + 7 * u);
+      ctx.textAlign = 'right'; ctx.fillText(T.bp[3], cx - 15.5 * u - 16, cy + 15.5 * u + 2); ctx.textAlign = 'left';
+      ctx.strokeStyle = COL.fg; ctx.lineWidth = 1.5;
+      for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+        const px = cx + sx * 15.5 * u, py = cy + sy * 15.5 * u;
+        ctx.beginPath(); ctx.moveTo(px - 9, py); ctx.lineTo(px + 9, py); ctx.moveTo(px, py - 9); ctx.lineTo(px, py + 9); ctx.stroke();
+      }
+    });
+  });
+  // the dot lands with a squash, then unrolls into the ring
+  const dr = 14 * spring(t, DOT_T - 0.04, 2.6, 0.38) * (1 - E(t, 0.78, 1.05, 'inCubic')), dw = wobble(t, DOT_T, 0.3, 9, 30);
+  if (dr > 0.2) { ctx.save(); ctx.translate(cx, cy); ctx.scale(1 + dw * 0.7, 1 - dw); disc(0, 0, dr, COL.fg); ctx.restore(); }
+  const ringP = E(t, 0.78, 1.7, 'inOutExpo');
+  const sqP = E(t, 1.35, 2.4, 'inOutCubic');
+  const fillP = E(t, 2.2, 2.75, 'outCubic');
+  // the downbeat at 3.0 lands on the mark: it squashes and springs back
+  const w = wobble(t, 3.0, 0.09, 7, 22);
+  about(cx, cy, { sx: 1 + w * 0.7, sy: 1 - w }, () => logo(cx, cy, s, { ring: ringP, sq: sqP, fill: hole ? 0 : fillP, sqCol: rgba('#ffffff', lerp(0.6, 0.2, fillP)), sqW: lerp(1.6, 1, fillP) }));
+  const ta = E(t, 2.6, 3.0, 'outCubic') * (1 - E(t, 3.6, 3.9, 'outCubic'));
+  if (ta > 0) withAlpha(ta, () => { setFont(18, 500, MONO, 7); ctx.fillStyle = COL.mute; ctx.textAlign = 'center'; ctx.fillText('OMNIXON', cx + 4, cy + 15.5 * u + 70); ctx.textAlign = 'left'; });
+}
+
+// =====================================================================================
+//  SCENE 2 — CHANNELS (4.8 → 12): four channels, four colour floods, then ONE API
+// =====================================================================================
+const CH = [
+  { w: 'TELEGRAM', c: PAL.blue, ink: '#ffffff', q: T.qs[0], o: { x: 960, y: 540 } },
+  { w: 'WHATSAPP', c: PAL.green, ink: '#03160a', q: T.qs[1], o: { x: 1500, y: 760 } },
+  { w: 'DISCORD', c: PAL.blurple, ink: '#ffffff', q: T.qs[2], o: { x: 440, y: 330 } },
+  { w: T.yourSite, c: COL.fg, ink: COL.ink, q: T.qs[3], o: { x: 1480, y: 300 } },
+];
+const CH_STEP = 2 * BEAT, CONV = S.ch + 4 * CH_STEP; // 9.6
+const HUB2 = { x: 860, y: 510, s: 210 };
+const CH_G = 15000, CH_H = 820, CH_ST = 0.03;
+const chWordIn = i => (i === 0 ? S.ch - 0.35 : S.ch + i * CH_STEP + 0.03);
+CH.forEach((c, i) => {
+  const ti = S.ch + i * CH_STEP;
+  if (i) { cue(ti, 'flood', { i }); impact(ti, 0.5, c.o.x, c.o.y); }
+  cueHeavy(c.w, chWordIn(i), { stagger: CH_ST, g: CH_G, h: CH_H, n0: i * 2, gain: 0.22, thump: 0.6, bump: 9 });
+  cue(ti + 0.5, 'bubble', { n: 79 + i * 3 });
+});
+const ONE_IN = CONV + 0.5;
+cue(CONV, 'swell', { d: 0.5 }); cue(CONV + 0.3, 'thump', { g: 0.8 }); bump(CONV + 0.45, 10); impact(CONV + 0.4, 0.5, HUB2.x, HUB2.y);
+for (let i = 0; i < 4; i++) cue(CONV + 0.35 + i * 0.08, 'tick', { g: 0.3 });
+cueHeavy(T.oneApi, ONE_IN, { g: 9000, n0: 3 });
+cue(CONV + 1.4, 'chime', { n: 84 });
+cueTyping('POST /api/v1/request', CONV + 1.3, 45, 3, 0.5);
+cue(S.code - 0.55, 'riser', { d: 0.55, hi: 1 });
+
+function sChannels(t) {
+  const cx = W / 2;
+  if (t < CONV) {
+    const i = clamp(Math.floor((t - S.ch) / CH_STEP), 0, 3), t0 = S.ch + i * CH_STEP, c = CH[i], lt = t - t0;
+    if (i > 0) { flood(CH[i - 1].c); dotField(t, { col: CH[i - 1].ink, a: 0.13 }); }
+    // the first colour waits behind the ring we dive through; the others flood out of the last bubble
+    const R = i === 0 ? 2600 : 2400 * ease.outExpo(P(t, t0 - 0.02, t0 + 0.55));
+    ctx.save(); ctx.beginPath(); ctx.arc(c.o.x, c.o.y, R, 0, TAU); ctx.clip();
+    flood(c.c); dotField(t, { col: c.ink, a: 0.13 });
+    setFont(96, 900, SANS, -2, 30); ctx.fillStyle = rgba(c.ink, 0.1);
+    const band = (c.w + '  ·  ').repeat(6), bw = ctx.measureText(c.w + '  ·  ').width;
+    ctx.fillText(band, -(((t - S.ch) * 160) % bw) - 100, 190);
+    ctx.fillText(band, (((t - S.ch) * 160) % bw) - bw - 100, 970);
+    let size = 300; setFont(size, 900, SANS, -0.03 * size, 0.17 * size);
+    const mw = ctx.measureText(c.w).width; if (mw > 1540) size *= 1540 / mw;
+    const k = heavy(c.w, cx, H / 2 + size * 0.36, size, t, chWordIn(i), { align: 'center', stagger: CH_ST, g: CH_G, h: CH_H, color: c.ink });
+    withAlpha(E(lt, 0.25, 0.45) * (1 - E(lt, CH_STEP - 0.14, CH_STEP - 0.02)), () => { setFont(17, 700, MONO, 3); ctx.fillStyle = rgba(c.ink, 0.75); ctx.fillText(`${T.channel} 0${i + 1} / 04`, k.x0 + 8, H / 2 - size * 0.44); });
+    // the message pops out of its corner on a spring
+    const bs = spring(t, t0 + 0.48, 2.2, 0.42);
+    if (bs > 0) { const ax = k.x0 + k.w - 6, ay = H / 2 + size * 0.36 + 62 + 44; about(ax, ay, { sx: bs, sy: bs }, () => bubble(ax, ay - 44, '“' + c.q + '”', { align: 'right', bg: c.ink, fg: c.c, size: 22 })); }
+    ctx.restore();
+    return;
+  }
+  // the white flood collapses into the hub, the four channels plug into it
+  const col = E(t, CONV, CONV + 0.4, 'inExpo');
+  if (col < 1) disc(lerp(CH[3].o.x, HUB2.x, col), lerp(CH[3].o.y, HUB2.y, col), lerp(2400, HUB2.s * 0.5, col), COL.fg);
+  CH.forEach((c, i) => {
+    const ti = CONV + 0.12 + i * 0.08, e = spring(t, ti, 1.5, 0.55);
+    const tx = 330, ty = 330 + i * 120, x = lerp(-300, tx, e), y = ty;
+    const p = pill(x, y, c.w.toLowerCase(), { align: 'center', size: 23, h: 60, dotCol: c.c, border: c.c, lw: 2.5 });
+    const p0 = { x: x + p.w / 2, y }, p3 = { x: HUB2.x - HUB2.s * 0.5 - 6, y: HUB2.y }, p1 = { x: lerp(p0.x, p3.x, 0.5), y: p0.y }, p2 = { x: lerp(p0.x, p3.x, 0.5), y: p3.y };
+    const d = E(t, CONV + 0.45 + i * 0.08, CONV + 0.9 + i * 0.08, 'inOutCubic');
+    strokeBez(p0, p1, p2, p3, 0, d, c.c, 3);
+    const pk = P(t, CONV + 0.9 + i * 0.08, CONV + 1.4);
+    if (pk > 0 && pk < 1) packet(k => bez(p0, p1, p2, p3, k), ease.inCubic(pk), c.c, 8, 0.22);
+  });
+  // the hub lands heavy, and takes the four packets with a squash
+  const hs = spring(t, CONV + 0.3, 1.7, 0.42), hw = wobble(t, CONV + 1.4, 0.07, 8, 24);
+  if (hs > 0) about(HUB2.x, HUB2.y, { sx: hs * (1 + hw * 0.7), sy: hs * (1 - hw) }, () => logo(HUB2.x, HUB2.y, HUB2.s));
+  heavy(T.oneApi, 1040, 580, 172, t, ONE_IN, { g: 9000, ringO: [0], marker: { from: T.oneApiMk[0], to: T.oneApiMk[1], col: COL.fg, ink: COL.ink, t: CONV + 1.25 } });
+  typed('POST /api/v1/request', 1048, 650, 28, t, CONV + 1.3, 45, { color: COL.fg, cursor: t > CONV + 1.2 });
+}
+function ringOGeom() { // where the O of ONE API sits (the camera flies through it)
+  const size = 172; mctx.font = `900 ${size}px ${SANS}`; mctx.letterSpacing = `${-0.03 * size}px`;
+  const wO = mctx.measureText(T.oneApi[0]).width + 0.03 * size, capH = size * 0.73, R = capH * 0.53;
+  return { x: 1040 + wO / 2, y: 580 - capH / 2, rIn: R * 0.6 };
+}
+
+// =====================================================================================
+//  SCENE 3 — SIMPLICITY (12 → 21.6, coral): a few lines of code, a streamed answer
+// =====================================================================================
+const CODE = [
+  [['from', 'kw'], [' omnixon ', 'fg'], ['import', 'kw'], [' Client', 'cls']],
+  [],
+  [['client', 'fg'], [' = ', 'op'], ['Client', 'cls'], ['(', 'op'], ['token', 'arg'], ['=', 'op'], ['"q7F_x2K..."', 'str'], [')', 'op']],
+  [],
+  [['async', 'kw'], [' ', 'fg'], ['for', 'kw'], [' chunk ', 'fg'], ['in', 'kw'], [' client.', 'fg'], ['send_message_stream', 'fn'], ['(', 'op']],
+  [['        ', 'fg'], ['"telegram-42"', 'str'], [',', 'op']],
+  [['        ', 'fg'], [T.codeQ, 'str'], ['):', 'op']],
+  [['    ', 'fg'], ['print', 'fn'], ['(', 'op'], ['chunk', 'fg'], [', ', 'op'], ['end', 'arg'], ['=', 'op'], ['""', 'str'], [')', 'op']],
+];
+const CODE_COL = { kw: PAL.coral, fg: '#e8e8ee', cls: '#ffffff', op: 'rgba(250,250,250,0.45)', arg: '#9a9aa6', str: '#c4c5cf', fn: '#ffffff' };
+const CODE_CHARS = CODE.reduce((n, l) => n + l.reduce((m, s) => m + s[0].length, 0) + 1, 0);
+const LAST_LINE = CODE[CODE.length - 1].map(s => s[0]).join('');
+const CODE_T0 = S.code + 0.9, CODE_T1 = S.code + 3.7, CODE_CPS = CODE_CHARS / (CODE_T1 - CODE_T0);
+const RUN_T = S.code + 4.2;
+const ANSWER_WORDS = T.answer.split(' ');
+const ANS_T0 = S.code + 4.7, ANS_T1 = S.code + 7.1;
+const ED = { x: 830, y: 130, w: 960, h: 520 }, AN = { x: 830, y: 690, w: 960, h: 236 };
+const RUN_XY = { x: ED.x + ED.w - 70, y: ED.y + 29 };
+const CODE_OUT = 20.85, FEW_IN = S.code - 0.3, LINES_IN = S.code - 0.12;
+const ED_IN = S.code + 0.05;
+cueHeavy(T.few, FEW_IN, { n0: 0 }); cueHeavy(T.lines, LINES_IN, { n0: 2 });
+cue(ED_IN + 0.32, 'thump', { g: 0.6 }); bump(ED_IN + 0.32, 8);
+cueTyping('$ pip install omnixon-lib', S.code + 0.6, 45, 3, 0.45);
+{ let n = 0; for (const l of CODE) { for (const s of l) for (const ch of s[0]) { n++; if (ch !== ' ' && n % 3 === 0) cue(CODE_T0 + n / CODE_CPS, 'key', { g: 0.75, v: n % 5 }); } n++; } }
+cue(RUN_T, 'hit', { g: 0.7 }); impact(RUN_T, 0.8, RUN_XY.x, RUN_XY.y); bump(RUN_T, 5); cue(RUN_T + 0.2, 'swell', { d: 0.5 });
+ANSWER_WORDS.forEach((w, i) => i % 2 === 0 && cue(lerp(ANS_T0, ANS_T1, i / ANSWER_WORDS.length), 'stream', { v: i % 4 }));
+cueFall(CODE_OUT); cue(CODE_OUT + 0.15, 'swell', { d: 0.8 });
+
+function editorCard(t, content) {
+  const { x: ex, y: ey, w: ew, h: eh } = ED;
+  rr(ex, ey, ew, eh, 22); ctx.fillStyle = COL.card; ctx.fill();
+  const lit = t >= RUN_T ? 1 - P(t, RUN_T + 0.3, RUN_T + 1.0) : 0;
+  ctx.strokeStyle = lit > 0 ? COL.fg : COL.line; ctx.lineWidth = 1.5 + lit * 2; ctx.stroke();
+  withAlpha(content, () => {
+    ctx.fillStyle = COL.line; ctx.fillRect(ex, ey + 58, ew, 1);
+    [0, 1, 2].forEach(k => disc(ex + 30 + k * 24, ey + 29, 7, 'rgba(250,250,250,0.18)'));
+    setFont(18, 500, MONO, 0); ctx.fillStyle = COL.mute; ctx.fillText('bot.py', ex + 112, ey + 35);
+    const rOn = t >= RUN_T, press = 1 - 0.14 * Math.sin(P(t, RUN_T - 0.08, RUN_T + 0.12) * Math.PI) + wobble(t, RUN_T + 0.12, 0.06, 9, 30);
+    const bw = 104, bx = ex + ew - bw - 18, by = ey + 12;
+    about(bx + bw / 2, by + 17, { sx: press, sy: press }, () => {
+      rr(bx, by, bw, 34, 17); ctx.fillStyle = rOn ? COL.fg : 'rgba(250,250,250,0.08)'; ctx.fill();
+      setFont(15, 700, MONO, 2); ctx.fillStyle = rOn ? COL.ink : COL.mute; ctx.fillText('▶ RUN', bx + 22, by + 23);
+    });
+    const n = Math.floor((t - CODE_T0) * CODE_CPS);
+    let k = 0, cursor = null;
+    const lh = 47, x0 = ex + 92, y0 = ey + 118;
+    setFont(26, 500, MONO, 0);
+    // the lines being run get a solid highlight bar
+    const runLine = t >= RUN_T && t < RUN_T + 0.9 ? 4 + Math.min(3, Math.floor(P(t, RUN_T, RUN_T + 0.8) * 4)) : -1;
+    CODE.forEach((line, li) => {
+      const y = y0 + li * lh;
+      if (li === runLine) { ctx.fillStyle = rgba(PAL.coral, 0.22); ctx.fillRect(ex + 1, y - 33, ew - 2, 46); ctx.fillStyle = PAL.coral; ctx.fillRect(ex + 1, y - 33, 5, 46); }
+      ctx.fillStyle = 'rgba(250,250,250,0.22)'; ctx.textAlign = 'right'; ctx.fillText(String(li + 1), ex + 58, y); ctx.textAlign = 'left';
+      let x = x0;
+      for (const [s, c] of line) {
+        const vis = clamp(n - k, 0, s.length); k += s.length;
+        if (vis > 0) { ctx.fillStyle = CODE_COL[c]; ctx.fillText(s.slice(0, vis), x, y); }
+        if (n >= k - s.length && n < k) cursor = { x: x + ctx.measureText(s.slice(0, vis)).width, y };
+        x += ctx.measureText(s).width;
+      }
+      if (n >= k && n < k + 1) cursor = { x, y };
+      k += 1;
+    });
+    if (n >= CODE_CHARS) cursor = { x: x0 + ctx.measureText(LAST_LINE).width, y: y0 + (CODE.length - 1) * lh };
+    if (cursor && t > CODE_T0 && (t < CODE_T1 || Math.floor(t * 3.2) % 2 === 0) && t < RUN_T) { ctx.fillStyle = COL.fg; ctx.fillRect(cursor.x + 2, cursor.y - 22, 3, 30); }
+  });
+}
+function answerCard(t) {
+  const { x: ax, y: ay, w: aw, h: ah } = AN;
+  rr(ax, ay, aw, ah, 22); ctx.fillStyle = COL.card; ctx.fill(); ctx.strokeStyle = COL.line; ctx.lineWidth = 1.5; ctx.stroke();
+  setFont(16, 700, MONO, 3); ctx.fillStyle = COL.fg; ctx.fillText(T.stream, ax + 54, ay + 44);
+  disc(ax + 34, ay + 38, 6, rgba(PAL.coral, t < ANS_T1 + 0.2 ? (Math.floor(t * 4) % 2 ? 1 : 0.3) : 1));
+  setFont(16, 500, MONO, 1); ctx.fillStyle = COL.mute; ctx.textAlign = 'right'; ctx.fillText(t < ANS_T1 + 0.1 ? T.chunks : T.okMs, ax + aw - 30, ay + 44); ctx.textAlign = 'left';
+  setFont(31, 500, SANS, -0.2);
+  const maxW = aw - 68; let x = ax + 34, y = ay + 100;
+  ANSWER_WORDS.forEach((w, i) => {
+    const ww = ctx.measureText(w + ' ').width, wd = ctx.measureText(w).width;
+    if (x + wd > ax + 34 + maxW) { x = ax + 34; y += 46; }
+    const tw = lerp(ANS_T0, ANS_T1, i / ANSWER_WORDS.length);
+    if (t >= tw) {
+      // each chunk lands as a solid white block that springs into place and settles into plain text
+      const fresh = 1 - P(t, tw + 0.1, tw + 0.32), pop = spring(t, tw, 3, 0.45);
+      if (fresh > 0) { ctx.fillStyle = COL.fg; rr(x - 5, y - 30 + (1 - pop) * 14, (wd + 10) * pop, 40, 6); ctx.fill(); }
+      ctx.fillStyle = fresh > 0.5 ? COL.ink : COL.fg; ctx.fillText(w, x, y);
+    }
+    x += ww;
+  });
+}
+function sCode(t) {
+  heavy(T.few, 130, 430, 176, t, FEW_IN, { out: CODE_OUT });
+  heavy(T.lines, 130, 610, 176, t, LINES_IN, { out: CODE_OUT + 0.1, marker: { from: T.linesMk[0], to: T.linesMk[1], col: SC.code, ink: COL.ink, t: S.code + 0.7 } });
+  // the small print falls with the headline
+  const fp = fall(t, CODE_OUT + 0.25);
+  if (fp.y < H) about(136, 730, { dy: fp.y, rot: fp.rot * 0.3 }, () => {
+    typed('$ pip install omnixon-lib', 136, 700, 26, t, S.code + 0.6, 45, { color: COL.mute });
+    const la = spring(t, S.code + 6.4, 1.6, 0.6);
+    if (la > 0) { setFont(22, 700, MONO, 2); const s = T.oneClient; ctx.save(); ctx.beginPath(); ctx.rect(130, 730, ctx.measureText(s).width * clamp(la, 0, 1) + 10, 40); ctx.clip(); ctx.fillStyle = COL.fg; ctx.fillText(s, 136, 760); ctx.restore(); }
+  });
+  // the editor drops in from above and lands heavy; RUN kicks it
+  if (t < MORPH_CM) {
+    const ey = -820 * (1 - spring(t, ED_IN, 1.3, 0.48)) + 7 * Math.sin(P(t, RUN_T, RUN_T + 0.25) * Math.PI) * (t > RUN_T ? 1 : 0);
+    const content = 1 - P(t, CODE_OUT + 0.05, MORPH_CM);
+    about(0, 0, { dy: ey }, () => editorCard(t, content));
+  }
+  // the answer rises from below on a spring, and on exit drops away
+  const ar = spring(t, RUN_T + 0.25, 1.4, 0.55);
+  if (ar > 0) {
+    const f = fall(t, CODE_OUT + 0.15, { dir: 1 }), cy = AN.y + AN.h / 2;
+    if (f.y < H) about(AN.x + AN.w / 2, cy, { dy: (1 - ar) * 520 + f.y, rot: f.rot * 0.25 }, () => answerCard(t));
+  }
+}
+
+// =====================================================================================
+//  SCENE 4 — ANY MODEL (21.15 → 28.45, yellow): the editor card becomes a slot-machine window
+// =====================================================================================
+const POOL = ['openai/gpt-5', 'google/gemini-2.5-pro', 'meta-llama/llama-4-maverick', 'mistralai/mistral-large', 'deepseek/deepseek-r1', 'qwen/qwen3-235b-a22b', 'x-ai/grok-4', 'moonshotai/kimi-k2', 'z-ai/glm-4.5', 'cohere/command-a', 'amazon/nova-pro-v1', 'microsoft/phi-4', 'anthropic/claude-sonnet-5.5', 'google/gemini-2.5-flash', 'openai/gpt-5-mini'];
+const REEL = []; { const r = mulberry32(3); for (let i = 0; i < 64; i++) REEL.push(POOL[Math.floor(r() * POOL.length)]); }
+const LANDS = [{ i: 30, id: 'anthropic/claude-opus-5.5' }, { i: 36, id: 'openai/gpt-5' }, { i: 42, id: 'google/gemini-2.5-pro' }, { i: 48, id: 'your-server/llama-3.3-70b' }];
+LANDS.forEach(l => (REEL[l.i] = l.id));
+const M0 = S.model, SLOT_Y = 590, FS = 54, ROW_H = 86;
+const SPINS = [[M0 + 0.6, M0 + 2.0, 0, 30, 'outQuart'], [M0 + 2.9, M0 + 3.4, 30, 36, 'outCubic'], [M0 + 4.1, M0 + 4.6, 36, 42, 'outCubic'], [M0 + 5.3, M0 + 5.85, 42, 48, 'outCubic']];
+const MODEL_IN = M0 - 0.1, MODEL_OUT = 28.1;
+function reelPos(t) { let p = 0; for (const [a, b, f, to, fn] of SPINS) { if (t < a) break; p = lerp(f, to, ease[fn](P(t, a, b))); } return p; }
+function slotGeom() {
+  mctx.font = `500 ${FS}px ${MONO}`; mctx.letterSpacing = '0px';
+  const cw = mctx.measureText('m').width, slotW = cw * 26 + 40, preW = mctx.measureText('"model": ').width;
+  const x0 = W / 2 - (preW + slotW) / 2;
+  return { x0, rect: { x: x0 + preW, y: SLOT_Y - ROW_H / 2, w: slotW, h: ROW_H } };
+}
+// the faint columns of model ids behind the reel (they become the vector cloud)
+function colXY(c, r, t) { const sp = (c % 2 ? 1 : -1) * (30 + c * 6), off = ((t - M0) * sp) % 38; return { x: 70 + c * 315, y: r * 38 + off }; }
+{
+  let last = 0;
+  for (let t = M0; t < MORPH_MR; t += 1 / 480) { const p = Math.floor(reelPos(t) + 0.5); if (p !== last) { cue(t, 'tick', { g: 0.4, n: 96 + (p % 3) }); last = p; } }
+  SPINS.forEach(([a, b], i) => { cue(b, 'land', { i }); bump(b, i === 0 ? 9 : 6); impact(b, 0.4, W / 2, SLOT_Y); });
+}
+cue(MORPH_CM, 'swell', { d: 0.6 }); cue(MORPH_CM + 0.55, 'thump', { g: 0.7 }); bump(MORPH_CM + 0.55, 9);
+cueHeavy(T.anyModel, MODEL_IN, { n0: 4, g: 8000 });
+cue(SPINS[3][1] + 0.3, 'pop', { n: 79 });
+cueFall(MODEL_OUT);
+
+function sModels(t) {
+  const colA = 0.05 * E(t, MORPH_CM + 0.2, MORPH_CM + 0.8) * (1 - E(t, MORPH_MR, MORPH_MR + 0.3));
+  if (colA > 0) { setFont(17, 500, MONO, 1); ctx.fillStyle = `rgba(250,250,250,${colA})`; for (let c = 0; c < 6; c++) for (let r = -2; r < 31; r++) { const p = colXY(c, r, t); ctx.fillText(POOL[(r + c * 5 + 99) % POOL.length], p.x, p.y); } }
+  heavy(T.anyModel, W / 2, 372, 214, t, MODEL_IN, { align: 'center', maxW: 1500, g: 8000, ringO: true, out: MODEL_OUT, marker: { from: T.anyMk[0], to: T.anyMk[1], col: SC.model, ink: COL.ink, t: M0 + 0.55 } });
+  if (t >= MORPH_MR) return;
+  const { x0, rect: SL } = slotGeom();
+  // the editor card flies down and shrinks into the slot window
+  const mk = spring(t, MORPH_CM, 1.2, 0.6), r = lerpRect(ED, SL, mk), rad = lerp(22, 16, clamp(mk));
+  const cur = SPINS.findIndex(([a, b], i) => t >= b && (i === SPINS.length - 1 || t < SPINS[i + 1][0]));
+  // every landing hits the window like a weight: a squash and a damped wobble
+  let sq = 0; SPINS.forEach(([a, b]) => (sq += wobble(t, b, 0.1, 9, 28)));
+  sq += wobble(t, MORPH_CM + 0.55, 0.08, 8, 24);
+  const prefA = spring(t, M0 + 0.15, 1.6, 0.6) * (1 - P(t, MODEL_OUT, MODEL_OUT + 0.25));
+  if (prefA > 0) withAlpha(clamp(prefA), () => { setFont(FS, 500, MONO, 0); ctx.fillStyle = COL.mute; ctx.fillText('"model": ', x0 - (1 - prefA) * 260, SLOT_Y + FS * 0.36); });
+  about(r.x + r.w / 2, r.y + r.h / 2, { sx: 1 + sq * 0.5, sy: 1 - sq }, () => {
+    const fillK = cur >= 0 ? clamp(spring(t, SPINS[cur][1], 2.2, 0.7)) : 0;
+    rr(r.x, r.y, r.w, r.h, rad); ctx.fillStyle = COL.card; ctx.fill();
+    if (fillK > 0) { rr(r.x, r.y, r.w * fillK, r.h, rad); ctx.fillStyle = COL.fg; ctx.fill(); }
+    rr(r.x, r.y, r.w, r.h, rad); ctx.strokeStyle = mix(COL.line, COL.fg, clamp(mk)); ctx.lineWidth = lerp(1.5, 2.5, clamp(mk)); ctx.stroke();
+    const rowsA = E(t, MORPH_CM + 0.6, MORPH_CM + 0.9);
+    if (rowsA > 0) withAlpha(rowsA, () => {
+      setFont(FS, 500, MONO, 0);
+      const p = reelPos(t), base = Math.floor(p);
+      ctx.save(); ctx.beginPath(); ctx.rect(SL.x - 10, SLOT_Y - ROW_H * 1.9, SL.w + 20, ROW_H * 3.8); ctx.clip();
+      for (let k = base - 3; k <= base + 3; k++) {
+        if (k < 0 || k >= REEL.length) continue;
+        const d = k - p, th = clamp(d * 0.5, -1.45, 1.45), y = SLOT_Y + Math.sin(th) * ROW_H * 2.0, sy = Math.cos(th), centre = Math.abs(d) < 0.5;
+        withAlpha(centre ? 1 : 0.4 * sy * sy, () => { ctx.save(); ctx.translate(0, y); ctx.scale(1, Math.max(0.05, sy)); ctx.fillStyle = centre && fillK > 0.5 ? COL.ink : COL.fg; ctx.fillText('"' + REEL[k] + '"', SL.x + 20, FS * 0.36); ctx.restore(); });
+      }
+      ctx.restore();
+    });
+  });
+  // the last landing drops a chip on top of the window
+  const last = SPINS[3][1], d = drop(t, last + 0.05, 260, { g: 5500 });
+  if (d) { const f = fall(t, MODEL_OUT + 0.05); if (f.y < H) about(SL.x + SL.w - 90, SLOT_Y - ROW_H / 2 - 30, { dy: d.y + f.y, rot: f.rot, sx: d.sx, sy: d.sy }, () => chip(SL.x + SL.w, SLOT_Y - ROW_H / 2 - 30, T.ownServer, { align: 'right', size: 15, bg: SC.model })); }
+}
+
+// =====================================================================================
+//  SCENE 5 — KNOWLEDGE (28.45 → 40.8, pink): the slot becomes the query; the model ids pour into a 3D
+//  vector space with the pgvector HNSW index; the query walks the index, the camera flies in and orbits
+// =====================================================================================
+const R0 = S.rag;
+const CLOUD = [], CENTERS = [];
+let Q, NEAR, KNN = [], L1 = [], L1E = [], PATH = [];
+{
+  const r = mulberry32(11), g = () => { let u = 0; while (!u) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(TAU * r()); };
+  for (let c = 0; c < 7; c++) { const th = r() * TAU, ph = Math.acos(2 * r() - 1), R = 170 + r() * 80; CENTERS.push({ x: R * Math.sin(ph) * Math.cos(th), y: R * Math.cos(ph) * 0.8, z: R * Math.sin(ph) * Math.sin(th) }); }
+  CENTERS[0] = { x: 150, y: -110, z: 120 };
+  CENTERS.forEach((c, ci) => { for (let k = 0; k < 26; k++) CLOUD.push({ x: c.x + g() * 46, y: c.y + g() * 46, z: c.z + g() * 46, c: ci }); });
+  for (let k = 0; k < 60; k++) { const th = r() * TAU, ph = Math.acos(2 * r() - 1), R = Math.cbrt(r()) * 320; CLOUD.push({ x: R * Math.sin(ph) * Math.cos(th), y: R * Math.cos(ph) * 0.8, z: R * Math.sin(ph) * Math.sin(th), c: -1 }); }
+  Q = { x: CENTERS[0].x + 10, y: CENTERS[0].y + 6, z: CENTERS[0].z - 6 };
+  const d3 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+  NEAR = CLOUD.map((p, i) => [i, d3(p, Q)]).sort((a, b) => a[1] - b[1]).slice(0, 5).map(a => a[0]);
+  const nn = CLOUD.map((p, i) => CLOUD.map((q, j) => [j, i === j ? 1e9 : d3(p, q)]).sort((a, b) => a[1] - b[1]).slice(0, 5).map(a => a[0]));
+  const seen = new Set();
+  nn.forEach((list, i) => list.slice(0, 3).forEach(j => { const k = i < j ? `${i}-${j}` : `${j}-${i}`; if (!seen.has(k)) { seen.add(k); KNN.push([i, j]); } }));
+  KNN.sort((a, b) => Math.hypot(CLOUD[a[0]].x, CLOUD[a[0]].y, CLOUD[a[0]].z) - Math.hypot(CLOUD[b[0]].x, CLOUD[b[0]].y, CLOUD[b[0]].z));
+  L1 = CLOUD.map((p, i) => i).filter(i => i % 8 === 3);
+  const l1n = {}; L1.forEach(i => (l1n[i] = L1.filter(j => j !== i).sort((a, b) => d3(CLOUD[i], CLOUD[a]) - d3(CLOUD[i], CLOUD[b])).slice(0, 3)));
+  const s1 = new Set(); L1.forEach(i => l1n[i].forEach(j => { const k = i < j ? `${i}-${j}` : `${j}-${i}`; if (!s1.has(k)) { s1.add(k); L1E.push([i, j]); } }));
+  let cur = L1.reduce((a, b) => (d3(CLOUD[a], Q) > d3(CLOUD[b], Q) ? a : b)); PATH.push(cur);
+  for (let step = 0; step < 12; step++) { const nb = l1n[cur].reduce((a, b) => (d3(CLOUD[a], Q) < d3(CLOUD[b], Q) ? a : b)); if (d3(CLOUD[nb], Q) >= d3(CLOUD[cur], Q)) break; cur = nb; PATH.push(cur); }
+  for (let step = 0; step < 12; step++) { const nb = nn[cur].reduce((a, b) => (d3(CLOUD[a], Q) < d3(CLOUD[b], Q) ? a : b)); if (d3(CLOUD[nb], Q) >= d3(CLOUD[cur], Q)) break; cur = nb; PATH.push(cur); }
+  if (PATH[PATH.length - 1] !== NEAR[0]) PATH.push(NEAR[0]);
+}
+const L1SET = new Set(L1);
+const Q_T = R0 + 1.7, FLY0 = R0 + 3.4, HOP0 = R0 + 3.9, HOPS = PATH.length - 1, HOP_D = Math.min(0.32, 1.5 / Math.max(1, HOPS)), HOP1 = HOP0 + HOPS * HOP_D;
+const ZOOM0 = R0 + 5.6, ZOOM1 = R0 + 7.7, LIT0 = R0 + 6.3, MORPH0 = R0 + 7.4, COLLAPSE0 = R0 + 10.9, RAG_OUT = R0 + 4.6;
+const RAG_C = { x: 960, y: 575 };
+const QUERY = '› ' + T.query;
+function pillRect() { mctx.font = `500 30px ${MONO}`; mctx.letterSpacing = '0px'; return { x: 130, y: 562, w: mctx.measureText(QUERY).width + 60, h: 76 }; }
+function ragCam(t) {
+  const k = ease.inOutCubic(P(t, ZOOM0, ZOOM1)), k2 = ease.inExpo(P(t, COLLAPSE0 + 0.2, S.mcp));
+  const l = t - R0;
+  return {
+    T: { x: lerp(0, Q.x, k), y: lerp(0, Q.y, k), z: lerp(0, Q.z, k) },
+    yaw: 0.55 + 0.11 * l + 1.1 * k, pitch: lerp(0.38, 0.24, k),
+    D: lerp(1250, 560, k) - 470 * k2, f: 1300,
+    cx: lerp(1170, RAG_C.x, k), cy: lerp(610, RAG_C.y, k), k, k2,
+  };
+}
+function cp(p, c) {
+  const x = p.x - c.T.x, y = p.y - c.T.y, z = p.z - c.T.z;
+  const cy = Math.cos(c.yaw), sy = Math.sin(c.yaw), x1 = x * cy - z * sy, z1 = x * sy + z * cy;
+  const cpi = Math.cos(c.pitch), spi = Math.sin(c.pitch), y2 = y * cpi - z1 * spi, z2 = y * spi + z1 * cpi;
+  const zz = z2 + c.D, s = c.f / Math.max(60, zz);
+  return { x: c.cx + x1 * s, y: c.cy + y2 * s, s, z: zz };
+}
+function line3(a, b, c, col, lw) { const A = cp(a, c), B = cp(b, c); if (A.z < 80 || B.z < 80) return; ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.stroke(); }
+// each point of the cloud starts life as a letter in the columns of model ids
+const CLOUD_FROM = CLOUD.map((p, i) => { const c = i % 6, r = 1 + ((i * 7) % 28), q = colXY(c, r, MORPH_MR); return { x: q.x + ((i * 53) % 14) * 10, y: q.y - 6, t: MORPH_MR + 0.1 + (i % 48) * 0.012, f: 0.8 + (i % 5) * 0.07 }; });
+const MSGS = T.msgs.map((m, i) => ({ src: m[0], txt: m[1], sim: ['0.94', '0.91', '0.88', '0.86', '0.83'][i], ...[{ x: 520, y: 320 }, { x: 1410, y: 290 }, { x: 1480, y: 640 }, { x: 470, y: 800 }, { x: 1190, y: 880 }][i] }));
+cue(MORPH_MR, 'swell', { d: 1.2 }); cue(MORPH_MR + 0.6, 'thump', { g: 0.5 }); bump(MORPH_MR + 0.6, 6);
+for (let k = 0; k < 10; k++) cue(MORPH_MR + 0.3 + k * 0.08, 'tick', { g: 0.18, n: 98 + (k % 4) * 2 });
+cue(R0 + 0.6, 'sweep', { d: 1.0 }); cue(R0 + 1.3, 'sweep', { d: 1.0, hi: 1 });
+cueHeavy(T.know1, R0 + 0.1, { n0: 1, g: 9000, h: 560 }); cueHeavy(T.know2, R0 + 0.25, { n0: 3, g: 9000, h: 560, every: 2 });
+cueTyping(QUERY, Q_T, 34, 3, 0.55);
+cue(FLY0, 'swell', { d: 0.5, hi: 1 });
+for (let i = 0; i <= HOPS; i++) cue(HOP0 + i * HOP_D, 'tok', { n: SCALE[Math.min(SCALE.length - 1, i)] + 12, g: 0.3 });
+cue(HOP1, 'thump', { g: 0.5 }); bump(HOP1, 5);
+cueFall(RAG_OUT);
+cue(ZOOM0, 'warp', { d: 1.8 });
+NEAR.forEach((_, i) => cue(LIT0 + i * 0.14, 'chime', { n: [84, 87, 89, 91, 96][i] }));
+MSGS.forEach((_, i) => cue(MORPH0 + i * 0.14, 'bubble', { n: [76, 79, 83, 86, 88][i] }));
+cue(COLLAPSE0, 'riser', { d: 0.9, hi: 1 }); cue(S.mcp - 0.05, 'boom', { g: 0.6 });
+
+function sRag(t) {
+  const c = ragCam(t);
+  const collapse = E(t, COLLAPSE0, COLLAPSE0 + 0.6, 'inExpo');
+  const fadeAll = 1 - c.k2;
+  // floor grid and axes
+  const ga = E(t, R0 + 0.6, R0 + 1.5, 'outCubic') * (1 - 0.55 * c.k) * fadeAll;
+  if (ga > 0) withAlpha(ga, () => {
+    for (let v = -400; v <= 400; v += 80) {
+      line3({ x: v, y: 360, z: -400 }, { x: v, y: 360, z: 400 }, c, 'rgba(250,250,250,0.08)', 1);
+      line3({ x: -400, y: 360, z: v }, { x: 400, y: 360, z: v }, c, 'rgba(250,250,250,0.08)', 1);
+    }
+    const ax = E(t, R0 + 0.5, R0 + 1.4, 'inOutExpo') * 430;
+    [{ x: 1, y: 0, z: 0 }, { x: 0, y: -1, z: 0 }, { x: 0, y: 0, z: 1 }].forEach(d => line3({ x: -d.x * ax, y: -d.y * ax, z: -d.z * ax }, { x: d.x * ax, y: d.y * ax, z: d.z * ax }, c, 'rgba(250,250,250,0.4)', 1.5));
+  });
+  // the points, flying in from the model ids
+  const pts = CLOUD.map((p, i) => {
+    const q = cp(p, c), f = CLOUD_FROM[i], k = spring(t, f.t, f.f, 0.72);
+    return t > f.t + 3 ? q : { x: lerp(f.x, q.x, k), y: lerp(f.y, q.y, k), s: lerp(0.5, q.s, clamp(k)), z: q.z, k };
+  });
+  // the index: lower-layer links in white, the upper layer's long links in pink
+  const ie = P(t, R0 + 1.3, R0 + 2.3), idxA = (1 - collapse) * fadeAll;
+  if (ie > 0 && idxA > 0) withAlpha(idxA, () => {
+    const n0 = Math.floor(KNN.length * ease.outCubic(ie));
+    ctx.strokeStyle = `rgba(250,250,250,${0.1 * (1 - 0.4 * c.k)})`; ctx.lineWidth = 1; ctx.beginPath();
+    for (let i = 0; i < n0; i++) { const [a, b] = KNN[i], A = pts[a], B = pts[b]; if (A.z < 80 || B.z < 80) continue; ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); }
+    ctx.stroke();
+    const n1 = Math.floor(L1E.length * ease.outCubic(P(t, R0 + 1.6, R0 + 2.5)));
+    ctx.strokeStyle = rgba(SC.rag, 0.6 * (1 - 0.5 * c.k)); ctx.lineWidth = 1.6; ctx.setLineDash([6, 6]); ctx.beginPath();
+    for (let i = 0; i < n1; i++) { const [a, b] = L1E[i], A = pts[a], B = pts[b]; if (A.z < 80 || B.z < 80) continue; ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); }
+    ctx.stroke(); ctx.setLineDash([]);
+  });
+  // the walk through the index
+  for (let j = 0; j < HOPS; j++) {
+    const h = P(t, HOP0 + j * HOP_D, HOP0 + (j + 1) * HOP_D); if (h <= 0) break;
+    const A = pts[PATH[j]], B = pts[PATH[j + 1]];
+    withAlpha((1 - collapse) * fadeAll * (1 - 0.6 * P(t, ZOOM0, ZOOM1)), () => { ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(lerp(A.x, B.x, ease.inOutCubic(h)), lerp(A.y, B.y, ease.inOutCubic(h))); ctx.strokeStyle = COL.fg; ctx.lineWidth = 3; ctx.stroke(); });
+    if (h < 1) packet(q => ({ x: lerp(A.x, B.x, q), y: lerp(A.y, B.y, q) }), ease.inOutCubic(h), COL.fg, 7, 0.4);
+  }
+  // points, depth-sorted; far ones are just dimmer
+  const order = pts.map((p, i) => i).sort((a, b) => pts[b].z - pts[a].z);
+  for (const i of order) {
+    if (NEAR.includes(i) && t >= MORPH0) continue;
+    const p = pts[i]; if (p.z < 80) continue;
+    const ni = NEAR.indexOf(i), lit = ni >= 0 ? clamp(spring(t, LIT0 + ni * 0.14, 2.4, 0.5), 0, 1.4) : 0;
+    const onPath = PATH.indexOf(i), hopT = HOP0 + onPath * HOP_D, visited = onPath >= 0 && t >= hopT && t < ZOOM1;
+    const hopPop = onPath >= 0 ? 1 + wobble(t, hopT, 0.9, 7, 18) : 1;
+    const depthA = clamp(1.25 - p.z / (c.D + 450), 0.2, 1) * (1 - c.k * clamp(Math.abs(p.z - c.D) / 400) * 0.7);
+    const base = Math.min(10, (lit ? 3.4 + lit * 3.5 : L1SET.has(i) ? 3.4 : 2.4) * p.s * hopPop);
+    if (c.k2 > 0.02) { const dx = p.x - RAG_C.x, dy = p.y - RAG_C.y; ctx.strokeStyle = `rgba(250,250,250,${0.5 * fadeAll})`; ctx.lineWidth = Math.max(1.2, base * 0.5); ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - dx * 0.25 * c.k2, p.y - dy * 0.25 * c.k2); ctx.stroke(); continue; }
+    withAlpha(1 - collapse * 0.7, () => {
+      if (lit) { disc(p.x, p.y, base, SC.rag); return; }
+      const flying = p.k != null && p.k < 1 ? 0.35 + 0.65 * clamp(p.k) : 1;
+      disc(p.x, p.y, base, visited ? COL.fg : L1SET.has(i) ? rgba(SC.rag, (0.35 + depthA * 0.65) * flying) : `rgba(250,250,250,${(0.18 + depthA * 0.62) * flying})`);
+    });
+  }
+  // headline and captions
+  heavy(T.know1, 130, 250, 96, t, R0 + 0.1, { g: 9000, h: 560, out: RAG_OUT });
+  heavy(T.know2, 130, 350, 96, t, R0 + 0.25, { g: 9000, h: 560, out: RAG_OUT + 0.08, marker: { from: T.know2Mk[0], to: T.know2Mk[1], col: SC.rag, ink: COL.ink, t: R0 + 0.95 } });
+  withAlpha(E(t, R0 + 2.0, R0 + 2.5, 'outCubic') * (1 - E(t, COLLAPSE0 - 0.3, COLLAPSE0)), () => { setFont(18, 700, MONO, 3); ctx.fillStyle = COL.fg; ctx.fillText(t < ZOOM0 ? T.capIdx : T.capTop, 136, 990); });
+  // the slot window becomes the query field; the query is typed, then thrown at the index's entry point
+  const PR = pillRect();
+  if (t < FLY0 + 0.15) {
+    const SL = slotGeom().rect;
+    const k = spring(t, MORPH_MR, 1.3, 0.62), r = lerpRect(SL, PR, k), white = 1 - E(t, MORPH_MR + 0.05, MORPH_MR + 0.45, 'outCubic');
+    const shrink = E(t, FLY0 - 0.05, FLY0 + 0.15, 'inExpo');
+    about(r.x + r.w, r.y + r.h / 2, { sx: 1 - shrink * 0.9, sy: 1 - shrink * 0.5 }, () => withAlpha(1 - shrink, () => {
+      rr(r.x, r.y, r.w, r.h, lerp(16, 38, clamp(k))); ctx.fillStyle = mix(COL.card, COL.fg, white); ctx.fill(); ctx.strokeStyle = COL.fg; ctx.lineWidth = 2; ctx.stroke();
+      if (white > 0.02) withAlpha(white, () => { ctx.save(); ctx.beginPath(); ctx.rect(r.x, r.y, r.w, r.h); ctx.clip(); setFont(lerp(FS, 30, clamp(k)), 500, MONO, 0); ctx.fillStyle = COL.ink; ctx.fillText('"' + REEL[48] + '"', r.x + 20, r.y + r.h / 2 + 12); ctx.restore(); });
+      if (k > 0.9) typed(QUERY, PR.x + 28, PR.y + 48, 30, t, Q_T, 34, { color: COL.fg, cursor: true });
+    }));
+  }
+  const qStart = { x: PR.x + PR.w + 20, y: PR.y + PR.h / 2 };
+  const entry = pts[PATH[0]], fly = P(t, FLY0 + 0.1, HOP0);
+  if (fly > 0 && fly < 1) { const p0 = qStart, p3 = entry, p1 = { x: p0.x + 200, y: p0.y - 260 }, p2 = { x: p3.x - 160, y: p3.y - 220 }; packet(k => bez(p0, p1, p2, p3, k), ease.inOutCubic(fly), COL.fg, 9, 0.3); }
+  const qs = cp(Q, c);
+  if (t >= HOP1) {
+    NEAR.forEach((idx, i) => {
+      const m = MSGS[i], mt = MORPH0 + i * 0.14, mo = spring(t, mt, 1.5, 0.58), moc = clamp(mo);
+      const dp = pts[idx];
+      let bx = lerp(dp.x, m.x, mo), by = lerp(dp.y, m.y, mo);
+      bx = lerp(bx, qs.x, collapse); by = lerp(by, qs.y, collapse);
+      const d = E(t, LIT0 + i * 0.14, LIT0 + 0.3 + i * 0.14, 'outCubic');
+      if (d > 0) withAlpha(1 - collapse, () => { ctx.beginPath(); ctx.moveTo(qs.x, qs.y); ctx.lineTo(lerp(qs.x, bx, d), lerp(qs.y, by, d)); ctx.strokeStyle = rgba(SC.rag, 0.9); ctx.lineWidth = 2; ctx.stroke(); });
+      if (t < mt) return;
+      if (moc > 0.3) withAlpha((moc - 0.3) * (1 - collapse), () => { ctx.beginPath(); ctx.moveTo(dp.x, dp.y); ctx.lineTo(bx, by); ctx.setLineDash([3, 5]); ctx.strokeStyle = 'rgba(250,250,250,0.4)'; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]); disc(dp.x, dp.y, 4, SC.rag); });
+      // a pink dot that unfolds into a white card, on a spring
+      setFont(27, 600, SANS, -0.2);
+      const tw = ctx.measureText(m.txt).width, bw = tw + 60, bh = 94, r0 = Math.min(9, 7 * dp.s);
+      const w = lerp(r0 * 2, bw, mo) * (1 - collapse * 0.92), h = lerp(r0 * 2, bh, mo) * (1 - collapse * 0.92), rad = lerp(r0, 18, moc);
+      rr(bx - w / 2, by - h / 2, w, h, rad); ctx.fillStyle = mix(SC.rag, COL.fg, E(t, mt + 0.05, mt + 0.35, 'outCubic')); ctx.fill();
+      const ta = E(t, mt + 0.3, mt + 0.6, 'outCubic') * (1 - collapse);
+      if (ta > 0) withAlpha(ta, () => {
+        const lx = bx - w / 2 + 30;
+        setFont(15, 700, MONO, 1.5); ctx.fillStyle = '#6a6a76'; ctx.fillText(m.src.toUpperCase(), lx, by - 14);
+        chip(bx + w / 2 - 22, by - 19, m.sim, { align: 'right', size: 14, bg: SC.rag, padX: 10, h: 26 });
+        setFont(27, 600, SANS, -0.2); ctx.fillStyle = COL.ink;
+        const n = Math.floor(P(t, mt + 0.3, mt + 0.75) * m.txt.length); ctx.fillText(m.txt.slice(0, n), lx, by + 26);
+      });
+    });
+    const qp = spring(t, HOP1, 2.2, 0.4);
+    disc(qs.x, qs.y, (9 + 4 * c.k) * qp + collapse * 30, COL.fg);
+    withAlpha(E(t, ZOOM1 - 0.2, ZOOM1 + 0.3) * (1 - collapse), () => pill(qs.x, qs.y + 72, T.query, { align: 'center', size: 20, h: 48, dotCol: SC.rag, border: COL.fg }));
+  }
+}
+
+// =====================================================================================
+//  SCENE 6 — TOOLS (40.8 → 52.35, green): the query dot opens into the hub; MCP servers dock
+// =====================================================================================
+const T0 = S.mcp;
+const HUB = { y: 575, s: 230 };
+const TOOLS = ['web-search', 'calendar', 'crm', 'github', 'files', 'email'].map((n, i) => ({ n, a: [270, 330, 30, 90, 150, 210][i] * Math.PI / 180 }));
+TOOLS.forEach((tl, i) => { tl.dock = T0 + 2.0 + i * 0.16; tl.on = tl.dock + 0.3; });
+const PANEL = { x: 1235, y: 300, w: 590, h: 500 };
+const DEMOS = [
+  { tool: 0, t: T0 + 3.9, fn: 'search', arg: 'query', val: T.demos[0][0], res: T.demos[0][1], back: T.demos[0][2] },
+  { tool: 2, t: T0 + 6.3, fn: 'add_contact', arg: 'name', val: T.demos[1][0], res: T.demos[1][1], back: T.demos[1][2] },
+  { tool: 4, t: T0 + 8.7, fn: 'check_files', arg: 'path', val: T.demos[2][0], res: T.demos[2][1], back: T.demos[2][2] },
+];
+const MCP_OUT = 52.0;
+cue(T0 + 0.35, 'thump', { g: 0.8 }); bump(T0 + 0.35, 10); impact(T0, 0.8, 960, HUB.y); cue(T0 + 0.5, 'swell', { d: 0.8 });
+TOOLS.forEach((tl, i) => { cue(T0 + 0.75 + i * 0.06, 'tok', { n: SCALE[i] + 12, g: 0.2 }); cue(tl.on, 'snap', { i }); });
+cueHeavy(T.tools, T0 + 0.2, { n0: 2, g: 9000, h: 560, every: 2 });
+cue(T0 + 3.0, 'swell', { d: 0.7 }); cue(T0 + 3.55, 'thump', { g: 0.4 });
+DEMOS.forEach((d, k) => {
+  cue(d.t, 'blip', { n: 84, g: 0.45 }); cue(d.t + 0.4, 'snap', { i: k }); bump(d.t + 0.4, 3);
+  const c0 = d.t + 0.55;
+  if (k === 0) { cueTyping(T.search, c0, 40, 3, 0.45); [0.95, 1.1, 1.25].forEach((o, j) => cue(c0 + o, 'tok', { n: SCALE[4 + j] + 12, g: 0.2 })); }
+  if (k === 1) { cue(c0 + 0.55, 'thump', { g: 0.3 }); cue(c0 + 0.6, 'chime', { n: 91 }); }
+  if (k === 2) { [0.35, 0.6, 0.85, 1.1].forEach((o, j) => cue(c0 + o, 'tok', { n: SCALE[3 + j] + 12, g: 0.22 })); cue(c0 + 1.25, 'chime', { n: 94 }); }
+  cue(d.t + 1.9, 'blip', { n: 79, g: 0.35 }); cue(d.t + 2.25, 'chime', { n: 96 });
+});
+cueFall(MCP_OUT); cue(MCP_OUT + 0.1, 'swell', { d: 0.9 });
+
+function constel(t) { const e = spring(t, T0 + 3.0, 1.1, 0.7); return { x: lerp(960, 690, e), y: HUB.y, s: lerp(1, 0.84, e), rx: lerp(560, 470, e), ry: lerp(265, 255, e) }; }
+function toolPos(i, t) {
+  const c = constel(t), tl = TOOLS[i];
+  const k = spring(t, T0 + 0.45 + i * 0.06, 1.0, 0.62);
+  const a = tl.a + 1.4 * (1 - clamp(k));
+  const m = lerp(2.6, 1, k);
+  return { x: c.x + Math.cos(a) * c.rx * c.s * m, y: c.y + Math.sin(a) * c.ry * c.s * m, s: c.s };
+}
+function cableEnds(i, t) {
+  const c = constel(t), tp = toolPos(i, t), dx = tp.x - c.x, dy = tp.y - c.y, d = Math.hypot(dx, dy) || 1, nx = dx / d, ny = dy / d;
+  return { a0: { x: c.x + nx * HUB.s * 0.56 * c.s, y: c.y + ny * HUB.s * 0.56 * c.s }, a1: { x: tp.x - nx * (Math.abs(nx) * 125 + Math.abs(ny) * 40) * c.s, y: tp.y - ny * (Math.abs(nx) * 40 + Math.abs(ny) * 40) * c.s } };
+}
+// orthogonal routes from a tile to the panel, drawn under the hub and the tiles
+function route(k, t) {
+  const d = DEMOS[k], p = toolPos(d.tool, t), s = p.s, px = PANEL.x;
+  if (k === 0) return [{ x: p.x, y: p.y - 40 * s }, { x: p.x, y: 262 }, { x: px - 36, y: 262 }, { x: px - 36, y: PANEL.y + 40 }, { x: px, y: PANEL.y + 40 }];
+  if (k === 1) return [{ x: p.x + 125 * s, y: p.y }, { x: px, y: p.y }];
+  return [{ x: p.x, y: p.y + 40 * s }, { x: p.x, y: 930 }, { x: px - 36, y: 930 }, { x: px - 36, y: PANEL.y + PANEL.h - 60 }, { x: px, y: PANEL.y + PANEL.h - 60 }];
+}
+function toolIcon(x, y, col) { ctx.strokeStyle = col; ctx.lineWidth = 2; rr(x - 12, y - 14, 24, 12, 3); ctx.stroke(); rr(x - 12, y + 2, 24, 12, 3); ctx.stroke(); }
+function drawTile(tl, x, y, sc, o = {}) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(sc * (o.sx ?? 1), sc * (o.sy ?? 1));
+  const inv = o.inv || 0;
+  rr(-125, -40, 250, 80, 20); ctx.fillStyle = inv > 0.5 ? COL.fg : COL.card; ctx.fill();
+  ctx.strokeStyle = o.border || COL.line; ctx.lineWidth = 2; ctx.stroke();
+  const fg = inv > 0.5 ? COL.ink : COL.fg;
+  toolIcon(-95, 0, fg);
+  setFont(24, 600, MONO, 0); ctx.fillStyle = fg; ctx.fillText(tl.n, -66, 8);
+  disc(102, 0, 7, o.dot || COL.dim);
+  ctx.restore();
+}
+// --- the three mini apps shown in the panel ---
+function searchUI(x, y, w, c) {
+  rr(x, y, w, 56, 28); ctx.fillStyle = 'rgba(250,250,250,0.06)'; ctx.fill(); ctx.strokeStyle = COL.dim; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(x + 30, y + 26, 9, 0, TAU); ctx.strokeStyle = COL.fg; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 37, y + 33); ctx.lineTo(x + 44, y + 40); ctx.stroke();
+  typed(T.search, x + 58, y + 36, 21, c, 0, 40, { color: COL.fg, cursor: c < 0.8 });
+  const bar = P(c, 0.6, 0.95);
+  if (bar > 0 && bar < 1) { ctx.fillStyle = SC.mcp; ctx.fillRect(x + 20, y + 62, (w - 40) * ease.inOutCubic(bar), 4); }
+  const RES = [['Tonkotsu House', 'tonkotsu.house › menu', '★ 4.8', T.meta[0]], ['Noodle Lab', 'noodlelab.co › moscow', '★ 4.7', T.meta[1]], ['Shio & Co.', 'shio.co › reserve', '★ 4.6', T.meta[2]]];
+  RES.forEach(([title, url, star, meta], i) => {
+    const a = spring(c, 0.95 + i * 0.15, 2.2, 0.5); if (a <= 0) return;
+    const ry = y + 92 + i * 112 + (1 - a) * 40;
+    withAlpha(clamp(a * 1.5), () => {
+      rr(x, ry, w, 98, 16); ctx.fillStyle = i === 0 ? COL.fg : 'rgba(250,250,250,0.05)'; ctx.fill();
+      const fg = i === 0 ? COL.ink : COL.fg;
+      setFont(15, 500, MONO, 0); ctx.fillStyle = i === 0 ? '#55555f' : COL.mute; ctx.fillText(url, x + 22, ry + 30);
+      setFont(24, 700, SANS, -0.2); ctx.fillStyle = fg; ctx.fillText(title, x + 22, ry + 60);
+      chip(x + 22, ry + 79, star, { align: 'left', size: 13, bg: SC.mcp, padX: 8, h: 22 });
+      setFont(15, 500, MONO, 0); ctx.fillStyle = i === 0 ? '#55555f' : COL.mute; ctx.fillText(meta, x + 96, ry + 84);
+    });
+  });
+}
+function crmUI(x, y, w, c) {
+  setFont(13, 700, MONO, 2); ctx.fillStyle = COL.mute;
+  ctx.fillText(T.crmHead[0], x + 66, y + 14); ctx.fillText(T.crmHead[1], x + 250, y + 14); ctx.fillText(T.crmHead[2], x + w - 64, y + 14);
+  ctx.fillStyle = COL.line; ctx.fillRect(x, y + 28, w, 1);
+  const rows = T.crmRows;
+  const ins = spring(c, 0.35, 1.6, 0.7), rh = 74;
+  const drawRow = (r, ry, hl) => {
+    if (hl > 0) { rr(x - 8, ry - 8, w + 16, rh - 10, 14); ctx.fillStyle = COL.fg; ctx.fill(); }
+    const fg = hl > 0 ? COL.ink : COL.fg;
+    disc(x + 28, ry + 26, 20, hl > 0 ? SC.mcp : 'rgba(250,250,250,0.12)');
+    setFont(14, 700, MONO, 0); ctx.fillStyle = hl > 0 ? COL.ink : COL.fg; ctx.textAlign = 'center'; ctx.fillText(r[0].split(' ').map(s => s[0]).join(''), x + 28, ry + 31); ctx.textAlign = 'left';
+    setFont(21, 700, SANS, -0.2); ctx.fillStyle = fg; ctx.fillText(r[0], x + 66, ry + 33);
+    setFont(16, 500, MONO, 0); ctx.fillStyle = hl > 0 ? '#55555f' : COL.mute; ctx.fillText(r[1], x + 250, ry + 32);
+    ctx.fillStyle = r === T.crmNew ? fg : COL.mute; ctx.fillText(r[2], x + w - 64, ry + 32);
+  };
+  ctx.save(); ctx.beginPath(); ctx.rect(x - 12, y + 32, w + 24, 4.2 * rh); ctx.clip();
+  rows.forEach((r, i) => drawRow(r, y + 48 + (i + ins) * rh, 0));
+  // the new contact drops into the top row with a bounce
+  const d = drop(c, 0.5, 240, { g: 6000 });
+  if (d) about(x + w / 2, y + 48 + rh - 12, { dy: d.y, sx: d.sx, sy: d.sy }, () => drawRow(T.crmNew, y + 48, 1));
+  ctx.restore();
+  const pc = spring(c, 1.0, 2.2, 0.45);
+  if (pc > 0) about(x + w - 70, y + 4 * rh + 70, { sx: pc, sy: pc }, () => chip(x + w, y + 4 * rh + 70, T.plusContact, { align: 'right', size: 15, bg: SC.mcp }));
+}
+function filesUI(x, y, w, c) {
+  const files = [['contract_anna.pdf', '248 KB', T.fileSt[0]], ['invoice_1042.pdf', '96 KB', T.fileSt[1]], ['nda_v3.docx', '1.1 MB', T.fileSt[2]], ['brief.md', '12 KB', T.fileSt[3]]];
+  const rh = 80, scan = P(c, 0.25, 1.2);
+  files.forEach(([n, size, st], i) => {
+    const ry = y + i * rh, at = 0.25 + ((i + 0.6) / files.length) * 0.95, done = c >= at;
+    rr(x, ry, w, rh - 12, 14); ctx.fillStyle = 'rgba(250,250,250,0.05)'; ctx.fill();
+    const px = x + 22, py = ry + 14;
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 22, py); ctx.lineTo(px + 30, py + 8); ctx.lineTo(px + 30, py + 40); ctx.lineTo(px, py + 40); ctx.closePath();
+    ctx.fillStyle = done ? COL.fg : 'rgba(0,0,0,0)'; ctx.fill(); ctx.strokeStyle = COL.fg; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+    setFont(20, 600, MONO, 0); ctx.fillStyle = COL.fg; ctx.fillText(n, x + 72, ry + 32);
+    setFont(14, 500, MONO, 0); ctx.fillStyle = COL.mute; ctx.fillText(size, x + 72, ry + 54);
+    if (done) { const pa = spring(c, at, 2.6, 0.45); about(x + w - 22, ry + 34, { sx: pa, sy: pa }, () => chip(x + w - 22, ry + 34, '✓ ' + st.toUpperCase(), { align: 'right', size: 14, bg: SC.mcp, padX: 12, h: 30 })); }
+  });
+  if (scan > 0 && scan < 1) { const sy = y + scan * files.length * rh; ctx.fillStyle = SC.mcp; ctx.fillRect(x - 6, sy - 2, w + 12, 4); }
+  withAlpha(E(c, 1.3, 1.6), () => { setFont(15, 700, MONO, 2); ctx.fillStyle = COL.fg; ctx.fillText(`${files.length} / ${files.length} ${T.checked}`, x, y + files.length * rh + 18); });
+}
+function sMcp(t) {
+  const c = constel(t);
+  const active = DEMOS.findIndex((d, k) => t >= d.t && (k === DEMOS.length - 1 || t < DEMOS[k + 1].t));
+  const act = active >= 0 ? DEMOS[active] : null;
+  const pin = spring(t, T0 + 3.25, 1.2, 0.62);
+  // 1) routes to the panel: the lowest layer, under the hub and the tiles
+  if (act && pin > 0 && t < MCP_OUT) {
+    const pts = route(active, t), th = E(t, act.t + 0.3, act.t + 0.65, 'inOutCubic') * (1 - E(t, act.t + 2.2, act.t + 2.5));
+    if (th > 0) {
+      strokePoly(pts, th, COL.fg, 2.5);
+      const mv = P(t, act.t + 0.4, act.t + 1.0);
+      if (mv > 0 && mv < 1) { const q = polyAt(pts, ease.inOutCubic(mv)); disc(q.x, q.y, 7, SC.mcp); }
+    }
+  }
+  // 2) cables: drawn straight in, a quiet current runs along them; on exit they reel back into the hub
+  const reel = E(t, MCP_OUT + 0.1, MORPH_MA, 'inCubic');
+  TOOLS.forEach((tl, i) => {
+    if (t < tl.dock || reel >= 1) return;
+    const { a0, a1 } = cableEnds(i, t), d = E(t, tl.dock, tl.on, 'outCubic') * (1 - reel);
+    const hot = act && act.tool === i && t < act.t + 2.4;
+    ctx.beginPath(); ctx.moveTo(a0.x, a0.y); ctx.lineTo(lerp(a0.x, a1.x, d), lerp(a0.y, a1.y, d));
+    ctx.strokeStyle = hot ? COL.fg : 'rgba(250,250,250,0.35)'; ctx.lineWidth = hot ? 3.5 : 2; ctx.stroke();
+    if (t > tl.on && reel === 0) { ctx.save(); ctx.setLineDash([6, 30]); ctx.lineDashOffset = -(t - tl.on) * 90; ctx.beginPath(); ctx.moveTo(a0.x, a0.y); ctx.lineTo(a1.x, a1.y); ctx.strokeStyle = SC.mcp; ctx.lineWidth = 2.5; ctx.stroke(); ctx.restore(); }
+  });
+  // 3) tiles (they become the agents at the hand-off)
+  if (t < MORPH_MA) TOOLS.forEach((tl, i) => {
+    const appear = clamp(spring(t, T0 + 0.45 + i * 0.06, 2.0, 0.55), 0, 1.3); if (appear <= 0) return;
+    const p = toolPos(i, t), on = t >= tl.on;
+    const hot = act && act.tool === i ? (t >= act.t + 0.4 && t < act.t + 2.3 ? 1 : 0) : 0;
+    const w = act && act.tool === i ? wobble(t, act.t + 0.4, 0.1, 9, 26) : 0;
+    drawTile(tl, p.x, p.y, p.s * appear, { border: on ? COL.fg : COL.line, dot: on ? SC.mcp : COL.dim, inv: hot, sx: 1 + w * 0.6, sy: 1 - w });
+  });
+  // 4) hub: grows out of the query dot, lands heavy, and on exit swells and vanishes
+  const open = spring(t, T0, 1.6, 0.42), gone = E(t, MORPH_MA - 0.05, MORPH_MA + 0.3, 'inCubic'), swell = 0.1 * Math.sin(P(t, MCP_OUT + 0.1, MORPH_MA) * Math.PI);
+  let hw = wobble(t, T0 + 0.35, 0.08, 7, 22); DEMOS.forEach(d => (hw += wobble(t, d.t + 2.25, 0.06, 9, 26)));
+  const hsz = HUB.s * c.s * lerp(0.04, 1, open) * (1 + swell) * (1 - gone);
+  if (hsz > 1) about(c.x, c.y, { sx: 1 + hw * 0.7, sy: 1 - hw }, () => logo(c.x, c.y, hsz));
+  // 5) the calls: a white chip rides the cable out, a green one rides back
+  DEMOS.forEach(d => {
+    const { a0, a1 } = cableEnds(d.tool, t);
+    const go = P(t, d.t, d.t + 0.4), back = P(t, d.t + 1.9, d.t + 2.25);
+    if (go > 0 && go < 1) { const k = ease.inOutCubic(go), sc = clamp(spring(go, 0, 3, 0.5), 0, 1.3), px = lerp(a0.x, a1.x, k), py = lerp(a0.y, a1.y, k); about(px, py, { sx: sc, sy: sc }, () => chip(px, py, d.fn + '()', { size: 16 })); }
+    if (back > 0 && back < 1) { const k = ease.inOutCubic(back), sc = clamp(spring(back, 0, 3, 0.5), 0, 1.3), px = lerp(a1.x, a0.x, k), py = lerp(a1.y, a0.y, k); about(px, py, { sx: sc, sy: sc }, () => chip(px, py, d.back, { size: 16, bg: SC.mcp })); }
+  });
+  // 6) the side panel slides in on a spring; on exit it drops away
+  if (pin > 0) {
+    const { x, y, w, h } = PANEL, f = fall(t, MCP_OUT + 0.05, { dir: 1 });
+    if (f.y < H) about(x + w / 2, y + h / 2, { dx: (1 - pin) * 760, dy: f.y, rot: f.rot * 0.3 }, () => {
+      rr(x, y, w, h, 24); ctx.fillStyle = COL.card; ctx.fill(); ctx.strokeStyle = COL.line; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = COL.line; ctx.fillRect(x, y + 76, w, 1);
+      DEMOS.forEach((d, k) => {
+        const tl = TOOLS[d.tool], inA = E(t, d.t + 0.35, d.t + 0.7, 'outExpo'), outA = k < DEMOS.length - 1 ? E(t, DEMOS[k + 1].t + 0.1, DEMOS[k + 1].t + 0.35, 'inCubic') : 0;
+        const a = inA * (1 - outA); if (a <= 0) return;
+        withAlpha(a, () => {
+          const b = chip(x + 26, y + 38, tl.n, { align: 'left', size: 15, bg: SC.mcp, padX: 12, h: 30 });
+          let cx = x + 26 + b.w + 14; setFont(18, 600, MONO, 0);
+          for (const [s, col] of [['.', COL.mute], [d.fn, COL.fg], ['(', COL.mute], [d.arg, '#a9a9b4'], ['=', COL.mute], [d.val, SC.mcp], [')', COL.mute]]) { ctx.fillStyle = col; ctx.fillText(s, cx, y + 44); cx += ctx.measureText(s).width; }
+          ctx.save(); ctx.beginPath(); ctx.rect(x + 1, y + 78, w - 2, h - 80); ctx.clip(); ctx.translate(0, (1 - inA) * 40 - outA * 40);
+          const cc = t - (d.t + 0.55), bx = x + 34, by = y + 108, bw = w - 68;
+          if (k === 0) searchUI(bx, by, bw, cc); else if (k === 1) crmUI(bx, by, bw, cc); else filesUI(bx, by, bw, cc);
+          ctx.restore();
+        });
+      });
+      DEMOS.forEach((d, k) => {
+        const a = spring(t, d.t + 2.25, 2.2, 0.45) * (k < DEMOS.length - 1 ? 1 - E(t, DEMOS[k + 1].t + 2.0, DEMOS[k + 1].t + 2.2) : 1);
+        if (a > 0) about(x + w / 2, y + h + 52, { sx: a, sy: a }, () => chip(x + w / 2, y + h + 52, '✓ ' + d.res, { size: 19, bg: SC.mcp }));
+      });
+    });
+  }
+  heavy(T.tools, W / 2, 168, 104, t, T0 + 0.2, { align: 'center', maxW: 1500, g: 9000, h: 560, out: MCP_OUT, marker: { from: T.toolsMk[0], to: T.toolsMk[1], col: SC.mcp, ink: COL.ink, t: T0 + 0.9 } });
+  withAlpha(E(t, T0 + 0.7, T0 + 1.1, 'outCubic') * (1 - E(t, MCP_OUT, MCP_OUT + 0.2)), () => { setFont(18, 700, MONO, 5); ctx.fillStyle = COL.fg; ctx.textAlign = 'center'; ctx.fillText(T.toolsSub, W / 2, 222); ctx.textAlign = 'left'; });
+}
+
+// =====================================================================================
+//  SCENE 7 — AGENTS (52.35 → 60.15, blue): the tool tiles roll into agents that ask each other
+// =====================================================================================
+const A0 = S.agents;
+const GX = 1235, GY = 560;
+const NODES = [
+  { n: 'support', note: T.notes[0], x: -390, y: -110, z: -80, tile: 5 },
+  { n: 'docs', note: T.notes[1], x: -70, y: -285, z: 140, tile: 0 },
+  { n: 'research', note: T.notes[2], x: 300, y: -200, z: -60, tile: 1 },
+  { n: 'sales', note: T.notes[3], x: -250, y: 205, z: 80, tile: 4 },
+  { n: 'booking', note: T.notes[4], x: 130, y: 250, z: -140, tile: 3 },
+  { n: 'billing', note: T.notes[5], x: 420, y: 70, z: 110, tile: 2 },
+];
+const EDGES = [[0, 1], [0, 2], [0, 3], [3, 4], [4, 5], [2, 5], [1, 4], [1, 2]];
+const CALLS = [[A0 + 1.8, 0, 1, 'ask_agent("docs")'], [A0 + 3.0, 0, 2, 'ask_agent("research")'], [A0 + 4.2, 3, 4, 'ask_agent("booking")'], [A0 + 5.4, 4, 5, 'ask_agent("billing")']];
+const AG_OUT = 59.4, PULL0 = 59.7;
+NODES.forEach((_, i) => cue(MORPH_MA + 0.55 + i * 0.05, 'tok', { n: SCALE[i + 1] + 12, g: 0.22 }));
+cue(MORPH_MA + 0.55, 'thump', { g: 0.5 }); bump(MORPH_MA + 0.6, 7);
+T.agents.forEach((s, k) => cueHeavy(s, A0 + k * 0.15, { n0: k * 2, g: 9000, every: 2 }));
+CALLS.forEach(([t0, a, b], i) => { cue(t0, 'blip', { n: 79 + [0, 2, 3, 5][i], g: 0.5 }); cue(t0 + 0.5, 'snap', { i }); bump(t0 + 0.5, 3); cue(t0 + 0.95, 'blip', { n: 74 + [0, 2, 3, 5][i], g: 0.3 }); impact(t0 + 0.5, 0.2, GX + NODES[b].x, GY + NODES[b].y); });
+cueFall(AG_OUT); cue(PULL0 - 0.1, 'swell', { d: 0.6, hi: 1 });
+
+function nodePos(i, t) {
+  const nd = NODES[i], k = ease.inOutCubic(P(t, A0 - 0.5, S.builtin)), rot = lerp(-0.45, 0.45, k), sc = lerp(0.94, 1.04, k);
+  const x = nd.x * Math.cos(rot) + nd.z * Math.sin(rot), z = -nd.x * Math.sin(rot) + nd.z * Math.cos(rot), s = 1300 / (1300 + z);
+  let px = GX + x * s * sc, py = GY + nd.y * s * sc;
+  // the exit: a short push outwards, then everything is pulled into the mark
+  const ant = Math.sin(P(t, PULL0 - 0.15, PULL0) * Math.PI) * 0.12, pull = ease.inCubic(P(t, PULL0, MERGE_AB));
+  px = lerp(px + (px - GX) * ant, MC.x, pull); py = lerp(py + (py - GY) * ant, MC.y, pull);
+  return { x: px, y: py, s: s * (1 - 0.75 * pull), z };
+}
+function sAgents(t) {
+  const mk = T.agentsMk;
+  T.agents.forEach((s, k) => heavy(s, 130, 380 + k * 120, 118, t, A0 + k * 0.15, { g: 9000, maxW: 640, out: AG_OUT + k * 0.05, marker: k === mk[0] ? { from: mk[1], to: mk[2], col: SC.agents, ink: COL.ink, t: A0 + 0.85 } : null }));
+  withAlpha(E(t, A0 + 1.0, A0 + 1.5, 'outCubic') * (1 - E(t, AG_OUT - 0.1, AG_OUT + 0.1)), () => {
+    setFont(21, 600, MONO, 1); ctx.fillStyle = COL.fg; ctx.fillText(T.agentsCap[0], 136, 700);
+    ctx.fillStyle = COL.mute; ctx.fillText(T.agentsCap[1], 136, 734);
+  });
+  if (t >= MERGE_AB) return;
+  const pos = NODES.map((_, i) => nodePos(i, t));
+  const pullA = 1 - P(t, PULL0, MERGE_AB);
+  EDGES.forEach(([a, b], i) => {
+    const d = E(t, A0 + 0.4 + i * 0.06, A0 + 0.9 + i * 0.06, 'inOutCubic'); if (d <= 0) return;
+    const A = pos[a], B = pos[b];
+    ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(lerp(A.x, B.x, d), lerp(A.y, B.y, d)); ctx.strokeStyle = rgba('#fafafa', 0.18 * pullA); ctx.lineWidth = 2; ctx.stroke();
+  });
+  const hit = new Array(NODES.length).fill(0), hitW = new Array(NODES.length).fill(0);
+  CALLS.forEach(([t0, a, b]) => {
+    const A = pos[a], B = pos[b], go = P(t, t0, t0 + 0.5);
+    if (go > 0) { const lit = 1 - P(t, t0 + 1.0, t0 + 1.6); if (lit > 0) { ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(lerp(A.x, B.x, ease.inOutCubic(go)), lerp(A.y, B.y, ease.inOutCubic(go))); ctx.strokeStyle = rgba('#fafafa', lit); ctx.lineWidth = 3.5; ctx.stroke(); } }
+    { const d = t - (t0 + 0.5); if (d >= 0 && d < 0.8) hit[b] = 1; }
+    hitW[b] += wobble(t, t0 + 0.5, 0.16, 8, 22);
+  });
+  // nodes: each is a tool tile rolling into a round agent
+  NODES.map((nd, i) => i).sort((a, b) => pos[b].z - pos[a].z).forEach(i => {
+    const nd = NODES[i], p = pos[i], h = hit[i];
+    const tp = toolPos(nd.tile, MORPH_MA), k = spring(t, MORPH_MA + i * 0.05, 1.15, 0.58), kc = clamp(k);
+    const x = lerp(tp.x, p.x, k), y = lerp(tp.y, p.y, k);
+    const nsz = 108 * p.s * (1 + hitW[i]), w = lerp(250 * tp.s, nsz, kc), hh = lerp(80 * tp.s, nsz, kc), rad = lerp(20 * tp.s, nsz / 2, kc);
+    const dep = clamp(0.55 + (p.s - 0.88) * 2.5, 0.45, 1);
+    withAlpha(lerp(1, dep, kc), () => {
+      rr(x - w / 2, y - hh / 2, w, hh, rad); ctx.fillStyle = h ? COL.fg : COL.card; ctx.fill(); ctx.strokeStyle = h ? COL.fg : mix(COL.fg, COL.line, kc); ctx.lineWidth = 2; ctx.stroke();
+      const ta = 1 - P(kc, 0.3, 0.6);
+      if (ta > 0) withAlpha(ta, () => { ctx.save(); ctx.beginPath(); ctx.rect(x - w / 2, y - hh / 2, w, hh); ctx.clip(); ctx.translate(x, y); ctx.scale(tp.s, tp.s); toolIcon(-95, 0, COL.fg); setFont(24, 600, MONO, 0); ctx.fillStyle = COL.fg; ctx.fillText(TOOLS[nd.tile].n, -66, 8); ctx.restore(); });
+      const ra = P(kc, 0.5, 0.85);
+      if (ra > 0) { ctx.beginPath(); ctx.arc(x, y, 19 * p.s * ra, 0, TAU); ctx.strokeStyle = h ? COL.ink : COL.fg; ctx.lineWidth = 9.5 * p.s * ra; ctx.stroke(); }
+      withAlpha(E(t, MORPH_MA + 0.6 + i * 0.06, MORPH_MA + 1.0 + i * 0.06) * (1 - E(t, AG_OUT, AG_OUT + 0.2)), () => {
+        setFont(22 * p.s, 700, MONO, 0); ctx.fillStyle = COL.fg; ctx.textAlign = 'center'; ctx.fillText(nd.n, p.x, p.y + 92 * p.s);
+        setFont(16 * p.s, 500, MONO, 0); ctx.fillStyle = COL.mute; ctx.fillText(nd.note, p.x, p.y + 118 * p.s); ctx.textAlign = 'left';
+      });
+    });
+  });
+  // the calls ride the edges as chips; the answer rides back in blue
+  CALLS.forEach(([t0, a, b, label]) => {
+    const A = pos[a], B = pos[b], go = P(t, t0, t0 + 0.5), back = P(t, t0 + 0.6, t0 + 1.0);
+    if (go > 0 && go < 1) { const q = ease.inOutCubic(go), s = clamp(spring(go, 0, 3, 0.5), 0, 1.3), px = lerp(A.x, B.x, q), py = lerp(A.y, B.y, q); about(px, py, { sx: s, sy: s }, () => chip(px, py, label, { size: 16 })); }
+    if (back > 0 && back < 1) { const q = ease.inOutCubic(back), s = clamp(spring(back, 0, 3, 0.5), 0, 1.3), px = lerp(B.x, A.x, q), py = lerp(B.y, A.y, q); about(px, py, { sx: s, sy: s }, () => chip(px, py, T.answerChip, { size: 15, bg: SC.agents, fg: COL.fg })); }
+  });
+}
+
+// =====================================================================================
+//  SCENE 8 — BUILT-IN MCP (60.15 → 67, blurple): the agents fuse into the mark; 52 tools spin out of it
+// =====================================================================================
+const B0 = S.builtin;
+const MCP52 = ['about_omnixon', 'whoami', 'find_agents', 'get_agent', 'create_agent', 'update_agent', 'delete_agent', 'list_versions', 'show_version', 'rollback_agent', 'list_connections', 'connect_agents', 'change_connection', 'disconnect_agents', 'send_message', 'interrupt_answer', 'find_users', 'recent_users', 'create_user', 'rename_user', 'delete_user', 'list_chats', 'read_chat', 'start_chat', 'rename_chat', 'clear_chat', 'delete_chat', 'add_knowledge', 'search_knowledge', 'list_knowledge', 'edit_knowledge', 'delete_knowledge', 'list_memories', 'add_memory', 'edit_memory', 'delete_memory', 'list_models', 'create_model', 'edit_model', 'delete_model', 'list_mcp_servers', 'add_mcp_server', 'edit_mcp_server', 'delete_mcp_server', 'attach_mcp_server', 'detach_mcp_server', 'list_tokens', 'create_token', 'edit_token', 'delete_token', 'usage_report', 'usage_report_monthly'];
+const MC = { x: 960, y: 455 };
+const TIERS = 3, PER_TIER = Math.ceil(MCP52.length / TIERS), RING_R = 700;
+const PLUCK = [
+  { name: 'create_agent', args: '(name="pirate")', res: '✓ id 7', t: B0 + 2.6 },
+  { name: 'connect_agents', args: '(2 → 7)', res: '✓', t: B0 + 3.4 },
+  { name: 'send_message', args: `(7, ${T.hello})`, res: '✓', t: B0 + 4.2 },
+].map((p, k) => ({ ...p, i: MCP52.indexOf(p.name), slot: { x: 1250, y: 850 + k * 62 } }));
+const PROMPT_T = B0 + 1.2, REPLY_T = B0 + 5.0, OUT_T = S.outro - 0.7, BURST0 = MERGE_AB + 0.1;
+cue(MERGE_AB, 'boom', { g: 0.8 }); bump(MERGE_AB + 0.05, 12); impact(MERGE_AB, 0.8, MC.x, MC.y); cue(BURST0, 'swell', { d: 0.9 });
+for (let k = 0; k < 12; k++) cue(BURST0 + 0.2 + k * 0.04, 'tick', { g: 0.14, n: 96 + (k % 5) * 2 });
+cueHeavy(T.speaks, B0 + 0.4, { n0: 0, g: 9000, h: 560, every: 2 });
+cueTyping(T.prompt, PROMPT_T, 42, 3, 0.5);
+PLUCK.forEach((p, k) => { cue(p.t, 'pluck', { n: 79 + k * 4 }); cue(p.t + 0.45, 'snap', { i: k }); bump(p.t + 0.45, 4); });
+cue(REPLY_T, 'chime', { n: 91 }); cue(REPLY_T + 0.08, 'chime', { n: 96 });
+cueFall(OUT_T); cue(OUT_T, 'riser', { d: 0.7, hi: 1 });
+
+function ringRot(t) { const d = t - B0; return 0.2 * d + (1 - Math.exp(-1.8 * d)) + 5 * P(t, OUT_T, S.outro) ** 3; }
+function ringPos(i, t) {
+  const tier = i % TIERS, slot = Math.floor(i / TIERS), dir = tier === 1 ? -1 : 1;
+  const R = RING_R * clamp(spring(t, BURST0 + tier * 0.06, 0.95, 0.6), 0, 1.25) * (1 - ease.inExpo(P(t, OUT_T, S.outro - 0.1)));
+  const phi = (slot / PER_TIER) * TAU + dir * ringRot(t) + tier * 0.37, tilt = 0.2;
+  const x = R * Math.cos(phi), z0 = R * Math.sin(phi), yo = (tier - 1) * 92 * Math.min(1, R / RING_R);
+  const y = yo - z0 * Math.sin(tilt) * 0.9, z = z0 * Math.cos(tilt);
+  const s = 2200 / (2200 + z);
+  return { x: MC.x + x * s, y: MC.y + y * s, s, z };
+}
+// a tool as a chip: outlined at the back, solid white when it turns to face us
+function toolChip(name, x, y, s, front, o = {}) {
+  setFont(17 * s, 600, MONO, 0);
+  const tw = ctx.measureText(name).width, h = 36 * s, w = tw + 46 * s, left = x - w / 2;
+  rr(left, y - h / 2, w, h, h / 2);
+  ctx.fillStyle = o.bg || (front > 0.5 ? COL.fg : COL.card); ctx.fill();
+  if (!o.bg) { ctx.strokeStyle = front > 0.5 ? COL.fg : COL.line; ctx.lineWidth = 1.5; ctx.stroke(); }
+  disc(left + 17 * s, y, 5 * s, SC.builtin);
+  ctx.fillStyle = o.fg || (front > 0.5 ? COL.ink : COL.fg); ctx.textBaseline = 'middle'; ctx.fillText(name, left + 30 * s, y + 1); ctx.textBaseline = 'alphabetic';
+}
+function builtinLogo(t) {
+  const sz = 160 * (0.25 + 0.75 * spring(t, MERGE_AB - 0.02, 1.7, 0.42));
+  let w = wobble(t, MERGE_AB, 0.12, 8, 24); PLUCK.forEach(p => (w += wobble(t, p.t, 0.06, 9, 26)));
+  about(MC.x, MC.y, { sx: 1 + w * 0.7, sy: 1 - w }, () => logo(MC.x, MC.y, sz));
+}
+function sBuiltin(t) {
+  const pulled = PLUCK.filter(p => t >= p.t).map(p => p.i);
+  const items = MCP52.map((n, i) => ({ n, i, p: ringPos(i, t) })).sort((a, b) => b.p.z - a.p.z);
+  let logoDrawn = false;
+  if (t < LOGO_BO) for (const it of items) {
+    if (!logoDrawn && it.p.z < 0) { builtinLogo(t); logoDrawn = true; }
+    if (pulled.includes(it.i)) continue;
+    const pk = PLUCK.find(p => p.i === it.i), hl = pk ? E(t, pk.t - 0.3, pk.t - 0.05) : 0;
+    const appear = clamp(spring(t, BURST0 + 0.05 + (it.i % 18) * 0.012, 2.0, 0.55), 0, 1.25);
+    const front = clamp((-it.p.z / RING_R - 0.25) / 0.5);
+    const depthA = clamp(0.25 + (1 - (it.p.z + RING_R) / (2 * RING_R)) * 0.9, 0.2, 1);
+    withAlpha(Math.max(depthA, hl), () => toolChip(it.n, it.p.x, it.p.y, it.p.s * appear * (1 + hl * 0.3), front, hl ? { bg: SC.builtin, fg: COL.fg } : {}));
+  }
+  if (!logoDrawn && t < LOGO_BO) builtinLogo(t);
+  // the plucked calls fly out of the ring into the log, land, and on exit drop away
+  PLUCK.forEach((p, k) => {
+    if (t < p.t) return;
+    const f = spring(t, p.t, 1.4, 0.6), from = ringPos(p.i, p.t), fo = fall(t, OUT_T + 0.08 * k);
+    const x = lerp(from.x, p.slot.x, f), y = lerp(from.y, p.slot.y, f) + fo.y;
+    if (y > H + 100) return;
+    about(x + 120, y, { rot: fo.rot * 0.3 }, () => {
+      setFont(21, 700, MONO, 0);
+      const nw = ctx.measureText(p.name).width; setFont(21, 500, MONO, 0); const aw = ctx.measureText(p.args).width;
+      const da = E(t, p.t + 0.4, p.t + 0.7), land = clamp(spring(t, p.t + 0.45, 2.6, 0.45), 0, 1.3);
+      const w = 64 + nw + (aw + 90) * da;
+      rr(x - 20, y - 26, w, 52, 26); ctx.fillStyle = f < 0.95 ? SC.builtin : COL.card; ctx.fill(); ctx.strokeStyle = COL.line; ctx.lineWidth = 1.5; ctx.stroke();
+      disc(x + 4, y, 6, SC.builtin);
+      setFont(21, 700, MONO, 0); ctx.fillStyle = COL.fg; ctx.fillText(p.name, x + 22, y + 7);
+      withAlpha(da, () => { setFont(21, 500, MONO, 0); ctx.fillStyle = COL.mute; ctx.fillText(p.args, x + 22 + nw, y + 7); });
+      if (land > 0) about(x + 22 + nw + aw + 50, y, { sx: land, sy: land }, () => chip(x + 22 + nw + aw + 50, y, p.res, { size: 15, padX: 10, h: 30 }));
+    });
+  });
+  // the prompt rises on a spring; the reply pops; both drop away on exit
+  const pr = spring(t, PROMPT_T - 0.35, 1.5, 0.6), fp = fall(t, OUT_T);
+  if (pr > 0 && fp.y < H) about(300, 859, { dy: (1 - pr) * 300 + fp.y, rot: fp.rot * 0.2 }, () => {
+    setFont(24, 500, MONO, 0); const w = ctx.measureText(T.prompt).width + 52;
+    rr(130, 828, w, 62, 31); ctx.fillStyle = COL.card; ctx.fill(); ctx.strokeStyle = COL.fg; ctx.lineWidth = 2; ctx.stroke();
+    typed(T.prompt, 154, 867, 24, t, PROMPT_T, 42, { color: COL.fg, cursor: true, cursorUntil: PLUCK[0].t });
+  });
+  const ra = clamp(spring(t, REPLY_T, 2.0, 0.45), 0, 1.3), fr = fall(t, OUT_T + 0.06, { dir: -1 });
+  if (ra > 0 && fr.y < H) about(130, 960, { sx: ra, sy: ra, dy: fr.y, rot: fr.rot * 0.2 }, () => bubble(130, 932, T.reply, { bg: COL.fg, fg: COL.ink, size: 22 }));
+  heavy(T.speaks, W / 2, 190, 112, t, B0 + 0.4, { align: 'center', maxW: 1600, g: 9000, h: 560, ringO: T.speaksRing, out: OUT_T, marker: { from: T.speaksMk[0], to: T.speaksMk[1], col: SC.builtin, ink: COL.fg, t: B0 + 1.0 } });
+  withAlpha(E(t, B0 + 0.8, B0 + 1.2, 'outCubic') * (1 - E(t, OUT_T, OUT_T + 0.2)), () => {
+    setFont(19, 700, MONO, 4); ctx.fillStyle = COL.fg; ctx.textAlign = 'center';
+    ctx.fillText(T.toolsN(Math.round(52 * E(t, B0 + 0.8, B0 + 1.8, 'outCubic'))), W / 2, 246); ctx.textAlign = 'left';
+  });
+}
+
+// =====================================================================================
+//  SCENE 9 — OUTRO (67 → 74.4): the mark rises, the features flood out of it, then it comes down for good
+// =====================================================================================
+const SLAM = S.slam, SD = (SLAM - S.outro) / T.strobe.length;
+const STROBE = T.strobe.map((w, i) => ({ w, c: i % 2 ? COL.bg : COL.fg, ink: i % 2 ? COL.fg : COL.ink, t0: S.outro + i * SD }));
+const WM = 'Omnixon', WM_SIZE = 196, LOGO_S = 190;
+function wordmarkGeom() { mctx.font = `700 ${WM_SIZE}px ${SANS}`; mctx.letterSpacing = `${-0.035 * WM_SIZE}px`; const wW = mctx.measureText(WM).width, gap = 52, gx = W / 2 - (LOGO_S + gap + wW) / 2; return { wW, gx, tx: gx + LOGO_S + gap, lx: gx + LOGO_S / 2 }; }
+const STROBE_G = 16000, STROBE_H = 700;
+STROBE.forEach((s, i) => { cue(s.t0, 'stutter', { i }); cueHeavy(s.w, s.t0 + 0.02, { stagger: 0.02, g: STROBE_G, h: STROBE_H, n0: i, every: 2, gain: 0.2, thump: 0.35, bump: 4 }); });
+cue(SLAM, 'swell', { d: 0.3 }); cue(SLAM + 0.28, 'boom', { g: 1 }); bump(SLAM + 0.28, 16); impact(SLAM + 0.28, 1.2);
+cue(SLAM + 0.75, 'swell', { d: 0.5 }); cue(SLAM + 1.2, 'thump', { g: 0.4 });
+T.tagline.split(' ').forEach((w, i) => cue(SLAM + 1.6 + i * 0.07 + landT(160, 4500), 'tok', { n: SCALE[i % SCALE.length] + 12, g: 0.18 }));
+cueTyping('omnixon.net', SLAM + 2.2, 24, 1, 0.4); cue(SLAM + 2.7, 'chime', { n: 96 });
+
+function outroLogo(t) {
+  const up = spring(t, LOGO_BO, 1.4, 0.62), down = spring(t, SLAM, 1.4, 0.5), slide = spring(t, SLAM + 0.75, 1.3, 0.62), g = wordmarkGeom();
+  return { x: lerp(W / 2, g.lx, slide), y: lerp(lerp(MC.y, 300, up), 470, down), s: lerp(lerp(160, 110, up), LOGO_S, down) };
+}
+function sOutro(t) {
+  const L = outroLogo(t);
+  // the features flood out of the mark, one per half-beat, alternating white and black
+  if (t >= S.outro) {
+    const i = clamp(Math.floor((t - S.outro) / SD), 0, STROBE.length - 1), st = STROBE[i];
+    if (i > 0) flood(STROBE[i - 1].c);
+    ctx.beginPath(); ctx.arc(L.x, L.y, 2500 * ease.outExpo(P(t, st.t0, st.t0 + 0.3)), 0, TAU); ctx.fillStyle = st.c; ctx.fill();
+    if (t < SLAM + 0.6) {
+      heavy(st.w, W / 2, 790, 200, t, st.t0 + 0.02, { align: 'center', maxW: 1500, stagger: 0.02, g: STROBE_G, h: STROBE_H, color: st.ink, out: i === STROBE.length - 1 ? SLAM : null });
+      withAlpha(E(t, st.t0 + 0.08, st.t0 + 0.2) * (1 - E(t, SLAM, SLAM + 0.15)), () => { setFont(18, 700, MONO, 4); ctx.fillStyle = st.ink; ctx.textAlign = 'center'; ctx.fillText(`0${i + 1} / 0${STROBE.length} · ${T.also}`, W / 2, 470); ctx.textAlign = 'left'; });
+    }
+  }
+  // the mark: lands heavy at the slam, slides aside; a white block runs out of it and uncovers the name
+  const g = wordmarkGeom(), cy = 470, wb = wobble(t, SLAM + 0.28, 0.14, 7, 22);
+  const grow = spring(t, SLAM + 1.0, 1.8, 0.6), retract = E(t, SLAM + 1.35, SLAM + 1.7, 'inOutExpo');
+  if (retract > 0) { ctx.save(); ctx.beginPath(); ctx.rect(g.tx - 10, 0, (g.wW + 30) * retract + 10, H); ctx.clip(); setFont(WM_SIZE, 700, SANS, -0.035 * WM_SIZE); ctx.fillStyle = COL.fg; ctx.fillText(WM, g.tx, cy + WM_SIZE * 0.36); ctx.restore(); }
+  if (grow > 0 && retract < 1) { const a = g.tx - 10 + (g.wW + 30) * retract, b = g.tx - 10 + (g.wW + 30) * grow; ctx.fillStyle = COL.fg; ctx.fillRect(a, cy - WM_SIZE * 0.42, Math.max(0, b - a), WM_SIZE * 0.84); }
+  about(L.x, L.y, { sx: 1 + wb * 0.7, sy: 1 - wb }, () => logo(L.x, L.y, L.s));
+  // the promise drops in word by word; the link types itself
+  const tag = T.tagline.split(' ');
+  setFont(42, 600, SANS, -0.4);
+  const tw = ctx.measureText(tag.join(' ')).width; let x = W / 2 - tw / 2;
+  tag.forEach((w, i) => {
+    const d = drop(t, SLAM + 1.6 + i * 0.07, 160, { g: 4500 }), ww = ctx.measureText(w).width;
+    if (d) about(x + ww / 2, 668, { dy: d.y, sx: d.sx, sy: d.sy }, () => { ctx.fillStyle = i >= T.tagHi ? COL.fg : COL.mute; ctx.fillText(w, x, 668); });
+    x += ctx.measureText(w + ' ').width;
+  });
+  withAlpha(E(t, SLAM + 2.1, SLAM + 2.3), () => {
+    typed('omnixon.net', W / 2 - 104, 760, 34, t, SLAM + 2.2, 24, { color: COL.link, weight: 700 });
+    setFont(34, 700, MONO, 0); const uw = ctx.measureText('omnixon.net').width;
+    ctx.fillStyle = COL.link; ctx.fillRect(W / 2 - 104, 776, uw * clamp(spring(t, SLAM + 2.7, 1.6, 0.7)), 3);
+    const ar = spring(t, SLAM + 2.75, 2, 0.5);
+    if (ar > 0) { setFont(34, 500, MONO, 0); withAlpha(clamp(ar), () => ctx.fillText('→', W / 2 - 104 + uw + 18 + (1 - ar) * -24, 760)); }
+  });
+}
+
+// every scene draws only inside its window; the windows overlap so the next scene grows out of the last
+const SCENES = [
+  { name: 'INTRO', a: S.intro, b: S.ch, from: 0, to: S.ch, fn: sIntro },
+  { name: 'CHANNELS', a: S.ch, b: S.code, from: S.ch, to: S.code, fn: sChannels },
+  { name: 'SIMPLICITY', a: S.code, b: S.model, from: S.code, to: S.model + 0.3, fn: sCode },
+  { name: 'ANY MODEL', a: S.model, b: S.rag, from: MORPH_CM, to: MORPH_MR + 0.9, fn: sModels },
+  { name: 'KNOWLEDGE', a: S.rag, b: S.mcp, from: MORPH_MR, to: S.mcp, fn: sRag },
+  { name: 'MCP TOOLS', a: S.mcp, b: S.agents, from: S.mcp, to: MCP_OUT + 1.0, fn: sMcp },
+  { name: 'AGENTS', a: S.agents, b: S.builtin, from: MORPH_MA, to: AG_OUT + 1.0, fn: sAgents },
+  { name: 'BUILT-IN MCP', a: S.builtin, b: S.outro, from: MERGE_AB, to: OUT_T + 0.9, fn: sBuiltin },
+  { name: 'OMNIXON', a: S.outro, b: S.end, from: LOGO_BO, to: S.end, fn: sOutro },
+];
+const DIVE = [S.ch - 0.9, S.ch], ZOOMO = [S.code - 0.5, S.code];
+
+function renderContent(t, target) {
+  ctx = target; ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (t >= DIVE[0] && t < DIVE[1]) {
+    // the camera dives through the ring; the first channel is already waiting inside it
+    sChannels(t); sIntro(t, true);
+  } else if (t >= ZOOMO[0] && t < ZOOMO[1]) {
+    // the camera flies through the O of ONE API; the code scene is already waiting inside it
+    const p = P(t, ZOOMO[0], ZOOMO[1]), o = ringOGeom(), z = 1 + ease.inExpo(p) * 90, k = ease.inOutCubic(p);
+    const view = { tx: lerp(o.x, W / 2, k), ty: lerp(o.y, H / 2, k) };
+    const sub = (c2d, fn) => { const prev = ctx; ctx = c2d; ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); fn(); ctx.restore(); ctx = prev; };
+    sub(bctxB, () => { background(t); const zb = lerp(0.55, 1, ease.outCubic(p)); ctx.translate(W / 2, H / 2); ctx.scale(zb, zb); ctx.translate(-W / 2, -H / 2); sCode(t); });
+    sub(bctxA, () => { ctx.fillStyle = COL.bg; ctx.fillRect(0, 0, W, H); ctx.translate(view.tx, view.ty); ctx.scale(z, z); ctx.translate(-o.x, -o.y); background(t); sChannels(t); });
+    ctx.drawImage(bufB, 0, 0);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.arc(view.tx, view.ty, o.rIn * z, 0, TAU, true); ctx.clip(); ctx.drawImage(bufA, 0, 0); ctx.restore();
+  } else {
+    background(t);
+    ctx.translate(0, camBump(t));
+    for (const sc of SCENES) if (t >= sc.from && t < sc.to) sc.fn(t);
+  }
+  ctx.restore();
+}
+
+// ---------- render: motion blur by sub-frames ----------
+function render(t) {
+  if (SUB === 1) renderContent(t, fctx);
+  else for (let k = 0; k < SUB; k++) {
+    renderContent(t + ((k + 0.5) / SUB - 0.5) * (0.6 / FPS), fctx);
+    actx.globalAlpha = 1 / (k + 1); actx.drawImage(frameC, 0, 0);
+  }
+  ctx = mainCtx; ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
+  ctx.drawImage(SUB === 1 ? frameC : accC, 0, 0);
+  ctx.restore();
+}
+
+// =====================================================================================
+//  PLAYER / RENDER HOOKS
+// =====================================================================================
+if (RENDER_MODE) document.body.classList.add('render');
+const fontsReady = Promise.all([
+  ...[400, 500, 600, 700, 800, 900].map(w => document.fonts.load(`${w} 40px 'Inter Tight'`, 'AaЯя')),
+  ...[400, 500, 600, 700].map(w => document.fonts.load(`${w} 40px 'JetBrains Mono'`, 'AaЯя')),
+]).then(() => document.fonts.ready);
+EVENTS.sort((a, b) => a.t - b.t);
+window.__film = { W, H, DUR, FPS, BEAT, LANG, slam: S.slam, events: EVENTS, sections: SCENES.map(({ name, a, b }) => ({ name, a, b })), render, ready: fontsReady.then(() => true) };
+
+if (!RENDER_MODE) {
+  const audio = document.getElementById('music'), btn = document.getElementById('play'), icon = document.getElementById('icon');
+  audio.src = `out/music-${LANG}.wav`;
+  const scrub = document.getElementById('scrub'), tc = document.getElementById('tc');
+  let playing = false, t0 = 0, start = 0, hasAudio = false;
+  audio.addEventListener('canplaythrough', () => (hasAudio = true));
+  audio.addEventListener('error', () => (hasAudio = false));
+  const now = () => (playing ? (hasAudio ? audio.currentTime : t0 + (performance.now() - start) / 1000) : t0);
+  const setIcon = () => icon.setAttribute('d', playing ? 'M3 1.5h3v11H3zM8 1.5h3v11H8z' : 'M3 1.5v11l9-5.5z');
+  function toggle() {
+    if (playing) { t0 = now(); playing = false; audio.pause(); }
+    else { if (t0 >= DUR - 0.01) t0 = 0; playing = true; start = performance.now(); audio.currentTime = t0; audio.play().catch(() => (hasAudio = false)); }
+    setIcon();
+  }
+  btn.onclick = toggle; main.onclick = toggle;
+  addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); toggle(); } });
+  scrub.oninput = () => { t0 = +scrub.value; start = performance.now(); audio.currentTime = t0; };
+  fontsReady.then(() => {
+    const loop = () => {
+      let t = now();
+      if (t >= DUR) { t = DUR - 1e-3; if (playing) { playing = false; audio.pause(); t0 = t; setIcon(); } }
+      render(t); scrub.value = t; tc.textContent = `${t.toFixed(2).padStart(5, '0')} / ${DUR.toFixed(2)}`;
+      requestAnimationFrame(loop);
+    };
+    loop();
+  });
+}
+</script>
+</body>
+</html>
