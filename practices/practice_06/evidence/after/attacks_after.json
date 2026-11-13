@@ -1,0 +1,339 @@
+[
+ {
+  "attack": "A01 anonymous profile read",
+  "request": "GET /profile?id=2",
+  "body": null,
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "A01 IDOR: alice reads bob profile",
+  "request": "GET /profile?id=2",
+  "body": null,
+  "status": 403,
+  "response": "{\"error\": \"forbidden\"}"
+ },
+ {
+  "attack": "A01 anonymous orders (all users)",
+  "request": "GET /orders",
+  "body": null,
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "A01 X-Role spoof (no session)",
+  "request": "GET /admin/export",
+  "body": null,
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "A01 X-Role spoof (customer session)",
+  "request": "GET /admin/export",
+  "body": null,
+  "status": 403,
+  "response": "{\"error\": \"staff only\"}"
+ },
+ {
+  "attack": "A03 SQLi OR 1=1 in /profile",
+  "request": "GET /profile?id=1%20OR%201%3D1",
+  "body": null,
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "A03 SQLi UNION (sqlite_master)",
+  "request": "GET /profile?id=0%20UNION%20SELECT%201%2Csql%2Cname%2Ctype%20FROM%20sqlite_master",
+  "body": null,
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "A03 SQLi in /search",
+  "request": "GET /search?q=%27%20OR%20%271%27%3D%271",
+  "body": null,
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "A03 SQLi in assistant order_id",
+  "request": "GET /assistant/context?order_id=1%20OR%201%3D1",
+  "body": null,
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "A03 SQLi OR 1=1 in /profile (alice token)",
+  "request": "GET /profile?id=1%20OR%201%3D1",
+  "body": null,
+  "status": 400,
+  "response": "{\"error\": \"invalid id\"}"
+ },
+ {
+  "attack": "A03 SQLi UNION sqlite_master (alice token)",
+  "request": "GET /profile?id=0%20UNION%20SELECT%201%2Csql%2Cname%2Ctype%20FROM%20sqlite_master",
+  "body": null,
+  "status": 400,
+  "response": "{\"error\": \"invalid id\"}"
+ },
+ {
+  "attack": "A03 SQLi in /search (alice token)",
+  "request": "GET /search?q=%27%20OR%20%271%27%3D%271",
+  "body": null,
+  "status": 200,
+  "response": "[]"
+ },
+ {
+  "attack": "A03 enumerate profiles via /search q=TEST (alice token)",
+  "request": "GET /search?q=TEST",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}]"
+ },
+ {
+  "attack": "A03 SQLi in assistant order_id (alice token)",
+  "request": "GET /assistant/context?order_id=1%20OR%201%3D1",
+  "body": null,
+  "status": 400,
+  "response": "{\"error\": \"invalid order_id\"}"
+ },
+ {
+  "attack": "A01 alice lists orders",
+  "request": "GET /orders",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"owner\": 1, \"product\": \"chair\", \"price\": 5000.0}]"
+ },
+ {
+  "attack": "Path traversal: private note (alice token)",
+  "request": "GET /files?user=..&path=private/operator-note.txt",
+  "body": null,
+  "status": 403,
+  "response": "{\"error\": \"forbidden\"}"
+ },
+ {
+  "attack": "IDOR: bob receipt (alice token)",
+  "request": "GET /files?user=bob&path=receipt.txt",
+  "body": null,
+  "status": 403,
+  "response": "{\"error\": \"forbidden\"}"
+ },
+ {
+  "attack": "Stored XSS payload saved (alice token)",
+  "request": "POST /reviews",
+  "body": {
+   "product": "chair",
+   "text": "<script>alert(document.domain)</script>"
+  },
+  "status": 201,
+  "response": "{\"saved\": true}"
+ },
+ {
+  "attack": "Stored XSS rendered (after save)",
+  "request": "GET /reviews/view",
+  "body": null,
+  "status": 200,
+  "response": "<html><body><p>&lt;script&gt;alert(document.domain)&lt;/script&gt;</p></body></html>"
+ },
+ {
+  "attack": "Debug logs (alice token)",
+  "request": "GET /debug/logs",
+  "body": null,
+  "status": 403,
+  "response": "{\"error\": \"staff only\"}"
+ },
+ {
+  "attack": "Assistant execute: export (alice token)",
+  "request": "POST /assistant/execute",
+  "body": {
+   "decision": {
+    "tool": "export_profiles",
+    "arguments": {}
+   }
+  },
+  "status": 403,
+  "response": "{\"error\": \"staff only\"}"
+ },
+ {
+  "attack": "A04 price tampering",
+  "request": "POST /orders",
+  "body": {
+   "product": "chair",
+   "price": 1
+  },
+  "status": 201,
+  "response": "{\"id\": 3, \"owner\": 1, \"product\": \"chair\", \"price\": 5000}"
+ },
+ {
+  "attack": "A04 negative price",
+  "request": "POST /orders",
+  "body": {
+   "product": "chair",
+   "price": -5000
+  },
+  "status": 201,
+  "response": "{\"id\": 4, \"owner\": 1, \"product\": \"chair\", \"price\": 5000}"
+ },
+ {
+  "attack": "Path traversal: private note",
+  "request": "GET /files?user=..&path=private/operator-note.txt",
+  "body": null,
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "IDOR: bob receipt without login",
+  "request": "GET /files?user=bob&path=receipt.txt",
+  "body": null,
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "Traversal ../bob via path",
+  "request": "GET /files?user=alice&path=../bob/receipt.txt",
+  "body": null,
+  "status": 400,
+  "response": "{\"error\": \"invalid file name\"}"
+ },
+ {
+  "attack": "Path outside sandbox (error leak)",
+  "request": "GET /files?user=alice&path=../../../../etc/passwd",
+  "body": null,
+  "status": 400,
+  "response": "{\"error\": \"invalid file name\"}"
+ },
+ {
+  "attack": "Stored XSS payload saved",
+  "request": "POST /reviews",
+  "body": {
+   "product": "chair",
+   "text": "<script>alert(document.domain)</script>"
+  },
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "Stored XSS rendered",
+  "request": "GET /reviews/view",
+  "body": null,
+  "status": 200,
+  "response": "<html><body><p>&lt;script&gt;alert(document.domain)&lt;/script&gt;</p></body></html>"
+ },
+ {
+  "attack": "Debug logs leak tokens/passwords",
+  "request": "GET /debug/logs",
+  "body": null,
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "Error leak: malformed body",
+  "request": "POST /orders",
+  "body": {},
+  "status": 400,
+  "response": "{\"error\": \"product required\"}"
+ },
+ {
+  "attack": "Assistant execute: export without auth",
+  "request": "POST /assistant/execute",
+  "body": {
+   "decision": {
+    "tool": "export_profiles",
+    "arguments": {}
+   }
+  },
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "Assistant execute: read operator note",
+  "request": "POST /assistant/execute",
+  "body": {
+   "decision": {
+    "tool": "read_file",
+    "arguments": {
+     "path": "private/operator-note.txt"
+    }
+   }
+  },
+  "status": 403,
+  "response": "{\"error\": \"forbidden\"}"
+ },
+ {
+  "attack": "Assistant execute: read bob receipt",
+  "request": "POST /assistant/execute",
+  "body": {
+   "decision": {
+    "tool": "read_file",
+    "arguments": {
+     "path": "files/bob/receipt.txt"
+    }
+   }
+  },
+  "status": 403,
+  "response": "{\"error\": \"forbidden\"}"
+ },
+ {
+  "attack": "Assistant context: foreign order",
+  "request": "GET /assistant/context?order_id=2",
+  "body": null,
+  "status": 403,
+  "response": "{\"error\": \"forbidden\"}"
+ },
+ {
+  "attack": "Brute force login (30 tries)",
+  "statuses": [
+   401,
+   429
+  ]
+ },
+ {
+  "attack": "Assistant execute: delete_tree files/bob",
+  "request": "POST /assistant/execute",
+  "body": {
+   "decision": {
+    "tool": "delete_tree",
+    "arguments": {
+     "path": "files/bob"
+    }
+   }
+  },
+  "status": 403,
+  "response": "{\"error\": \"tool is disabled\"}"
+ },
+ {
+  "attack": "Bob receipt after delete",
+  "request": "GET /files?user=bob&path=receipt.txt",
+  "body": null,
+  "status": 401,
+  "response": "{\"error\": \"login required\"}"
+ },
+ {
+  "attack": "Assistant execute: delete_tree . (everything)",
+  "request": "POST /assistant/execute",
+  "body": {
+   "decision": {
+    "tool": "delete_tree",
+    "arguments": {
+     "path": "."
+    }
+   }
+  },
+  "status": 403,
+  "response": "{\"error\": \"tool is disabled\"}"
+ },
+ {
+  "attack": "Health after wipe",
+  "request": "GET /health",
+  "body": null,
+  "status": 200,
+  "response": "{\"status\": \"ok\"}"
+ },
+ {
+  "attack": "Alice receipt after wipe",
+  "request": "GET /files?user=alice&path=receipt.txt",
+  "body": null,
+  "status": 200,
+  "response": "{\"content\": \"TEST_ALICE receipt: chair, 5000 RUB\"}"
+ }
+]
