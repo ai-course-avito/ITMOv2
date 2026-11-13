@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Практика 4 — Две фичи с агентом</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f7f7f9; color: #222; }
+    .container { max-width: 800px; margin: 0 auto; padding: 24px; }
+    h1 { font-size: 28px; margin: 16px 0 8px; }
+    .subtitle { color: #666; margin: 0 0 24px; }
+    h2 { font-size: 20px; margin: 0 0 12px; }
+    .card { background: #fff; border: 1px solid #e3e3e7; border-radius: 8px; padding: 16px 18px; margin: 12px 0; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    ul { margin: 8px 0 0 18px; }
+    li { margin: 6px 0; }
+    code { background: #f0f0f3; padding: 2px 4px; border-radius: 4px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 90%; }
+    a { color: #0b57d0; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .badge { display: inline-block; background: #e8f0fe; color: #0b57d0; padding: 2px 8px; border-radius: 12px; font-size: 80%; margin-left: 8px; }
+    .muted { color: #666; font-size: 90%; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Практика 4 — Две фичи с агентом</h1>
+    <p class="subtitle">Среда агента, skill, собственный MCP и рефлексия.</p>
+
+    <div class="card">
+      <h2>Блок А: Настроенная среда <span class="badge">5 баллов</span></h2>
+      <ul>
+        <li><a href="../AGENTS.md">AGENTS.md</a> — правила и маршрут чтения</li>
+        <li><a href="../skills/pptx/SKILL.md">skills/pptx/SKILL.md</a> — skill для работы с .pptx</li>
+        <li><a href="../opencode.json">opencode.json</a> — MCP context7 и pptx-reader</li>
+        <li><a href="SETUP.md">docs/SETUP.md</a> — обоснование подключений</li>
+        <li>Pre-commit hook → <code>make check</code></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Блок Б: Skill <span class="badge">2 балла</span></h2>
+      <ul>
+        <li><a href="SKILL_REVIEW.md">docs/SKILL_REVIEW.md</a> — разбор skill pptx</li>
+        <li><a href="../practices/practice_03/output.pptx">practices/practice_03/output.pptx</a> — результат (8 слайдов)</li>
+        <li><a href="../practices/practice_03/output.md">practices/practice_03/output.md</a> — исходный конспект</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Блок В: Свой MCP tool <span class="badge">2 балла</span></h2>
+      <ul>
+        <li><a href="../mcp/pptx-reader/server.py">mcp/pptx-reader/server.py</a> — MCP-сервер (2 tool'а)</li>
+        <li><a href="../practices/practice_03/results/mcp-custom-tool.txt">practices/practice_03/results/mcp-custom-tool.txt</a> — успешный вызов и ошибки</li>
+      </ul>
+      <p class="muted">Tool'ы: <code>count_slides(path)</code>, <code>get_slide_title(path, index)</code></p>
+    </div>
+
+    <div class="card">
+      <h2>Блок Г: Рефлексия <span class="badge">1 балл</span></h2>
+      <ul>
+        <li><a href="reflection.md">docs/reflection.md</a> — что помогло, что мешало, где вмешался</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Проверки и доказательства</h2>
+      <ul>
+        <li><code>cd practices/practice_03 &amp;&amp; make check</code> — ruff + unittest + check_pptx</li>
+        <li><a href="../practices/practice_03/results/tester-review.txt">tester-review.txt</a> — subagent review</li>
+        <li><a href="../practices/practice_03/results/mcp-context7-check.txt">mcp-context7-check.txt</a> — MCP context7 в работе</li>
+        <li><a href="HANDOFF.md">docs/HANDOFF.md</a> — состояние после практики</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Фичи</h2>
+      <ul>
+        <li><strong>Фича A:</strong> AGENTS.md, skill pptx, MCP context7, STYLEGUIDE, make check, pre-commit hook</li>
+        <li><strong>Фича B:</strong> check_pptx.py, цель check_pptx в Makefile, worktree practice_04-b</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

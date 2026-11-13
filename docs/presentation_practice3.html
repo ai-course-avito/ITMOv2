@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Практика 3 — Локальные модели</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f7f7f9; color: #222; }
+    .container { max-width: 800px; margin: 0 auto; padding: 24px; }
+    h1 { font-size: 28px; margin: 16px 0 8px; }
+    .subtitle { color: #666; margin: 0 0 24px; }
+    h2 { font-size: 20px; margin: 0 0 12px; }
+    .card { background: #fff; border: 1px solid #e3e3e7; border-radius: 8px; padding: 16px 18px; margin: 12px 0; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    ul { margin: 8px 0 0 18px; }
+    li { margin: 6px 0; }
+    code { background: #f0f0f3; padding: 2px 4px; border-radius: 4px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 90%; }
+    a { color: #0b57d0; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .badge { display: inline-block; background: #e8f0fe; color: #0b57d0; padding: 2px 8px; border-radius: 12px; font-size: 80%; margin-left: 8px; }
+    .muted { color: #666; font-size: 90%; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Практика 3 — Локальные модели</h1>
+    <p class="subtitle">Запуск локальной LLM через Ollama, интеграция в OpenCode, baseline vs system, метрики.</p>
+
+    <div class="card">
+      <h2>Окружение и модель</h2>
+      <ul>
+        <li>ОС: macOS, CPU/GPU: Apple M5, RAM: 16 GB</li>
+        <li>Ollama 0.35.0 / OpenCode 1.18.33 / Python 3.14.7</li>
+        <li>Модель: <code>qwen3.5:4b</code> (Q4_K_M, 3.4 GB, Apache-2.0)</li>
+        <li>Контекст: <code>num_ctx=4096</code> (API), <code>num_ctx=65536</code> (агент)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Отчёт и модфилы</h2>
+      <ul>
+        <li><a href="../practices/practice_03/REPORT.md">practices/practice_03/REPORT.md</a> — основной отчёт</li>
+        <li><a href="../practices/practice_03/PRACTICE.md">practices/practice_03/PRACTICE.md</a> — сценарий практики</li>
+        <li><a href="../practices/practice_03/lab/Modelfile">lab/Modelfile</a> — профиль <code>itmo-local</code></li>
+        <li><a href="../practices/practice_03/lab/Modelfile.agent">lab/Modelfile.agent</a> — профиль <code>itmo-agent</code></li>
+        <li><a href="../practices/practice_03/lab/demo/opencode.json">lab/demo/opencode.json</a> — конфиг <code>local-guide</code></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Эксперименты A/B</h2>
+      <ul>
+        <li><a href="../practices/practice_03/lab/results/baseline.json">baseline.json</a> — без system prompt</li>
+        <li><a href="../practices/practice_03/lab/results/system.json">system.json</a> — с system.txt</li>
+        <li>Temperature 0.8 (hot): 
+            <a href="../practices/practice_03/lab/results/hot42.json">42</a>,
+            <a href="../practices/practice_03/lab/results/hot43.json">43</a>,
+            <a href="../practices/practice_03/lab/results/hot44.json">44</a></li>
+        <li>Temperature 0.2 (cool): 
+            <a href="../practices/practice_03/lab/results/cool42.json">42</a>,
+            <a href="../practices/practice_03/lab/results/cool43.json">43</a>,
+            <a href="../practices/practice_03/lab/results/cool44.json">44</a></li>
+      </ul>
+      <p class="muted">Медиана скорости: ~37.6 tok/s. TTFT не измерен (не потоковый ответ).</p>
+    </div>
+
+    <div class="card">
+      <h2>Проверка на проекте (Q1–Q5)</h2>
+      <ul>
+        <li><a href="../practices/practice_03/lab/results/q1.jsonl">q1.jsonl</a> — как запустить тесты</li>
+        <li><a href="../practices/practice_03/lab/results/q2.jsonl">q2.jsonl</a> — пустое имя подписчика</li>
+        <li><a href="../practices/practice_03/lab/results/q3.jsonl">q3.jsonl</a> — <strong>unsubscribe не найден</strong> (ложная предпосылка)</li>
+        <li><a href="../practices/practice_03/lab/results/q4.jsonl">q4.jsonl</a> — <strong>CI не указан</strong> (нет данных)</li>
+        <li><a href="../practices/practice_03/lab/results/q5.jsonl">q5.jsonl</a> — подписки в памяти процесса</li>
+        <li><a href="../practices/practice_03/lab/results/read-check3.jsonl">read-check3.jsonl</a> — подтверждение вызова <code>read</code></li>
+      </ul>
+      <p class="muted">Q3 и Q4 — модель не выдумала, а честно сказала «нет данных».</p>
+    </div>
+
+    <div class="card">
+      <h2>Проверки</h2>
+      <ul>
+        <li><code>make -C practices/practice_03/lab test</code> — 3 теста OK</li>
+        <li><code>curl http://localhost:11434/api/tags</code> — локальный endpoint</li>
+        <li>Offline-проверка: Wi-Fi выключен, модель ответила</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Ограничения</h2>
+      <ul>
+        <li>TTFT не измерен (ответ не потоковый)</li>
+        <li>Альтернативные модели (например, qwen3.5:2b) не сравнивались</li>
+        <li>Context 64k требует много памяти</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

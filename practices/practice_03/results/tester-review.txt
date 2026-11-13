@@ -1,0 +1,5 @@
+[93m[1m! [0m agent "tester" is a subagent, not a primary agent. Falling back to default agent
+[0m
+> build · openai/gpt-5
+[0m
+[91m[1mError: [0mRequest failed

@@ -1,0 +1,34 @@
+# Свой MCP tool: pptx-reader
+
+## Успешный вызов
+
+Запрос: используй MCP pptx-reader, count_slides и get_slide_title для output.pptx
+
+Вызовы MCP:
+- pptx-reader_count_slides [path=.../output.pptx]
+- pptx-reader_get_slide_title [index=0, path=.../output.pptx]
+
+Результат:
+- Слайдов: 8
+- Заголовок слайда 0: "Практика 3 — подключение LLM через OpenCode"
+
+## Ошибочный вход
+
+Запрос: count_slides на несуществующем файле и get_slide_title с index=999
+
+Вызовы MCP:
+- pptx-reader_count_slides [path=.../mcp/nonexistent.pptx]
+- pptx-reader_get_slide_title [index=999, path=.../output.pptx]
+
+Ошибки:
+1. count_slides → FILE_NOT_FOUND: Файл не найден: mcp/nonexistent.pptx
+2. get_slide_title → INDEX_OUT_OF_RANGE: Индекс 999 вне диапазона (всего слайдов: 8)
+
+## Вывод
+
+MCP-сервер pptx-reader реализует 2 tool'а:
+- count_slides(path) — число слайдов
+- get_slide_title(path, index) — заголовок слайда
+
+Оба tool'а корректно обрабатывают ошибочный вход: возвращают структурированную 
+ошибку с кодом (FILE_NOT_FOUND, INDEX_OUT_OF_RANGE), а не падают.

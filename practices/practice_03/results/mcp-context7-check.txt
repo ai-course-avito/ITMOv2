@@ -1,0 +1,13 @@
+MCP context7: проверка check_pptx.py по документации python-pptx
+
+Вызовы MCP:
+- context7_resolve-library-id [libraryName=python-pptx]
+- context7_query-docs [libraryId=/scanny/python-pptx, query=read text from shapes]
+
+Источники: docs/user/text.rst, quickstart.rst, placeholders-using.rst
+
+Проверка кода:
+- Строки 73–79: slide.shapes.title + .text — соответствует placeholders-using.rst
+- Строки 80–89: has_text_frame + .text — соответствует text.rst
+
+Вывод: использование соответствует документации python-pptx.

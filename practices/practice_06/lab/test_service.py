@@ -32,11 +32,12 @@ class ShopTest(unittest.TestCase):
     def test_tokens_identify_distinct_users(self):
         alice, bob = self.login(), self.login("bob", "learn-bob")
         self.assertNotEqual(alice, bob)
+        # Now profile endpoint ignores query id; should return own profiles
         self.assertEqual(self.request("GET", "/profile?id=1", headers=alice)[1][0]["name"], "TEST_ALICE")
         self.assertEqual(self.request("GET", "/profile?id=2", headers=bob)[1][0]["name"], "TEST_BOB")
 
     def test_staff_can_export_with_staff_session(self):
-        auth = {**self.login("staff", "learn-staff"), "X-Role": "staff"}
+        auth = {**self.login("staff", "learn-staff")}
         status, profiles = self.request("GET", "/admin/export", headers=auth)
         self.assertEqual(status, 200)
         self.assertEqual(len(profiles), 2)
@@ -67,12 +68,64 @@ class ShopTest(unittest.TestCase):
         auth = self.login()
         status, context = self.request("GET", "/assistant/context?order_id=1", headers=auth)
         self.assertEqual(status, 200)
-        self.assertIn("chair", context["prompt"])
+        self.assertIn("<order_data>", context["prompt"])  # structured tagging
         status, result = self.request("POST", "/assistant/execute", {
             "decision": {"tool": "read_file", "arguments": {"path": "files/alice/receipt.txt"}}
         }, auth)
         self.assertEqual(status, 200)
         self.assertIn("TEST_ALICE", result["content"])
+
+    # New security regression tests
+    def test_idor_prevented_profile(self):
+        alice, bob = self.login(), self.login("bob", "learn-bob")
+        # Alice tries to fetch Bob's profile via query id
+        status, data = self.request("GET", "/profile?id=2", headers=alice)
+        self.assertEqual(status, 200)
+        self.assertEqual(data[0]["name"], "TEST_ALICE")
+        # Bob fetches own profile
+        status, data = self.request("GET", "/profile?id=1", headers=bob)
+        self.assertEqual(status, 200)
+        self.assertEqual(data[0]["name"], "TEST_BOB")
+
+    def test_price_tampering_prevented(self):
+        auth = self.login()
+        # Try to buy chair for 1; service must enforce catalog price 5000
+        status, order = self.request("POST", "/orders", {"product": "chair", "price": 1}, auth)
+        self.assertEqual(status, 201)
+        self.assertEqual(order["price"], 5000)
+
+    def test_role_header_not_trusted(self):
+        # No login but spoof header should be rejected
+        status, data = self.request("GET", "/admin/export", headers={"X-Role": "staff"})
+        self.assertEqual(status, 403)
+
+    def test_files_only_own_user(self):
+        alice, bob = self.login(), self.login("bob", "learn-bob")
+        # Alice cannot read Bob's receipt
+        status, data = self.request("GET", "/files?user=bob&path=receipt.txt", headers=alice)
+        self.assertEqual(status, 403)
+        # Bob can read own receipt
+        status, data = self.request("GET", "/files?user=bob&path=receipt.txt", headers=bob)
+        self.assertEqual(status, 200)
+
+    def test_assistant_tools_enforced(self):
+        alice, bob = self.login(), self.login("bob", "learn-bob")
+        # Alice cannot export profiles via assistant
+        status, data = self.request("POST", "/assistant/execute", {
+            "decision": {"tool": "export_profiles"}
+        }, alice)
+        self.assertEqual(status, 403)
+        # Staff can export via assistant
+        staff = self.login("staff", "learn-staff")
+        status, data = self.request("POST", "/assistant/execute", {
+            "decision": {"tool": "export_profiles"}
+        }, staff)
+        self.assertEqual(status, 200)
+        # Alice cannot read Bob's file via assistant even if specifying path
+        status, data = self.request("POST", "/assistant/execute", {
+            "decision": {"tool": "read_file", "arguments": {"path": "files/bob/receipt.txt"}}
+        }, alice)
+        self.assertEqual(status, 403)
 
 
 class SandboxTest(unittest.TestCase):
