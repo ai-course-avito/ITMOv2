@@ -1,0 +1,10 @@
+include:
+  - component: $CI_SERVER_FQDN/internal/ci-components/docker-registry-auth@v2.9.0
+  - component: $CI_SERVER_FQDN/internal/ci-components/container-promote@v2.9.0
+    inputs:
+      job_name: unilink_promote_job
+      image_tag: latest
+      image_name: api
+      promote_tag: $CI_COMMIT_TAG
+      run_on_tag: true
+      registry_login_job_name: .registry-login

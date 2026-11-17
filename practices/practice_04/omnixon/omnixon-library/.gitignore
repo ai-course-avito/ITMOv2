@@ -1,0 +1,7 @@
+.DS_Store
+dist
+__pycache__
+config.py
+temp
+a.py
+a.xml

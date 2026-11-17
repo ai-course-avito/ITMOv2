@@ -1,0 +1,37 @@
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # The Omnixon service. OMNIXON_URL has no trailing slash, e.g. http://omnixon-api:8000
+    location /api/ {
+        proxy_pass ${OMNIXON_URL};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # server-sent events and slow model calls
+        proxy_buffering off;
+        proxy_read_timeout 700s;
+        proxy_send_timeout 700s;
+        client_max_body_size 64m;  # base64 attachments
+    }
+
+    # /healthz, /readyz and /metrics of the service, under a prefix of their own so that the
+    # panel's /metrics page does not collide with them
+    location /_ops/ {
+        proxy_pass ${OMNIXON_URL}/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+    }
+
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    location / {
+        add_header Cache-Control "no-cache";
+        try_files $uri /index.html;
+    }
+}
