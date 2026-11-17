@@ -1,0 +1,21 @@
+======================================================================
+ERROR: tests.test_server (unittest.loader._FailedTest.tests.test_server)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: tests.test_server
+Traceback (most recent call last):
+  File "/usr/lib/python3.14/unittest/loader.py", line 433, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/usr/lib/python3.14/unittest/loader.py", line 374, in _get_module_from_name
+    __import__(name)
+    ~~~~~~~~~~^^^^^^
+  File "/home/yokko/Projects/ITMOv2/practices/practice_05/tests/test_server.py", line 11, in <module>
+    from app.server import (
+    ...<7 lines>...
+    )
+ModuleNotFoundError: No module named 'app.server'
+
+
+----------------------------------------------------------------------
+Ran 31 tests in 0.001s
+
+FAILED (errors=1)
