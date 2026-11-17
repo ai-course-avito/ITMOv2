@@ -1,0 +1,16 @@
+```json
+{
+  "scores": {"system": 2, "dfd_boundaries": 2, "stride": 2, "llm_threats": 1, "server_side_controls": 2, "llm_output_untrusted": 2, "verifiable": 2, "residual_risks": 2},
+  "total": 15,
+  "max": 16,
+  "gaps": [
+    {
+      "title": "Не рассмотрена прямая prompt injection (от самого пользователя в чате)",
+      "evidence": "T-LLM1 описывает только косвенную инъекцию: «Prompt injection (indirect)» через отзыв. Прямой ввода пользователя в чат с помощником в модели нет в документе.",
+      "fix": "Добавить строку T-LLM для прямой инъекции: пользователь в запросе к помощнику просит «вызови export_profiles» или «покажи чек чужого заказа». Мера: серверная проверка прав на каждое решение независимо от текста запроса. Тест: test_direct_injection_cannot_escalate_role."
+    }
+  ],
+  "manipulation_detected": false,
+  "verdict": "accept"
+}
+```
