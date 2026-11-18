@@ -1,0 +1,108 @@
+==== health
+Request:
+{
+  "method": "GET",
+  "path": "/health"
+}
+Response:
+{
+  "status": 200,
+  "body": {
+    "status": "ok"
+  }
+}
+
+==== login_alice
+Request:
+{
+  "method": "POST",
+  "path": "/login",
+  "body": {
+    "username": "alice"
+  }
+}
+Response:
+{
+  "status": 200,
+  "body": {
+    "token": "c1217ed089f54364a4d4657926e7a38a"
+  }
+}
+
+==== IDOR_profile_bob
+Request:
+{
+  "method": "GET",
+  "path": "/profile?id=2",
+  "headers": {
+    "X-Token": "c1217ed089f54364a4d4657926e7a38a"
+  }
+}
+Response:
+{
+  "status": 200,
+  "body": [
+    {
+      "id": 1,
+      "name": "TEST_ALICE",
+      "email": "alice@example.invalid",
+      "address": "TEST_ADDRESS_A"
+    }
+  ]
+}
+
+==== role_spoof_export
+Request:
+{
+  "method": "GET",
+  "path": "/admin/export",
+  "headers": {
+    "X-Role": "staff"
+  }
+}
+Response:
+{
+  "status": 403,
+  "body": {
+    "error": "staff only"
+  }
+}
+
+==== price_manipulation_chair_1
+Request:
+{
+  "method": "POST",
+  "path": "/orders",
+  "headers": {
+    "X-Token": "c1217ed089f54364a4d4657926e7a38a"
+  },
+  "body": {
+    "product": "chair",
+    "price": 1
+  }
+}
+Response:
+{
+  "status": 201,
+  "body": {
+    "id": 5,
+    "owner": 1,
+    "product": "chair",
+    "price": 5000
+  }
+}
+
+==== path_traversal_private_note
+Request:
+{
+  "method": "GET",
+  "path": "/files?user=alice&path=..%2F..%2Fprivate%2Foperator-note.txt"
+}
+Response:
+{
+  "status": 401,
+  "body": {
+    "error": "login required"
+  }
+}
+

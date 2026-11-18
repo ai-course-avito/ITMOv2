@@ -1,0 +1,24 @@
+{
+  "version": "1.2.3.dev0",
+  "integration_state_schema": 1,
+  "installed_integrations": [
+    "generic",
+    "kiro-cli"
+  ],
+  "integration_settings": {
+    "generic": {
+      "script": "sh",
+      "raw_options": "--commands-dir .opencode/commands/",
+      "parsed_options": {
+        "commands_dir": ".opencode/commands/"
+      },
+      "invoke_separator": "."
+    },
+    "kiro-cli": {
+      "script": "sh",
+      "invoke_separator": "."
+    }
+  },
+  "integration": "kiro-cli",
+  "default_integration": "kiro-cli"
+}
