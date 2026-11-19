@@ -74,6 +74,70 @@ class ShopTest(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn("TEST_ALICE", result["content"])
 
+    def test_customer_cannot_read_another_profile_or_inject_sql(self):
+        auth = self.login()
+        self.assertEqual(self.request("GET", "/profile?id=2", headers=auth)[0], 403)
+        status, profiles = self.request("GET", "/profile?id=1%20OR%201=1", headers=auth)
+        self.assertEqual(status, 403)
+        self.assertEqual(profiles["error"], "forbidden")
+
+    def test_customer_search_is_limited_to_own_profile(self):
+        status, profiles = self.request("GET", "/search?q=TEST", headers=self.login())
+        self.assertEqual(status, 200)
+        self.assertEqual([profile["id"] for profile in profiles], [1])
+
+    def test_customer_sees_only_own_orders_and_catalog_price(self):
+        auth = self.login()
+        status, orders = self.request("GET", "/orders", headers=auth)
+        self.assertEqual(status, 200)
+        self.assertEqual({order["owner"] for order in orders}, {1})
+        status, order = self.request("POST", "/orders", {"product": "lamp", "price": 1}, auth)
+        self.assertEqual(status, 201)
+        self.assertEqual(order["price"], 1500)
+
+    def test_role_header_does_not_grant_staff_access(self):
+        auth = {"X-Role": "staff"}
+        self.assertEqual(self.request("GET", "/admin/export", headers=auth)[0], 403)
+        self.assertEqual(self.request("GET", "/admin/export", headers=self.login(),)[0], 403)
+
+    def test_customer_cannot_read_other_files_or_delete_them(self):
+        auth = self.login()
+        self.assertEqual(self.request("GET", "/files?user=bob&path=receipt.txt", headers=auth)[0], 403)
+        status, result = self.request("POST", "/assistant/execute", {
+            "decision": {"tool": "delete_tree", "arguments": {"path": "files"}}
+        }, auth)
+        self.assertEqual(status, 403)
+        self.assertIn("TEST_ALICE", self.sandbox_text("files/alice/receipt.txt"))
+
+    def test_reviews_are_escaped_in_html(self):
+        auth = self.login()
+        self.request("POST", "/reviews", {"product": "chair", "text": "<script>alert(1)</script>"}, auth)
+        status, html = self.request("GET", "/reviews/view", headers=auth)
+        self.assertEqual(status, 200)
+        self.assertNotIn("<script>", html)
+        self.assertIn("&lt;script&gt;", html)
+
+    def test_assistant_checks_order_and_tool_permissions(self):
+        auth = self.login()
+        self.assertEqual(self.request("GET", "/assistant/context?order_id=2", headers=auth)[1]["prompt"].count("lamp"), 0)
+        status, _ = self.request("POST", "/assistant/execute", {
+            "decision": {"tool": "export_profiles", "arguments": {}}
+        }, auth)
+        self.assertEqual(status, 403)
+
+    def test_logs_do_not_expose_session_tokens(self):
+        auth = self.login()
+        token = auth["X-Token"]
+        self.request("GET", "/orders", headers=auth)
+        self.assertEqual(self.request("GET", "/debug/logs", headers=auth)[0], 403)
+        status, logs = self.request("GET", "/debug/logs", headers=self.login("staff", "learn-staff"))
+        self.assertEqual(status, 200)
+        self.assertNotIn(token, str(logs))
+        self.assertNotIn("learn-alice", str(logs))
+
+    def sandbox_text(self, name):
+        return self.shop.sandbox.read(name)
+
 
 class SandboxTest(unittest.TestCase):
     def setUp(self):
