@@ -2,23 +2,20 @@
   "name": "Sub-workflow: Issue Classifier (HW 7.2)",
   "nodes": [
     {
-      "parameters": {
-        "options": {}
-      },
-      "id": "node-sub-trigger",
+      "parameters": {},
+      "id": "db325000-543e-4f16-8487-b5222b5e2126",
       "name": "Execute Workflow Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        200,
-        300
+        0,
+        0
       ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "https://litellm.data-light.ru/v1/chat/completions",
-        "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -37,29 +34,30 @@
         "jsonBody": "={{ JSON.stringify({\n  model: 'openai/gpt-5',\n  messages: [\n    {\n      role: 'system',\n      content: 'You are an expert GitHub Issue classifier. Classify the issue into exactly ONE type: \"bug\", \"task\", \"feature\", or \"unknown\".\\n\\nCriteria:\\n- \"bug\": something is broken, crashing, throwing errors, regression.\\n- \"feature\": request for new functionality, enhancement, improvement.\\n- \"task\": question about setup, documentation update, configuration, general query.\\n- \"unknown\": vague, empty, spam, or ambiguous text lacking details.\\n\\nCalculate confidence as a float between 0.0 and 1.0. If the issue lacks details, set confidence < 0.8.\\n\\nCRITICAL: Return ONLY a valid JSON object matching this schema:\\n{\"type\": \"bug\"|\"task\"|\"feature\"|\"unknown\", \"confidence\": 0.95}'\n    },\n    {\n      role: 'user',\n      content: 'Title: ' + ($json.title || '') + '\\n\\nBody: ' + ($json.body || '')\n    }\n  ],\n  temperature: 0.1\n}) }}",
         "options": {}
       },
-      "id": "node-llm-classify",
+      "id": "5adda1ae-c968-4c0f-b8bf-d15ac5284158",
       "name": "Classify with GPT-5",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        440,
-        300
+        240,
+        0
       ]
     },
     {
       "parameters": {
         "jsCode": "const rawText = $json.choices[0].message.content.trim();\nlet result = { type: 'unknown', confidence: 0.5 };\n\ntry {\n  // Strip markdown codeblocks if model returned ```json ... ```\n  const cleaned = rawText.replace(/^```json\\s*/i, '').replace(/^```\\s*/i, '').replace(/```$/i, '').trim();\n  const parsed = JSON.parse(cleaned);\n  if (parsed.type && typeof parsed.confidence === 'number') {\n    result.type = ['bug', 'task', 'feature', 'unknown'].includes(parsed.type.toLowerCase()) ? parsed.type.toLowerCase() : 'unknown';\n    result.confidence = Math.min(1.0, Math.max(0.0, parsed.confidence));\n  }\n} catch (e) {\n  // Fallback if parsing fails\n  result = { type: 'unknown', confidence: 0.4 };\n}\n\nreturn [{ json: result }];"
       },
-      "id": "node-parse-output",
+      "id": "309e5e67-8f0a-4669-8364-7c4a691fe907",
       "name": "Parse Structured Output",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        680,
-        300
+        480,
+        0
       ]
     }
   ],
+  "pinData": {},
   "connections": {
     "Execute Workflow Trigger": {
       "main": [
@@ -83,5 +81,17 @@
         ]
       ]
     }
-  }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f24d9654-cd85-4401-a52b-1472b6ef0b66",
+  "meta": {
+    "instanceId": "68dbbb4e8fa686c3fd4e9982ade6836edb66976f207553e7ac22df961581c78c"
+  },
+  "nodeGroups": [],
+  "id": "9Jb4gkWfWZGmKJSQ",
+  "tags": []
 }

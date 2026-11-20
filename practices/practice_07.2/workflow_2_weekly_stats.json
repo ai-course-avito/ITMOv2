@@ -12,13 +12,13 @@
           ]
         }
       },
-      "id": "node-cron-weekly",
+      "id": "23db1e24-9db8-4ccb-8e00-4c8da5b288f1",
       "name": "Schedule Trigger (Mon 9:00)",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        200,
-        300
+        0,
+        0
       ]
     },
     {
@@ -37,41 +37,52 @@
         },
         "options": {}
       },
-      "id": "node-get-issues",
+      "id": "84a7485a-7300-41d5-aadd-bf95600a7d96",
       "name": "Fetch Issues from GitHub",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        440,
-        300
-      ]
+        240,
+        0
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "mBxuLumW8SRSPXFz",
+          "name": "GitHub account 22"
+        }
+      }
     },
     {
       "parameters": {
         "jsCode": "const allItems = $input.all();\nconst oneWeekAgo = new Date();\noneWeekAgo.setDate(oneWeekAgo.getDate() - 7);\n\nlet total = 0;\nlet bugs = 0;\nlet tasks = 0;\nlet features = 0;\nlet needsTriage = 0;\nlet closed = 0;\nconst authorCounts = {};\n\nfor (const item of allItems) {\n  const issue = item.json;\n  // Исключаем пулл-реквесты\n  if (issue.pull_request) continue;\n\n  const createdAt = new Date(issue.created_at);\n  if (createdAt >= oneWeekAgo || issue.state === 'open') {\n    total++;\n    if (issue.state === 'closed') closed++;\n\n    const author = issue.user ? issue.user.login : 'unknown';\n    authorCounts[author] = (authorCounts[author] || 0) + 1;\n\n    const labelNames = (issue.labels || []).map(l => (l.name || '').toLowerCase());\n    if (labelNames.includes('bug')) bugs++;\n    if (labelNames.includes('task')) tasks++;\n    if (labelNames.includes('feature-request') || labelNames.includes('feature')) features++;\n    if (labelNames.includes('needs-triage')) needsTriage++;\n  }\n}\n\n// Форматируем авторов в читаемую строку\nconst authorSummary = Object.entries(authorCounts)\n  .map(([author, count]) => `${author} (${count})`)\n  .join(', ') || 'нет активности';\n\nreturn [{\n  json: {\n    total,\n    bugs,\n    tasks,\n    features,\n    needsTriage,\n    closed,\n    authorSummary,\n    reportDate: new Date().toLocaleDateString('ru-RU')\n  }\n}];"
       },
-      "id": "node-aggregate-stats",
+      "id": "2c5bee9e-6921-478b-9b02-63a0099765be",
       "name": "Group Stats by Type & Author",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        680,
-        300
+        480,
+        0
       ]
     },
     {
       "parameters": {
-        "operation": "getMany",
-        "dataTableId": "weekly_stats",
-        "options": {}
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "CpPOCFhkRHs38Tp2",
+          "mode": "list",
+          "cachedResultName": "weekly_stats",
+          "cachedResultUrl": "/projects/j6MXDscNF3y8JKoy/datatables/CpPOCFhkRHs38Tp2"
+        }
       },
-      "id": "node-get-prev-stats",
+      "id": "0c0df871-2af3-407e-85fc-7b91c1452694",
       "name": "Get Previous Stats from Data Table",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        900,
-        300
+        704,
+        0
       ],
       "alwaysOutputData": true
     },
@@ -79,20 +90,19 @@
       "parameters": {
         "jsCode": "const current = $('Group Stats by Type & Author').first().json;\nconst rows = $input.all().map(r => r.json).filter(r => r.total !== undefined);\n\n// Берём последнюю сохранённую неделю (если есть)\nconst prev = rows.length > 0 ? rows[rows.length - 1] : {\n  total: 0,\n  bugs: 0,\n  tasks: 0,\n  features: 0,\n  needsTriage: 0\n};\n\nfunction formatDelta(currVal, prevVal) {\n  const diff = Number(currVal || 0) - Number(prevVal || 0);\n  if (diff > 0) return `+${diff}`;\n  if (diff < 0) return `${diff}`;\n  return '0 (без изм.)';\n}\n\nreturn [{\n  json: {\n    ...current,\n    prev_total: prev.total || 0,\n    prev_bugs: prev.bugs || 0,\n    prev_tasks: prev.tasks || 0,\n    prev_features: prev.features || 0,\n    prev_needsTriage: prev.needsTriage || 0,\n    delta_total: formatDelta(current.total, prev.total),\n    delta_bugs: formatDelta(current.bugs, prev.bugs),\n    delta_tasks: formatDelta(current.tasks, prev.tasks),\n    delta_features: formatDelta(current.features, prev.features),\n    delta_needsTriage: formatDelta(current.needsTriage, prev.needsTriage)\n  }\n}];"
       },
-      "id": "node-calc-delta",
+      "id": "536f4899-ffe3-47a2-b734-2c894f73ac71",
       "name": "Calculate Deltas to Last Week",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1120,
-        300
+        928,
+        0
       ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "https://litellm.data-light.ru/v1/chat/completions",
-        "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -111,74 +121,126 @@
         "jsonBody": "={{ JSON.stringify({\n  model: 'openai/gpt-5',\n  messages: [\n    {\n      role: 'system',\n      content: 'Ты Senior Engineering Manager. На основе еженедельной сводки по GitHub Issues и изменений (дельты) к прошлой неделе напиши ёмкий профессиональный \"AI-комментарий недели\" (3-5 предложений) на русском языке. Оцени динамику багов, нагрузку на команду и дай одну конкретную рекомендацию.'\n    },\n    {\n      role: 'user',\n      content: 'Сводка за неделю:\\n' +\n        '- Всего активных Issues: ' + $json.total + ' (дельта: ' + $json.delta_total + ')\\n' +\n        '- Баги: ' + $json.bugs + ' (дельта: ' + $json.delta_bugs + ')\\n' +\n        '- Задачи/Вопросы: ' + $json.tasks + ' (дельта: ' + $json.delta_tasks + ')\\n' +\n        '- Запросы фич: ' + $json.features + ' (дельта: ' + $json.delta_features + ')\\n' +\n        '- Требуют триажа (needs-triage): ' + $json.needsTriage + ' (дельта: ' + $json.delta_needsTriage + ')\\n' +\n        '- Активные авторы: ' + $json.authorSummary\n    }\n  ],\n  temperature: 0.4\n}) }}",
         "options": {}
       },
-      "id": "node-ai-comment",
+      "id": "ec58c9ba-238b-4a5f-8155-70352b526e1c",
       "name": "AI Weekly Commentary (GPT-5)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1340,
-        300
+        1152,
+        0
       ]
     },
     {
       "parameters": {
-        "operation": "insert",
-        "dataTableId": "weekly_stats",
-        "fields": {
-          "values": [
+        "dataTableId": {
+          "__rl": true,
+          "value": "CpPOCFhkRHs38Tp2",
+          "mode": "list",
+          "cachedResultName": "weekly_stats",
+          "cachedResultUrl": "/projects/j6MXDscNF3y8JKoy/datatables/CpPOCFhkRHs38Tp2"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "total": "={{ $(\"Calculate Deltas to Last Week\").first().json.total }}",
+            "bugs": "={{ $(\"Calculate Deltas to Last Week\").first().json.bugs }}",
+            "tasks": "={{ $(\"Calculate Deltas to Last Week\").first().json.tasks }}",
+            "features": "={{ $(\"Calculate Deltas to Last Week\").first().json.features }}",
+            "needsTriage": "={{ $(\"Calculate Deltas to Last Week\").first().json.needsTriage }}"
+          },
+          "matchingColumns": [],
+          "schema": [
             {
-              "field": "total",
-              "value": "={{ $(\"Calculate Deltas to Last Week\").first().json.total }}"
+              "id": "total",
+              "displayName": "total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
             },
             {
-              "field": "bugs",
-              "value": "={{ $(\"Calculate Deltas to Last Week\").first().json.bugs }}"
+              "id": "bugs",
+              "displayName": "bugs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
             },
             {
-              "field": "tasks",
-              "value": "={{ $(\"Calculate Deltas to Last Week\").first().json.tasks }}"
+              "id": "tasks",
+              "displayName": "tasks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
             },
             {
-              "field": "features",
-              "value": "={{ $(\"Calculate Deltas to Last Week\").first().json.features }}"
+              "id": "features",
+              "displayName": "features",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
             },
             {
-              "field": "needsTriage",
-              "value": "={{ $(\"Calculate Deltas to Last Week\").first().json.needsTriage }}"
+              "id": "needsTriage",
+              "displayName": "needsTriage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
             }
-          ]
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
         },
         "options": {}
       },
-      "id": "node-save-weekly-db",
+      "id": "57072fa9-f3dc-4afb-bd27-8a80066a2989",
       "name": "Save Stats to Data Table",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        1560,
-        300
+        1360,
+        0
       ]
     },
     {
       "parameters": {
-        "resource": "message",
-        "operation": "send",
-        "sendTo": "ashot@example.com",
+        "fromEmail": "Agusha228am@yandex.ru",
+        "toEmail": "Agusha228am@yandex.ru",
         "subject": "=📊 Еженедельный отчёт по GitHub Issues ({{ $(\"Calculate Deltas to Last Week\").first().json.reportDate }})",
-        "messageType": "html",
-        "message": "=<div style=\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1e4e8; border-radius: 8px;\">\n  <h2 style=\"color: #0366d6; margin-top: 0;\">📊 Еженедельный дайджест GitHub Issues</h2>\n  <p style=\"color: #586069; font-size: 14px;\">Отчёт за прошедшую неделю по репозиторию <strong>manamv/ITMOv2</strong>.</p>\n  \n  <table style=\"width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;\">\n    <thead>\n      <tr style=\"background-color: #f6f8fa; border-bottom: 2px solid #e1e4e8;\">\n        <th style=\"padding: 10px; text-align: left;\">Категория</th>\n        <th style=\"padding: 10px; text-align: center;\">Текущая неделя</th>\n        <th style=\"padding: 10px; text-align: center;\">Прошлая неделя</th>\n        <th style=\"padding: 10px; text-align: center;\">Динамика (Δ)</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr style=\"border-bottom: 1px solid #eaecef;\">\n        <td style=\"padding: 10px;\">🐛 Баги (bug)</td>\n        <td style=\"padding: 10px; text-align: center; font-weight: bold;\">{{ $('Calculate Deltas to Last Week').first().json.bugs }}</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $('Calculate Deltas to Last Week').first().json.prev_bugs }}</td>\n        <td style=\"padding: 10px; text-align: center; color: #d73a49; font-weight: bold;\">{{ $('Calculate Deltas to Last Week').first().json.delta_bugs }}</td>\n      </tr>\n      <tr style=\"border-bottom: 1px solid #eaecef;\">\n        <td style=\"padding: 10px;\">✨ Новые фичи (feature)</td>\n        <td style=\"padding: 10px; text-align: center; font-weight: bold;\">{{ $('Calculate Deltas to Last Week').first().json.features }}</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $('Calculate Deltas to Last Week').first().json.prev_features }}</td>\n        <td style=\"padding: 10px; text-align: center; color: #28a745; font-weight: bold;\">{{ $('Calculate Deltas to Last Week').first().json.delta_features }}</td>\n      </tr>\n      <tr style=\"border-bottom: 1px solid #eaecef;\">\n        <td style=\"padding: 10px;\">📋 Задачи / Вопросы (task)</td>\n        <td style=\"padding: 10px; text-align: center; font-weight: bold;\">{{ $('Calculate Deltas to Last Week').first().json.tasks }}</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $('Calculate Deltas to Last Week').first().json.prev_tasks }}</td>\n        <td style=\"padding: 10px; text-align: center; font-weight: bold;\">{{ $('Calculate Deltas to Last Week').first().json.delta_tasks }}</td>\n      </tr>\n      <tr style=\"border-bottom: 1px solid #eaecef;\">\n        <td style=\"padding: 10px;\">⚠️ Требуют триажа (needs-triage)</td>\n        <td style=\"padding: 10px; text-align: center; font-weight: bold;\">{{ $('Calculate Deltas to Last Week').first().json.needsTriage }}</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $('Calculate Deltas to Last Week').first().json.prev_needsTriage }}</td>\n        <td style=\"padding: 10px; text-align: center; color: #e36209; font-weight: bold;\">{{ $('Calculate Deltas to Last Week').first().json.delta_needsTriage }}</td>\n      </tr>\n      <tr style=\"background-color: #f6f8fa; font-weight: bold;\">\n        <td style=\"padding: 10px;\">Всего обращений</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $('Calculate Deltas to Last Week').first().json.total }}</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $('Calculate Deltas to Last Week').first().json.prev_total }}</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $('Calculate Deltas to Last Week').first().json.delta_total }}</td>\n      </tr>\n    </tbody>\n  </table>\n\n  <p><strong>👥 Активные авторы недели:</strong> {{ $('Calculate Deltas to Last Week').first().json.authorSummary }}</p>\n\n  <div style=\"background-color: #f1f8ff; border-left: 4px solid #0366d6; padding: 15px; margin-top: 20px; border-radius: 4px;\">\n    <h3 style=\"margin-top: 0; color: #0366d6; font-size: 16px;\">🤖 AI-комментарий недели:</h3>\n    <p style=\"margin-bottom: 0; font-size: 14px; line-height: 1.5; color: #24292e;\">{{ $('AI Weekly Commentary (GPT-5)').first().json.choices[0].message.content }}</p>\n  </div>\n</div>",
+        "html": "==<div style=\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1e4e8; border-radius: 8px;\">\n  <h2 style=\"color: #0366d6; margin-top: 0;\">📊 Еженедельный дайджест GitHub Issues</h2>\n  <p style=\"color: #586069; font-size: 14px;\">Отчёт за прошедшую неделю по репозиторию <strong>manamv/ITMOv2</strong>.</p>\n\n  <table style=\"width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;\">\n    <thead>\n      <tr style=\"background-color: #f6f8fa; border-bottom: 2px solid #e1e4e8;\">\n        <th style=\"padding: 10px; text-align: left;\">Категория</th>\n        <th style=\"padding: 10px; text-align: center;\">Текущая неделя</th>\n        <th style=\"padding: 10px; text-align: center;\">Прошлая неделя</th>\n        <th style=\"padding: 10px; text-align: center;\">Динамика (Δ)</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr style=\"border-bottom: 1px solid #eaecef;\">\n        <td style=\"padding: 10px;\">🐛 Баги (bug)</td>\n        <td style=\"padding: 10px; text-align: center; font-weight: bold;\">{{ $(\"Calculate Deltas to Last Week\").first().json.bugs }}</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $(\"Calculate Deltas to Last Week\").first().json.prev_bugs }}</td>\n        <td style=\"padding: 10px; text-align: center; color: #d73a49; font-weight: bold;\">{{ $(\"Calculate Deltas to Last Week\").first().json.delta_bugs }}</td>\n      </tr>\n      <tr style=\"border-bottom: 1px solid #eaecef;\">\n        <td style=\"padding: 10px;\">✨ Новые фичи (feature)</td>\n        <td style=\"padding: 10px; text-align: center; font-weight: bold;\">{{ $(\"Calculate Deltas to Last Week\").first().json.features }}</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $(\"Calculate Deltas to Last Week\").first().json.prev_features }}</td>\n        <td style=\"padding: 10px; text-align: center; color: #28a745; font-weight: bold;\">{{ $(\"Calculate Deltas to Last Week\").first().json.delta_features }}</td>\n      </tr>\n      <tr style=\"border-bottom: 1px solid #eaecef;\">\n        <td style=\"padding: 10px;\">📋 Задачи / Вопросы (task)</td>\n        <td style=\"padding: 10px; text-align: center; font-weight: bold;\">{{ $(\"Calculate Deltas to Last Week\").first().json.tasks }}</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $(\"Calculate Deltas to Last Week\").first().json.prev_tasks }}</td>\n        <td style=\"padding: 10px; text-align: center; font-weight: bold;\">{{ $(\"Calculate Deltas to Last Week\").first().json.delta_tasks }}</td>\n      </tr>\n      <tr style=\"border-bottom: 1px solid #eaecef;\">\n        <td style=\"padding: 10px;\">⚠️ Требуют триажа (needs-triage)</td>\n        <td style=\"padding: 10px; text-align: center; font-weight: bold;\">{{ $(\"Calculate Deltas to Last Week\").first().json.needsTriage }}</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $(\"Calculate Deltas to Last Week\").first().json.prev_needsTriage }}</td>\n        <td style=\"padding: 10px; text-align: center; color: #e36209; font-weight: bold;\">{{ $(\"Calculate Deltas to Last Week\").first().json.delta_needsTriage }}</td>\n      </tr>\n      <tr style=\"background-color: #f6f8fa; font-weight: bold;\">\n        <td style=\"padding: 10px;\">Всего обращений</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $(\"Calculate Deltas to Last Week\").first().json.total }}</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $(\"Calculate Deltas to Last Week\").first().json.prev_total }}</td>\n        <td style=\"padding: 10px; text-align: center;\">{{ $(\"Calculate Deltas to Last Week\").first().json.delta_total }}</td>\n      </tr>\n    </tbody>\n  </table>\n\n  <p><strong>👥 Активные авторы недели:</strong> {{ $(\"Calculate Deltas to Last Week\").first().json.authorSummary }}</p>\n\n  <div style=\"background-color: #f1f8ff; border-left: 4px solid #0366d6; padding: 15px; margin-top: 20px; border-radius: 4px;\">\n    <h3 style=\"margin-top: 0; color: #0366d6; font-size: 16px;\">🤖 AI-комментарий недели:</h3>\n    <p style=\"margin-bottom: 0; font-size: 14px; line-height: 1.5; color: #24292e;\">{{ ($(\"AI Weekly Commentary (GPT-5)\").first().json.choices[0].message.content || \"\").replace(/\\n/g, \"<br>\") }}</p>\n  </div>\n</div>",
         "options": {}
       },
-      "id": "node-send-gmail",
-      "name": "Send Email via Gmail",
-      "type": "n8n-nodes-base.gmail",
+      "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        1780,
-        300
-      ]
+        1568,
+        0
+      ],
+      "id": "b6c1ca7a-10e7-49ac-8381-51fb14add707",
+      "name": "Send an Email",
+      "webhookId": "1e1aa2b2-5c2d-4966-bd77-15a657cb3272",
+      "credentials": {
+        "smtp": {
+          "id": "zaTN7UAeyY5j6Kg9",
+          "name": "SMTP account 13"
+        }
+      }
     }
   ],
+  "pinData": {},
   "connections": {
     "Schedule Trigger (Mon 9:00)": {
       "main": [
@@ -250,12 +312,25 @@
       "main": [
         [
           {
-            "node": "Send Email via Gmail",
+            "node": "Send an Email",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
-  }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b2dae277-6a36-4ca6-b510-f6621542141b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "68dbbb4e8fa686c3fd4e9982ade6836edb66976f207553e7ac22df961581c78c"
+  },
+  "nodeGroups": [],
+  "id": "f3exyoTBY2LMjK4b",
+  "tags": []
 }
