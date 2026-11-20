@@ -1,0 +1,657 @@
+{
+  "name": "Workflow 1: Issue Triage & Classification (HW 7.2)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "github-issues",
+        "responseMode": "onReceived",
+        "responseData": "OK",
+        "options": {}
+      },
+      "id": "node-webhook-issues",
+      "name": "GitHub Webhook (Issues)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "github-issues"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-opened",
+              "leftValue": "={{ $json.body?.action }}",
+              "rightValue": "open",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "cond-not-pr",
+              "leftValue": "={{ Boolean($json.body?.issue?.pull_request) }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-filter-opened",
+      "name": "Is Issue Opened?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getMany",
+        "dataTableId": "processed_issues",
+        "filters": {
+          "conditions": [
+            {
+              "field": "issue_id",
+              "operator": "equal",
+              "value": "={{ $('GitHub Webhook (Issues)').item.json.body.issue.number }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-check-db-issues",
+      "name": "Check Data Table (processed_issues)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        640,
+        280
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const currentIssue = Number($('GitHub Webhook (Issues)').first().json.body.issue.number);\nconst tableRows = $('Check Data Table (processed_issues)').all();\n\nconst isAlreadyProcessed = tableRows.some(row => Number(row.json.issue_id) === currentIssue);\n\nif (isAlreadyProcessed) {\n  // Уже обработан -> выходим\n  return [];\n}\n\nreturn [{\n  json: {\n    issue_id: currentIssue,\n    title: $('GitHub Webhook (Issues)').first().json.body.issue.title,\n    body: $('GitHub Webhook (Issues)').first().json.body.issue.body || '',\n    repo: $('GitHub Webhook (Issues)').first().json.body.repository.full_name\n  }\n}];"
+      },
+      "id": "node-dedup-issues",
+      "name": "Deduplication (processed_issues)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        860,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "mode": "each",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $json.title }}",
+            "body": "={{ $json.body }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "node-subworkflow",
+      "name": "Classify Issue (Sub-workflow)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1080,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "rule-needs-triage",
+                    "leftValue": "={{ $json.confidence }}",
+                    "rightValue": 0.8,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "rule-bug",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "bug",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "rule-task",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "task",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "rule-feature",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "feature",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-switch-type",
+      "name": "Switch by Type & Escalation",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1320,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $(\"GitHub Webhook (Issues)\").first().json.body.repository.full_name }}/issues/{{ $(\"GitHub Webhook (Issues)\").first().json.body.issue.number }}/labels",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n-bot"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ labels: [\"needs-triage\"] }) }}",
+        "options": {}
+      },
+      "id": "node-label-unknown",
+      "name": "Label: needs-triage (No Comment)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $(\"GitHub Webhook (Issues)\").first().json.body.repository.full_name }}/issues/{{ $(\"GitHub Webhook (Issues)\").first().json.body.issue.number }}/labels",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n-bot"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ labels: [\"bug\"] }) }}",
+        "options": {}
+      },
+      "id": "node-label-bug",
+      "name": "Label: bug",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $(\"GitHub Webhook (Issues)\").first().json.body.repository.full_name }}/issues/{{ $(\"GitHub Webhook (Issues)\").first().json.body.issue.number }}/comments",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n-bot"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ body: \"🤖 **AI Triage:** Спасибо за обращение! Этот Issue автоматически классифицирован как **Bug** (уверенность: \" + Math.round($(\"Classify Issue (Sub-workflow)\").first().json.confidence * 100) + \"%).\\n\\nПожалуйста, убедитесь, что указаны шаги для воспроизведения и версия окружения.\" }) }}",
+        "options": {}
+      },
+      "id": "node-comment-bug",
+      "name": "Comment: Bug Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1820,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $(\"GitHub Webhook (Issues)\").first().json.body.repository.full_name }}/issues/{{ $(\"GitHub Webhook (Issues)\").first().json.body.issue.number }}/labels",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n-bot"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ labels: [\"task\"] }) }}",
+        "options": {}
+      },
+      "id": "node-label-task",
+      "name": "Label: task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $(\"GitHub Webhook (Issues)\").first().json.body.repository.full_name }}/issues/{{ $(\"GitHub Webhook (Issues)\").first().json.body.issue.number }}/comments",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n-bot"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ body: \"🤖 **AI Triage:** Обращение классифицировано как **Task / Вопрос** (уверенность: \" + Math.round($(\"Classify Issue (Sub-workflow)\").first().json.confidence * 100) + \"%). Команда ответит при первой возможности!\" }) }}",
+        "options": {}
+      },
+      "id": "node-comment-task",
+      "name": "Comment: Task Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1820,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $(\"GitHub Webhook (Issues)\").first().json.body.repository.full_name }}/issues/{{ $(\"GitHub Webhook (Issues)\").first().json.body.issue.number }}/labels",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n-bot"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ labels: [\"feature-request\"] }) }}",
+        "options": {}
+      },
+      "id": "node-label-feat",
+      "name": "Label: feature-request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $(\"GitHub Webhook (Issues)\").first().json.body.repository.full_name }}/issues/{{ $(\"GitHub Webhook (Issues)\").first().json.body.issue.number }}/comments",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n-bot"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ body: \"🤖 **AI Triage:** Спасибо за идею! Этот Issue классифицирован как **Feature Request** (уверенность: \" + Math.round($(\"Classify Issue (Sub-workflow)\").first().json.confidence * 100) + \"%). Предложение добавлено в бэклог сообщества.\" }) }}",
+        "options": {}
+      },
+      "id": "node-comment-feat",
+      "name": "Comment: Feature Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1820,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "dataTableId": "processed_issues",
+        "fields": {
+          "values": [
+            {
+              "field": "issue_id",
+              "value": "={{ $(\"GitHub Webhook (Issues)\").first().json.body.issue.number }}"
+            },
+            {
+              "field": "author",
+              "value": "={{ $(\"GitHub Webhook (Issues)\").first().json.body.issue.user.login }}"
+            },
+            {
+              "field": "created_at",
+              "value": "={{ $(\"GitHub Webhook (Issues)\").first().json.body.issue.created_at }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-save-issues-db",
+      "name": "Save to Data Table (processed_issues)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2100,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "GitHub Webhook (Issues)": {
+      "main": [
+        [
+          {
+            "node": "Is Issue Opened?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Issue Opened?": {
+      "main": [
+        [
+          {
+            "node": "Check Data Table (processed_issues)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Data Table (processed_issues)": {
+      "main": [
+        [
+          {
+            "node": "Deduplication (processed_issues)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplication (processed_issues)": {
+      "main": [
+        [
+          {
+            "node": "Classify Issue (Sub-workflow)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Issue (Sub-workflow)": {
+      "main": [
+        [
+          {
+            "node": "Switch by Type & Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch by Type & Escalation": {
+      "main": [
+        [
+          {
+            "node": "Label: needs-triage (No Comment)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Label: bug",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Label: task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Label: feature-request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Label: needs-triage (No Comment)": {
+      "main": [
+        [
+          {
+            "node": "Save to Data Table (processed_issues)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Label: bug": {
+      "main": [
+        [
+          {
+            "node": "Comment: Bug Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comment: Bug Template": {
+      "main": [
+        [
+          {
+            "node": "Save to Data Table (processed_issues)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Label: task": {
+      "main": [
+        [
+          {
+            "node": "Comment: Task Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comment: Task Template": {
+      "main": [
+        [
+          {
+            "node": "Save to Data Table (processed_issues)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Label: feature-request": {
+      "main": [
+        [
+          {
+            "node": "Comment: Feature Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comment: Feature Template": {
+      "main": [
+        [
+          {
+            "node": "Save to Data Table (processed_issues)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
