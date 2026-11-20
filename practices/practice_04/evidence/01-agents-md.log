@@ -1,0 +1,3 @@
+AGENT ACTION: Refer to AGENTS.md rules and run unified check
+Command: bash practices/practice_04/scripts/check.sh
+Result: OK (all tests passed)

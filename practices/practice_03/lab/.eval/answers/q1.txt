@@ -1,0 +1,3 @@
+Файл источника: `/home/tyrt/ITMOv2/practices/practice_03/lab/demo/README.md`, строка 6.
+
+Запустить тесты командой `make test`.

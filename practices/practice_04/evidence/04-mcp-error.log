@@ -1,0 +1,9 @@
+{"jsonrpc": "2.0", "id": 1, "result": {"protocolVersion": "2024-11-05", "capabilities": {"tools": {}}, "serverInfo": {"name": "file-summary", "version": "0.1.0"}}}
+Agent chat
+User: Call MCP tool file_summary with path="practices/practice_04/does-not-exist.sh"
+Assistant: MCP(file-summary.tools/call) → Error
+Error:
+{
+  "code": -32004,
+  "message": "File not found: practices/practice_04/does-not-exist.sh"
+}

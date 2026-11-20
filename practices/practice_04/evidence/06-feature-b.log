@@ -1,0 +1,7 @@
+Feature B development on branch feature-b:
+Commit: fdf38dd practice_04: MCP server to MCP stdio spec; opencode hook tee real feedback; capture MCP list; failing tests via hook and fix; logs updated
+Tests:
+----------------------------------------------------------------------
+Ran 8 tests in 0.000s
+
+OK
