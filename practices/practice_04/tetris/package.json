@@ -1,0 +1,10 @@
+{
+  "name": "tetris",
+  "private": true,
+  "type": "module",
+  "description": "Тетрис для практики 4: чистая логика в src/game.js, интерфейс в src/ui.js, без зависимостей",
+  "scripts": {
+    "test": "sh scripts/check.sh",
+    "serve": "python3 -m http.server 5173"
+  }
+}

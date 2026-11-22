@@ -1,0 +1,24 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode/big-pickle",
+  "mcp": {
+    "review-tools": {
+      "type": "local",
+      "command": [".venv/bin/python", "mcp_server/review_tools_server.py"],
+      "enabled": true,
+      "timeout": 15000
+    }
+  },
+  "permission": {
+    "edit": "allow",
+    "skill": "allow",
+    "webfetch": "deny",
+    "bash": {
+      "*": "deny",
+      "sh scripts/check.sh": "allow",
+      ".venv/bin/python .opencode/skills/pr-diff-review/scripts/validate_review.py *": "allow",
+      "git status*": "allow",
+      "git diff*": "allow"
+    }
+  }
+}

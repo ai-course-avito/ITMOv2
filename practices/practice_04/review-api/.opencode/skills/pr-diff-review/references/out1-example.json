@@ -1,0 +1,14 @@
+{
+  "summary": "Добавлен эндпоинт POST /api/reviews, который передаёт diff в LLM без проверок входа.",
+  "risks": [
+    {
+      "file": "app/api.py",
+      "line": 10,
+      "evidence": "return review_service.review(payload[\"diff\"])",
+      "risk": "Нет проверки длины diff: запрос длиннее 20 000 символов не отклоняется с HTTP 413 (API-1)."
+    }
+  ],
+  "checks": [
+    "Отправить POST /api/reviews с diff длиннее 20 000 символов и проверить ответ 413."
+  ]
+}

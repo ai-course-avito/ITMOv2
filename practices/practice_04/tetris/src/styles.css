@@ -1,0 +1,470 @@
+/* «Тетрадь в клетку»: план — docs/design-plan.md.
+   Цвета, размер клетки и шрифты — только здесь, в :root; ниже — ссылки на них. */
+
+:root {
+  --paper: #f2f6f9;
+  --grid: #c9ddea;
+  --ink: #22398f;
+  --graphite: #555b66;
+  --mark: #d2475a;
+
+  --piece-i: #3a7bd5;
+  --piece-o: #e8a317;
+  --piece-t: #8e4fc2;
+  --piece-s: #2f9b67;
+  --piece-z: #d2475a;
+  --piece-j: #22398f;
+  --piece-l: #e5782f;
+
+  --font-hand: "Neucha", "Segoe Print", "Bradley Hand", cursive;
+  --font-text: "Golos Text", "Segoe UI", system-ui, sans-serif;
+
+  --cell: 28px;
+  --side-cols: 7;
+  --layout-cols: 20;
+}
+
+@media (max-height: 820px) {
+  :root {
+    --cell: 24px;
+  }
+}
+
+@media (max-height: 640px) {
+  :root {
+    --cell: 20px;
+  }
+}
+
+/* 17 колонок × 21px = 357px — помещается в 360px. */
+@media (max-width: 599px) {
+  :root {
+    --cell: 21px;
+    --side-cols: 4;
+    --layout-cols: 17;
+  }
+}
+
+/* ---------- лист ---------- */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-text);
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+}
+
+.sheet {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-block: var(--cell);
+  overflow: clip;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: var(--cell) var(--cell);
+}
+
+/* Сетка раскладки совпадает с сеткой листа: все дорожки — ровно одна клетка,
+   отступ слева округлён до целой клетки. */
+.layout {
+  --layout-w: calc(var(--cell) * var(--layout-cols));
+  position: relative;
+  display: grid;
+  grid-template-columns:
+    [margin] var(--cell) var(--cell)
+    [board] repeat(10, var(--cell))
+    [mid] var(--cell)
+    [side] repeat(var(--side-cols), var(--cell));
+  grid-template-rows:
+    repeat(3, var(--cell))
+    [field] repeat(20, var(--cell))
+    var(--cell)
+    [touch] repeat(2, var(--cell));
+  width: var(--layout-w);
+  margin-left: var(--cell);
+  margin-left: max(0px, round(down, calc((100% - var(--layout-w)) / 2), var(--cell)));
+}
+
+/* Красная линия полей. */
+.layout::before {
+  content: "";
+  position: absolute;
+  top: -100vh;
+  bottom: -100vh;
+  left: calc(var(--cell) - 1px);
+  width: 2px;
+  background: var(--mark);
+  opacity: 0.75;
+}
+
+/* ---------- заголовок ---------- */
+
+.title {
+  grid-column: board / -1;
+  grid-row: 1 / span 3;
+  align-self: end;
+  justify-self: start;
+  position: relative;
+  margin: 0 0 calc(var(--cell) * 0.7);
+  font-family: var(--font-hand);
+  font-weight: 400;
+  font-size: calc(var(--cell) * 2.2);
+  line-height: 1;
+  color: var(--ink);
+}
+
+.title-underline {
+  position: absolute;
+  left: 0;
+  right: -0.15em;
+  bottom: -0.22em;
+  width: calc(100% + 0.15em);
+  height: 0.28em;
+  overflow: visible;
+}
+
+.title-underline path {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
+  animation: draw-line 900ms ease-out 250ms forwards;
+}
+
+@keyframes draw-line {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ---------- поле ---------- */
+
+.board-wrap {
+  grid-column: board / span 10;
+  grid-row: field / span 20;
+  position: relative;
+}
+
+/* Поле получает фокус только программно (tabindex="-1"), чтобы клавиши
+   не уходили в скрытые кнопки; его обводка ручкой уже видна. */
+.board-wrap:focus-visible {
+  outline: none;
+}
+
+.board,
+.preview {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--cell));
+  grid-auto-rows: var(--cell);
+}
+
+.board {
+  --cols: 10;
+  height: 100%;
+  /* Обводка ручкой: основная линия и чуть смещённый второй проход. */
+  box-shadow:
+    0 0 0 2px var(--ink),
+    1px 2px 0 2px color-mix(in srgb, var(--ink) 30%, transparent);
+}
+
+.cell {
+  position: relative;
+}
+
+.cell[data-p]::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 1.5px solid color-mix(in srgb, var(--c), var(--ink) 35%);
+  border-radius: 2px;
+  background-color: var(--c);
+  /* Штрихи фломастера. */
+  background-image: repeating-linear-gradient(
+    -50deg,
+    transparent 0 3px,
+    color-mix(in srgb, var(--paper) 22%, transparent) 3px 4px
+  );
+}
+
+/* Призрачная фигура — карандашная намётка: пунктир цвета фигуры, без заливки. */
+.cell[data-g]:not([data-p])::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 2px dashed color-mix(in srgb, var(--c), var(--ink) 20%);
+  border-radius: 2px;
+}
+
+[data-p="I"], [data-g="I"] { --c: var(--piece-i); }
+[data-p="O"], [data-g="O"] { --c: var(--piece-o); }
+[data-p="T"], [data-g="T"] { --c: var(--piece-t); }
+[data-p="S"], [data-g="S"] { --c: var(--piece-s); }
+[data-p="Z"], [data-g="Z"] { --c: var(--piece-z); }
+[data-p="J"], [data-g="J"] { --c: var(--piece-j); }
+[data-p="L"], [data-g="L"] { --c: var(--piece-l); }
+
+/* ---------- экраны поверх поля ---------- */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: calc(var(--cell) * 0.6);
+  padding: var(--cell);
+  background: color-mix(in srgb, var(--paper) 90%, transparent);
+  animation: appear 180ms ease-out;
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+.overlay-title {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-weight: 400;
+  font-size: calc(var(--cell) * 1.5);
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+/* Красная ручка — только для событий. */
+.overlay-title--mark {
+  color: var(--mark);
+}
+
+.overlay-text {
+  margin: 0;
+  max-width: 26ch;
+  font-size: max(14px, calc(var(--cell) * 0.6));
+  line-height: 1.45;
+  color: var(--graphite);
+}
+
+.overlay-text strong {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Новый рекорд — пометка красной ручкой. */
+.overlay-mark {
+  display: block;
+  margin-top: 0.35em;
+  font-family: var(--font-hand);
+  font-size: 1.3em;
+  line-height: 1.1;
+  color: var(--mark);
+}
+
+.button {
+  min-height: calc(var(--cell) * 1.75);
+  padding: 0 calc(var(--cell) * 0.7);
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-text);
+  font-weight: 600;
+  font-size: max(15px, calc(var(--cell) * 0.6));
+  cursor: pointer;
+}
+
+.button:hover {
+  background: color-mix(in srgb, var(--ink), var(--graphite) 35%);
+}
+
+:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.button:focus-visible {
+  outline-color: var(--mark);
+}
+
+/* ---------- пометки на полях ---------- */
+
+/* Колонка — стопка блоков, высота каждого кратна клетке, поэтому
+   подписи и цифры ложатся на линии листа. */
+.side {
+  grid-column: side / span var(--side-cols);
+  grid-row: field / span 20;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat {
+  display: grid;
+  grid-template-rows: var(--cell) var(--cell);
+  margin-bottom: var(--cell);
+}
+
+.stat--next {
+  grid-template-rows: var(--cell) calc(var(--cell) * 2);
+}
+
+.label {
+  align-self: end;
+  padding-bottom: 0.12em;
+  font-family: var(--font-hand);
+  font-size: calc(var(--cell) * 0.8);
+  line-height: 1;
+  color: var(--graphite);
+}
+
+.value {
+  font-weight: 600;
+  font-size: calc(var(--cell) * 0.85);
+  line-height: var(--cell);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.preview {
+  --cols: 4;
+}
+
+/* Отложенная фигура: пока hold израсходован — бледная, как вычеркнутая. */
+.preview--hold {
+  position: relative;
+}
+
+.preview--hold[data-used] {
+  opacity: 0.35;
+}
+
+.hold-hint {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  font-family: var(--font-hand);
+  font-size: calc(var(--cell) * 0.6);
+  color: var(--graphite);
+}
+
+.preview--hold[data-empty] .hold-hint {
+  display: flex;
+}
+
+.hint-touch {
+  display: none;
+}
+
+/* Сноска под полем: легенда клавиш, три колонки на линиях листа. */
+.keys {
+  grid-column: board / -1;
+  grid-row: touch / span 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: var(--cell);
+  margin: 0;
+  font-size: max(12px, calc(var(--cell) * 0.5));
+  color: var(--graphite);
+}
+
+.keys div {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  white-space: nowrap;
+}
+
+.keys dt,
+.keys dd {
+  margin: 0;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.7em;
+  padding: 0.05em 0.35em;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  font-family: var(--font-text);
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--ink);
+}
+
+/* ---------- кнопки для касаний ---------- */
+
+.touch {
+  grid-column: board / -1;
+  grid-row: touch / span 2;
+  display: none;
+  gap: calc(var(--cell) * 0.25);
+}
+
+.touch-button {
+  flex: 1;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-weight: 600;
+  font-size: calc(var(--cell) * 0.95);
+  touch-action: manipulation;
+  user-select: none;
+  cursor: pointer;
+}
+
+.touch-button:active {
+  background: color-mix(in srgb, var(--ink) 15%, var(--paper));
+}
+
+/* ---------- узкий экран и касания ---------- */
+
+/* Где есть кнопки для касаний, они занимают место сноски с клавишами. */
+@media (max-width: 599px), (pointer: coarse) {
+  .touch {
+    display: flex;
+  }
+
+  .keys,
+  .hint-keys {
+    display: none;
+  }
+
+  .hint-touch {
+    display: inline;
+  }
+}
+
+/* ---------- без декоративного движения ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .title-underline path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .overlay {
+    animation: none;
+  }
+}
