@@ -1,0 +1,10 @@
+:root {
+  --bs-body-bg: #f4f2e9;
+  --bs-body-color: #172b24;
+  --bs-body-font-family: system-ui, sans-serif;
+}
+#app { max-width: 48rem; }
+h1 { font-family: Georgia, serif; font-size: clamp(2.5rem, 8vw, 5rem); letter-spacing: -.05em; }
+.card { --bs-card-bg: #fffdf7; --bs-card-border-color: #d3dbd0; }
+.btn-primary { --bs-btn-bg: #215443; --bs-btn-border-color: #215443; --bs-btn-hover-bg: #163d30; --bs-btn-hover-border-color: #163d30; --bs-btn-disabled-bg: #566f65; --bs-btn-disabled-border-color: #566f65; }
+:focus-visible { outline: 3px solid #a94621; outline-offset: 3px; }
