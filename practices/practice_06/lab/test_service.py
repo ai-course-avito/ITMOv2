@@ -98,7 +98,13 @@ class SandboxTest(unittest.TestCase):
             sentinel = Path(directory) / "sentinel.txt"
             sentinel.write_text("keep")
             link = self.sandbox.root / "escape"
-            link.symlink_to(directory, target_is_directory=True)
+            try:
+                link.symlink_to(directory, target_is_directory=True)
+            except OSError as exc:
+                # Unprivileged symlink creation is blocked on this OS/account (e.g. Windows
+                # without Developer Mode or admin rights). That is an environment limitation,
+                # not a statement about the sandbox boundary itself, so skip rather than fail.
+                self.skipTest(f"cannot create symlinks in this environment: {exc}")
             with self.assertRaises(ValueError):
                 self.sandbox.read("escape/sentinel.txt")
             with self.assertRaises(ValueError):
