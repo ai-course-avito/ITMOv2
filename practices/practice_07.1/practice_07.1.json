@@ -1,0 +1,678 @@
+{
+  "name": "practice_07.1",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.body.repository.full_name }}/pulls/{{ $json.body.issue.number }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3.diff"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3e6bb942-aa35-4e43-9072-18cb6478aca3",
+      "name": "Get file's PR info",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        160,
+        -208
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "githubApi": {
+          "id": "PKcLjl6EpHeJej0h",
+          "name": "GitHub account 66"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "openai/gpt-5.2"
+        },
+        "options": {}
+      },
+      "id": "73591737-a0f4-4bba-8977-abba7da8584c",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        656,
+        0
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "Xc1ziHzydn29ShmL",
+          "name": "OpenAI account 55"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "owner": {
+          "__rl": true,
+          "value": "kamilasalis",
+          "mode": "list",
+          "cachedResultName": "kamilasalis",
+          "cachedResultUrl": "https://github.com/kamilasalis"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "ITMOv2",
+          "mode": "list",
+          "cachedResultName": "ITMOv2",
+          "cachedResultUrl": "https://github.com/ai-course-avito/ITMOv2"
+        },
+        "events": [
+          "issue_comment"
+        ],
+        "options": {}
+      },
+      "id": "e7c6d979-d747-4621-9484-85b370ab1a0f",
+      "name": "PR Trigger1",
+      "type": "n8n-nodes-base.githubTrigger",
+      "position": [
+        -544,
+        -96
+      ],
+      "webhookId": "c6a30e53-bda5-4922-87f3-8cdfb399a35f",
+      "notesInFlow": false,
+      "typeVersion": 1,
+      "credentials": {
+        "githubApi": {
+          "id": "PKcLjl6EpHeJej0h",
+          "name": "GitHub account 66"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "kamilasalis",
+          "mode": "list",
+          "cachedResultName": "kamilasalis",
+          "cachedResultUrl": "https://github.com/kamilasalis"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "ITMOv2",
+          "mode": "list",
+          "cachedResultName": "ITMOv2",
+          "cachedResultUrl": "https://github.com/kamilasalis/ITMOv2"
+        },
+        "issueNumber": "={{ $('PR Trigger1').first().json.body.issue.number }}",
+        "editFields": {
+          "labels": [
+            {
+              "label": "ReviewedByAI"
+            }
+          ]
+        }
+      },
+      "id": "159f8e33-9268-4592-a1b6-948eb6ca463c",
+      "name": "Add Label to PR1",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        1280,
+        -208
+      ],
+      "webhookId": "70d2db56-965b-4f1f-817c-1fbb311320c0",
+      "typeVersion": 1,
+      "credentials": {
+        "githubApi": {
+          "id": "PKcLjl6EpHeJej0h",
+          "name": "GitHub account 66"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a senior Python developer.\n\nСделай code review ТОЛЬКО добавленных строк (они начинаются с +).\nСтроки даны в формате \"НОМЕР: +код\". Найди: баги, проблемы безопасности, регрессии, проблемы производительности, нарушения best practices.\n\nВерни ТОЛЬКО валидный JSON-массив, без markdown и без пояснений, в формате:\n[{\"path\": \"путь к файлу из строки FILE\", \"line\": НОМЕР, \"comment\": \"замечание и пример исправления\"}]\n\nПравила: line — номер из начала строки с +, к которой относится замечание. Комментарии пиши на русском. Один комментарий на одну проблему. Если проблем нет, верни [].\n\nDiff:\n{{ $('parse diff').first().json.annotated }}",
+        "options": {
+          "systemMessage": ""
+        }
+      },
+      "id": "3e032c63-aba1-4720-9fa2-d23f7c28f584",
+      "name": "Code Review Agent1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        576,
+        -208
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.comment.body }}",
+                    "rightValue": "/make_ai_review",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9304604a-b5d6-4ce4-bbc3-049f7ced1ee2"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "2e16a0a6-2923-400f-9d14-645d75f3970f",
+                    "leftValue": "={{ $json.body.comment.body }}",
+                    "rightValue": "/make_other_ai_review",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.5,
+      "position": [
+        -320,
+        -96
+      ],
+      "id": "f012ac3c-f6ee-4de7-bcfe-f827db151a95",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.body.repository.full_name }}/pulls/{{ $json.body.issue.number }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3.diff"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "624ef329-2778-49be-8ec0-30c6e25c8962",
+      "name": "Get file's PR info1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -16,
+        336
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "githubApi": {
+          "id": "PKcLjl6EpHeJej0h",
+          "name": "GitHub account 66"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "google/gemini-2.5-flash"
+        },
+        "options": {}
+      },
+      "id": "ccf7df8c-cc91-4297-9379-34f652e392b9",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        192,
+        544
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "Xc1ziHzydn29ShmL",
+          "name": "OpenAI account 55"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "review",
+        "owner": {
+          "__rl": true,
+          "value": "kamilasalis",
+          "mode": "list",
+          "cachedResultName": "kamilasalis",
+          "cachedResultUrl": "https://github.com/kamilasalis"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "ITMOv2",
+          "mode": "list",
+          "cachedResultName": "ITMOv2",
+          "cachedResultUrl": "https://github.com/kamilasalis/ITMOv2"
+        },
+        "pullRequestNumber": "={{ $('PR Trigger1').first().json.body.issue.number }}",
+        "event": "comment",
+        "body": "=**Модель: google/gemini-2.5-flash**\n\n{{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "7f7ad72e-502f-43fd-94e8-5f7ffd59c244",
+      "name": "GitHub Robot",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        592,
+        336
+      ],
+      "webhookId": "4392c85d-31e9-4ebd-8f4d-d556cbb8f3e0",
+      "typeVersion": 1.1,
+      "credentials": {
+        "githubApi": {
+          "id": "PKcLjl6EpHeJej0h",
+          "name": "GitHub account 66"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "kamilasalis",
+          "mode": "list",
+          "cachedResultName": "kamilasalis",
+          "cachedResultUrl": "https://github.com/kamilasalis"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "ITMOv2",
+          "mode": "list",
+          "cachedResultName": "ITMOv2",
+          "cachedResultUrl": "https://github.com/kamilasalis/ITMOv2"
+        },
+        "issueNumber": "={{ $('PR Trigger1').first().json.body.issue.number }}",
+        "editFields": {
+          "labels": [
+            {
+              "label": "ReviewedByAI"
+            }
+          ]
+        }
+      },
+      "id": "61a0ccb0-66c0-4c2f-b4fa-0df21a8e3cf6",
+      "name": "Add Label to PR",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        736,
+        368
+      ],
+      "webhookId": "70d2db56-965b-4f1f-817c-1fbb311320c0",
+      "typeVersion": 1,
+      "credentials": {
+        "githubApi": {
+          "id": "PKcLjl6EpHeJej0h",
+          "name": "GitHub account 66"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a senior Python developer.\n\nСделай code review ТОЛЬКО изменённых строк в diff.\nНайди:\n\t•\tбаги\n\t•\tпроблемы безопасности\n\t•\tрегрессии\n\t•\tпроблемы производительности\n\t•\tнарушения best practices\n\nДай конкретные рекомендации и примеры исправлений.\n\n{{ $json.data }}",
+        "options": {
+          "systemMessage": ""
+        }
+      },
+      "id": "519c0914-bdcd-4732-860a-fe70fb59748a",
+      "name": "Code Review Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        224,
+        336
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "ZWHdDBlHgPpvF9Kz",
+          "mode": "list",
+          "cachedResultName": "reviewed_prs",
+          "cachedResultUrl": "/projects/KIYEEocueP0pxQTY/datatables/ZWHdDBlHgPpvF9Kz"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "pr_number": "={{ $('PR Trigger1').first().json.body.issue.number }}"
+          },
+          "matchingColumns": [
+            "pr_number"
+          ],
+          "schema": [
+            {
+              "id": "pr_number",
+              "displayName": "pr_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1504,
+        -208
+      ],
+      "id": "3f936e74-721c-4d22-bbc1-97f4b5f25924",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ZWHdDBlHgPpvF9Kz",
+          "mode": "list",
+          "cachedResultName": "reviewed_prs",
+          "cachedResultUrl": "/projects/KIYEEocueP0pxQTY/datatables/ZWHdDBlHgPpvF9Kz"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "pr_number",
+              "keyValue": "={{ $json.body.issue.number }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        -192
+      ],
+      "id": "6214d895-1a89-467a-a22a-ffd08caa4511",
+      "name": "If row does not exist"
+    },
+    {
+      "parameters": {
+        "jsCode": "const diff = $input.first().json.data;\nlet path = null;\nlet newLine = 0;\nconst annotated = [];\nconst valid = {};\n\nfor (const l of diff.split('\\n')) {\n  if (l.startsWith('diff --git')) {\n    path = l.split(' b/')[1];\n    continue;\n  }\n  if (l.startsWith('+++') || l.startsWith('---') || l.startsWith('index ')) continue;\n  const m = l.match(/^@@ -\\d+(?:,\\d+)? \\+(\\d+)(?:,\\d+)? @@/);\n  if (m) {\n    newLine = parseInt(m[1], 10);\n    annotated.push(`\\nFILE: ${path}\\n${l}`);\n    continue;\n  }\n  if (!path) continue;\n  if (l.startsWith('+')) {\n    annotated.push(`${newLine}: ${l}`);\n    (valid[path] = valid[path] || []).push(newLine);\n    newLine++;\n  } else if (l.startsWith(' ')) {\n    annotated.push(`${newLine}: ${l}`);\n    newLine++;\n  }\n}\n\nreturn [{ json: { annotated: annotated.join('\\n'), valid } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        -208
+      ],
+      "id": "04dfca4e-2a37-4f24-a016-8f50cad57430",
+      "name": "parse diff"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $('PR Trigger1').first().json.body.repository.full_name }}/pulls/{{ $('PR Trigger1').first().json.body.issue.number }}/reviews",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event: 'COMMENT', body: $json.body, comments: $json.comments }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1072,
+        -176
+      ],
+      "id": "a70ec99b-5326-455f-881e-7dcc43bbf493",
+      "name": "HTTP Request",
+      "credentials": {
+        "githubApi": {
+          "id": "PKcLjl6EpHeJej0h",
+          "name": "GitHub account 66"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output || '[]';\nconst clean = raw.replace(/```json|```/g, '').trim();\n\nlet items = [];\ntry { items = JSON.parse(clean); } catch (e) { items = []; }\n\nconst valid = $('parse diff').first().json.valid;\n\nconst comments = items\n  .filter(c => c.path && valid[c.path] && valid[c.path].includes(Number(c.line)))\n  .map(c => ({\n    path: c.path,\n    line: Number(c.line),\n    side: 'RIGHT',\n    body: c.comment\n  }));\n\nreturn [{ json: {\n  body: `**Модель: openai/gpt-5.2**\\n\\nНайдено замечаний: ${comments.length}`,\n  comments\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -208
+      ],
+      "id": "21b53f7d-97e4-44b1-90d3-9662bd702b39",
+      "name": "Build review"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get file's PR info": {
+      "main": [
+        [
+          {
+            "node": "parse diff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Code Review Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PR Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Review Agent1": {
+      "main": [
+        [
+          {
+            "node": "Build review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "If row does not exist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get file's PR info1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get file's PR info1": {
+      "main": [
+        [
+          {
+            "node": "Code Review Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Code Review Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub Robot": {
+      "main": [
+        [
+          {
+            "node": "Add Label to PR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Review Agent": {
+      "main": [
+        [
+          {
+            "node": "GitHub Robot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Label to PR1": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Label to PR": {
+      "main": [
+        []
+      ]
+    },
+    "If row does not exist": {
+      "main": [
+        [
+          {
+            "node": "Get file's PR info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse diff": {
+      "main": [
+        [
+          {
+            "node": "Code Review Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Add Label to PR1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build review": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "59cf9192-4048-415b-a40b-d01892623679",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "68dbbb4e8fa686c3fd4e9982ade6836edb66976f207553e7ac22df961581c78c"
+  },
+  "nodeGroups": [],
+  "id": "NGClnwhdGeibyRBG",
+  "tags": []
+}
