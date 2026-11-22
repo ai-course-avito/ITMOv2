@@ -1,0 +1,278 @@
+{
+  "updatedAt": "2026-11-22T21:31:12.969Z",
+  "createdAt": "2026-11-22T21:31:12.969Z",
+  "id": "pzt6w4WRsum7RoG5",
+  "name": "ИТМО 7.2 — обработка Issues",
+  "description": "Классифицирует новые Issues через отдельный workflow. Добавляет один из четырёх лейблов. Работает только с учебным репозиторием.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "c9a702a3-2250-4b36-a0c5-20758c364a48",
+      "name": "Новое Issue",
+      "type": "n8n-nodes-base.githubTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        288
+      ],
+      "parameters": {
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "vlklk"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "itmo-n8n-lab"
+        },
+        "events": [
+          "issues"
+        ]
+      },
+      "webhookId": "cc134c9b-a3e3-4dfa-baef-8c40cd9dbe5b"
+    },
+    {
+      "id": "33130446-5bfc-43eb-b06c-45fc848cd0b7",
+      "name": "Проверить событие",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        288
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const payload=$input.first().json; const p=payload.body ?? payload; if(p.action!=='opened'||p.repository?.full_name!=='vlklk/itmo-n8n-lab'||p.issue?.pull_request||!Number.isSafeInteger(p.issue?.number)) return [];const x=p.issue;return [{json:{number:x.number,title:String(x.title??''),body:String(x.body??''),labels:(x.labels??[]).map(l=>l.name).filter(Boolean)}}];"
+      }
+    },
+    {
+      "id": "5fbe0ac2-b5c5-4638-8400-cf099f43f00e",
+      "name": "Вызвать классификатор",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        448,
+        288
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "J4SrEMXKKkLALLRn"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $json.title }}",
+            "body": "={{ $json.body }}"
+          },
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "display": true,
+              "required": false,
+              "defaultMatch": false
+            },
+            {
+              "id": "body",
+              "displayName": "body",
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "display": true,
+              "required": false,
+              "defaultMatch": false
+            }
+          ]
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "25e6849d-4613-4405-a8fe-ba3e51340245",
+      "name": "Маршрутизация категории",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.5,
+      "position": [
+        672,
+        256
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 4,
+        "output": "={{ $json.confidence >= 0.8 && ['bug','task','feature'].includes($json.type) ? ['bug','task','feature'].indexOf($json.type) : 3 }}"
+      }
+    },
+    {
+      "id": "070a8576-a277-4a8a-9862-a1d500557d1b",
+      "name": "Лейбл bug",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ 'https://api.github.com/repos/vlklk/itmo-n8n-lab/issues/' + $('Проверить событие').first().json.number + '/labels' }}",
+        "jsonBody": "={{ JSON.stringify({labels:['bug']}) }}"
+      }
+    },
+    {
+      "id": "6534b2ba-e46f-4f24-bd27-5a34de777f93",
+      "name": "Лейбл task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        192
+      ],
+      "parameters": {
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ 'https://api.github.com/repos/vlklk/itmo-n8n-lab/issues/' + $('Проверить событие').first().json.number + '/labels' }}",
+        "jsonBody": "={{ JSON.stringify({labels:['task']}) }}"
+      }
+    },
+    {
+      "id": "d248f2d6-abd5-4bad-8db6-c63b59b7a441",
+      "name": "Лейбл feature",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        384
+      ],
+      "parameters": {
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ 'https://api.github.com/repos/vlklk/itmo-n8n-lab/issues/' + $('Проверить событие').first().json.number + '/labels' }}",
+        "jsonBody": "={{ JSON.stringify({labels:['feature']}) }}"
+      }
+    },
+    {
+      "id": "70aa9f5c-ce1b-4b47-84e9-e5e493ea07a2",
+      "name": "Лейбл needs-triage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        576
+      ],
+      "parameters": {
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ 'https://api.github.com/repos/vlklk/itmo-n8n-lab/issues/' + $('Проверить событие').first().json.number + '/labels' }}",
+        "jsonBody": "={{ JSON.stringify({labels:['needs-triage']}) }}"
+      }
+    }
+  ],
+  "connections": {
+    "Новое Issue": {
+      "main": [
+        [
+          {
+            "node": "Проверить событие",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Проверить событие": {
+      "main": [
+        [
+          {
+            "node": "Вызвать классификатор",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Вызвать классификатор": {
+      "main": [
+        [
+          {
+            "node": "Маршрутизация категории",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Маршрутизация категории": {
+      "main": [
+        [
+          {
+            "node": "Лейбл bug",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Лейбл task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Лейбл feature",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Лейбл needs-triage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "nodeGroups": [],
+  "pinData": null,
+  "versionId": "e24489c1-1a75-4098-8c9f-16faca94f7cf",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "versionMetadata": {
+    "name": "Черновик обработки Issues",
+    "description": "Created with 8 nodes: Новое Issue, Проверить событие, Вызвать классификатор, Маршрутизация категории, Лейбл bug and 3 more"
+  }
+}

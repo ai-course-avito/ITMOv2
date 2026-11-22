@@ -1,0 +1,200 @@
+{
+  "updatedAt": "2026-11-22T21:31:46.538Z",
+  "createdAt": "2026-11-22T21:31:46.538Z",
+  "id": "3GCC5GAbIBuYRNCk",
+  "name": "ИТМО 7.2 — еженедельная статистика",
+  "description": "Формирует HTML-сводку за семь дней по четырём запросам GitHub. Есть ручной запуск и расписание на понедельник.",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "4b56f68a-b6a8-4fbb-b238-6ba94c6bf48e",
+      "name": "Понедельник 09:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * MON"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ee60694e-2701-458b-a2e7-4d8e63600f15",
+      "name": "Четыре запроса",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        96
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const repo='repo:vlklk/itmo-n8n-lab'; const now=new Date();const from=new Date(now.getTime()-7*86400000).toISOString(); const to=now.toISOString(); const range=from+'..'+to;return [['Новые Issues','is:issue created:'+range],['Закрытые Issues','is:issue is:closed closed:'+range],['Новые PR','is:pr created:'+range],['Влитые PR','is:pr is:merged merged:'+range]].map(([metric,term])=>({json:{metric,q:repo+' '+term,from,to}}));"
+      }
+    },
+    {
+      "id": "7465cd4d-d683-4437-b6c1-99b1faa0714c",
+      "name": "Ручная проверка",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3cb2a91c-f070-4357-a802-a614cd4a8535",
+      "name": "GitHub Search API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        96
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.github.com/search/issues",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.q }}"
+            },
+            {
+              "name": "per_page",
+              "value": "100"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 20000
+        }
+      }
+    },
+    {
+      "id": "b42c6370-c6f5-4a4f-ab89-07f2188a804c",
+      "name": "Сводка по типу и автору",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        96
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const inq=$('Четыре запроса').all();const escape=s=>String(s).replace(/[&<>\"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[ch])); const rows=$input.all().map(({json:v},i)=>{if(!Array.isArray(v.items)||!Number.isSafeInteger(v.total_count)||v.incomplete_results||v.total_count>v.items.length)throw Error('Incomplete GitHub search result: '+inq[i]?.json.metric);const authors=new Map();for(const x of v.items){const a=x.user?.login??'unknown';authors.set(a,(authors.get(a)??0)+1)}return {metric:inq[i].json.metric,total:v.total_count,authors:[...authors].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))}});const html='<h1>Статистика GitHub за 7 дней</h1><table border=\"1\" cellpadding=\"6\"><tr><th>Категория</th><th>Всего</th><th>По авторам</th></tr>'+rows.map(r=>'<tr><td>'+escape(r.metric)+'</td><td>'+r.total+'</td><td>'+r.authors.map(([a,n])=>escape(a)+': '+n).join(', ')+'</td></tr>').join('')+'</table>';return [{json:{html,rows}}];"
+      }
+    },
+    {
+      "id": "3d8b3a56-e18a-4d1d-aa90-1fc8e59f40f3",
+      "name": "Письмо со статистикой",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        96
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "SET_RECIPIENT@example.invalid",
+        "subject": "ИТМО — статистика GitHub за неделю",
+        "emailType": "html",
+        "message": "={{ $json.html }}"
+      },
+      "webhookId": "8c17b0a2-ad31-4623-ac3f-2624f93d0d17"
+    }
+  ],
+  "connections": {
+    "Понедельник 09:00": {
+      "main": [
+        [
+          {
+            "node": "Четыре запроса",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Четыре запроса": {
+      "main": [
+        [
+          {
+            "node": "GitHub Search API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ручная проверка": {
+      "main": [
+        [
+          {
+            "node": "Четыре запроса",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub Search API": {
+      "main": [
+        [
+          {
+            "node": "Сводка по типу и автору",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Сводка по типу и автору": {
+      "main": [
+        [
+          {
+            "node": "Письмо со статистикой",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "Europe/Moscow"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "nodeGroups": [],
+  "pinData": null,
+  "versionId": "88907c74-d5f7-4805-8ec5-e70a81869de2",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "versionMetadata": {
+    "name": "Черновик еженедельного отчёта",
+    "description": "Created with 6 nodes: Понедельник 09:00, Четыре запроса, Ручная проверка, GitHub Search API, Сводка по типу и автору and 1 more"
+  }
+}
