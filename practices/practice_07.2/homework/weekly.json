@@ -1,0 +1,575 @@
+{
+  "name": "Практика 7.2 — недельный отчёт",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * MON"
+            }
+          ]
+        }
+      },
+      "name": "Понедельник 09:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1.2,
+      "id": "e2f03976-f19f-41d2-9e63-9d55b9d5e77f"
+    },
+    {
+      "parameters": {},
+      "name": "Проверить вручную",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        0,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "1b5b0d36-fb12-4b30-9212-9f72021f96cc"
+    },
+    {
+      "parameters": {
+        "jsCode": "// При ручной проверке берём последние 7 дней; в понедельник — ровно прошлую неделю до 09:00.\nconst end=$now.startOf('second');const start=end.minus({days:7});\nreturn [{json:{period_start:start.toUTC().toISO({suppressMilliseconds:true}),period_end:end.toUTC().toISO({suppressMilliseconds:true}),week_key:end.startOf('week').toISODate(),previous_key:end.startOf('week').minus({weeks:1}).toISODate(),recipient:'YOUR_EMAIL@example.com'}}];"
+      },
+      "name": "Период отчёта",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        240,
+        112
+      ],
+      "typeVersion": 2,
+      "id": "461f3231-f2f7-4bb7-8bf1-76355b181dd9"
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://api.github.com/search/issues?per_page=100&q='+encodeURIComponent('repo:bronY9/ITMOv2 is:issue label:\"bug\" created:'+$('Период отчёта').first().json.period_start+'..'+$('Период отчёта').first().json.period_end) }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Запрос bug",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        480,
+        112
+      ],
+      "typeVersion": 4.2,
+      "id": "7180821e-7b5d-470c-9cc8-c7156318bbf4",
+      "credentials": {
+        "githubApi": {
+          "id": "evxpWncjlZMqgRD0",
+          "name": "GitHub account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://api.github.com/search/issues?per_page=100&q='+encodeURIComponent('repo:bronY9/ITMOv2 is:issue label:\"task\" created:'+$('Период отчёта').first().json.period_start+'..'+$('Период отчёта').first().json.period_end) }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Запрос task",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        720,
+        112
+      ],
+      "typeVersion": 4.2,
+      "id": "77190001-8017-4f33-bb66-4d7b61f8e8ab",
+      "credentials": {
+        "githubApi": {
+          "id": "evxpWncjlZMqgRD0",
+          "name": "GitHub account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://api.github.com/search/issues?per_page=100&q='+encodeURIComponent('repo:bronY9/ITMOv2 is:issue label:\"feature-request\" created:'+$('Период отчёта').first().json.period_start+'..'+$('Период отчёта').first().json.period_end) }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Запрос feature-request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        960,
+        112
+      ],
+      "typeVersion": 4.2,
+      "id": "6a7cd17f-b9b5-4d34-a816-196d60715ca3",
+      "credentials": {
+        "githubApi": {
+          "id": "evxpWncjlZMqgRD0",
+          "name": "GitHub account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://api.github.com/search/issues?per_page=100&q='+encodeURIComponent('repo:bronY9/ITMOv2 is:issue label:\"needs-triage\" created:'+$('Период отчёта').first().json.period_start+'..'+$('Период отчёта').first().json.period_end) }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Запрос needs-triage",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1200,
+        112
+      ],
+      "typeVersion": 4.2,
+      "id": "1d087a36-9097-4972-a9f2-7fe34503607a",
+      "credentials": {
+        "githubApi": {
+          "id": "evxpWncjlZMqgRD0",
+          "name": "GitHub account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const sources=[['bug','Запрос bug'],['task','Запрос task'],['feature','Запрос feature-request'],['unknown','Запрос needs-triage']];\nconst by_type={bug:0,task:0,feature:0,unknown:0},by_author={},seen=new Set();\nfor(const [type,name] of sources){const data=$(name).first().json;if(data.incomplete_results||data.total_count>100)throw new Error('Результат GitHub обрезан: требуется пагинация');for(const issue of data.items??[]){if(seen.has(issue.id))continue;seen.add(issue.id);by_type[type]++;const a=issue.user.login;if(!by_author[a])by_author[a]={bug:0,task:0,feature:0,unknown:0,total:0};by_author[a][type]++;by_author[a].total++;}}\nreturn [{json:{...$('Период отчёта').first().json,by_type,by_author,total:seen.size,simulated:false}}];"
+      },
+      "name": "Группировка по типу и автору",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1472,
+        112
+      ],
+      "typeVersion": 2,
+      "id": "5beeefc9-06d6-4a28-961a-f2694b435a47"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "pxSmX3wUgC8v82KW"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "week_key",
+              "keyValue": "={{ $json.previous_key }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "name": "Прошлая неделя",
+      "type": "n8n-nodes-base.dataTable",
+      "position": [
+        1712,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "2dd0e90e-4d2c-4407-acb9-3a2f2f1161e5",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const current=$('Группировка по типу и автору').first().json;const rows=$input.all().map(x=>x.json).filter(x=>x.week_key===current.previous_key);if(rows.length>1)throw new Error('В таблице несколько записей одной недели');const previous=rows.length?JSON.parse(rows[0].stats_json):null;const delta={};for(const t of Object.keys(current.by_type))delta[t]=previous?current.by_type[t]-(previous.by_type[t]??0):null;const author_delta={};for(const a of new Set([...Object.keys(current.by_author),...Object.keys(previous?.by_author??{})]))author_delta[a]=(current.by_author[a]?.total??0)-(previous?.by_author[a]?.total??0);return [{json:{...current,previous,delta,author_delta,total_delta:previous?current.total-previous.total:null}}];"
+      },
+      "name": "Изменение за неделю",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1952,
+        112
+      ],
+      "typeVersion": 2,
+      "id": "8cbd7f55-c3a9-4971-9d33-23301a75c1fb"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Напиши по-русски 2–3 коротких предложения для недельного отчёта. Используй только переданные числа: объём обращений, основные типы и изменения к прошлой неделе. Не выдумывай причины изменений. Если прошлой недели нет — укажи это. Если previous.simulated=true — прямо назови сравнение учебным, с тестовой прошлой неделей. Не используй Markdown или HTML. Данные: {{ JSON.stringify($json) }}"
+      },
+      "name": "AI-комментарий недели",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        2192,
+        112
+      ],
+      "typeVersion": 1.6,
+      "id": "da1b9d61-5d3f-44a0-85c1-d0d60d1ad503"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "openai/gpt-6.1-sol"
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "name": "Модель для аннотации",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        2192,
+        352
+      ],
+      "typeVersion": 1.2,
+      "id": "2b7b5302-6140-4d23-b7e2-a72d0ac675dd",
+      "credentials": {
+        "openAiApi": {
+          "id": "gmHUOpgpMrv4N0t2",
+          "name": "OpenAI account 10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const d=$('Изменение за неделю').first().json;const ai=$json.text??$json.output;if(typeof ai!=='string'||!ai.trim())throw new Error('AI не вернул аннотацию');\nconst esc=x=>String(x).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c]));const fmt=x=>x===null?'нет данных':(x>0?'+':'')+x;\nconst labels={bug:'Ошибки',task:'Задачи',feature:'Новые возможности',unknown:'Требуют уточнения'};\nconst types=Object.entries(d.by_type).map(([t,count])=>`<tr><td>${labels[t]}</td><td>${count}</td><td>${d.previous?.by_type[t]??'—'}</td><td>${fmt(d.delta[t])}</td></tr>`).join('');\nconst authors=Object.entries(d.by_author).sort((a,b)=>b[1].total-a[1].total).map(([a,v])=>`<tr><td>${esc(a)}</td><td>${v.bug}</td><td>${v.task}</td><td>${v.feature}</td><td>${v.unknown}</td><td>${v.total}</td><td>${d.previous?fmt(d.author_delta[a]):'нет данных'}</td></tr>`).join('');\nconst previousNote=d.previous?.simulated?'Предыдущая неделя — явно помеченная учебная запись для проверки Δ.':d.previous?'Сравнение с сохранённой предыдущей неделей.':'Данных прошлой недели нет; Δ не вычислен.';\nconst html=`<!doctype html><html lang=\"ru\"><head><meta charset=\"utf-8\"></head><body style=\"font-family:Arial,sans-serif\"><h1>Недельный отчёт по Issues</h1><p>bronY9/ITMOv2 · ${esc(d.period_start)} — ${esc(d.period_end)}</p><p>${previousNote}</p><table border=\"1\" cellpadding=\"8\" cellspacing=\"0\"><tr><th>Тип</th><th>Сейчас</th><th>Ранее</th><th>Δ</th></tr>${types}<tr><th>Всего</th><th>${d.total}</th><th>${d.previous?.total??'—'}</th><th>${fmt(d.total_delta)}</th></tr></table><h2>По авторам</h2><table border=\"1\" cellpadding=\"8\" cellspacing=\"0\"><tr><th>Автор</th><th>bug</th><th>task</th><th>feature</th><th>unknown</th><th>Всего</th><th>Δ</th></tr>${authors}</table><h2>AI-комментарий недели</h2><p>${esc(ai)}</p></body></html>`;\nconst stats={by_type:d.by_type,by_author:d.by_author,total:d.total,simulated:false};return [{json:{...d,html,ai_comment:ai,subject:'Issues ITMOv2 — неделя '+d.week_key,stats_json:JSON.stringify(stats)}}];"
+      },
+      "name": "HTML-письмо",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2432,
+        112
+      ],
+      "typeVersion": 2,
+      "id": "d7933d03-7292-4c5d-b05b-f33d5393d6fe"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.recipient }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "name": "Отправить отчёт Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        2672,
+        112
+      ],
+      "typeVersion": 2.1,
+      "id": "346029af-c7b7-4a3c-a3f8-40374de3268f",
+      "notesInFlow": true,
+      "webhookId": "d9a501e0-92ea-40f7-ad61-07367b2a953c",
+      "disabled": true,
+      "notes": "Подключить свой Gmail OAuth2, затем включить узел и выполнить реальную отправку. Сейчас отключён для проверки отчёта без почтового подключения."
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "pxSmX3wUgC8v82KW"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "week_key",
+              "keyValue": "={{ $('HTML-письмо').first().json.week_key }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "week_key": "={{ $('HTML-письмо').first().json.week_key }}",
+            "period_start": "={{ $('HTML-письмо').first().json.period_start }}",
+            "period_end": "={{ $('HTML-письмо').first().json.period_end }}",
+            "stats_json": "={{ $('HTML-письмо').first().json.stats_json }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "week_key",
+              "displayName": "week_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "period_start",
+              "displayName": "period_start",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "period_end",
+              "displayName": "period_end",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "stats_json",
+              "displayName": "stats_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "name": "Сохранить статистику недели",
+      "type": "n8n-nodes-base.dataTable",
+      "position": [
+        2912,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "11702701-d134-492d-833e-f97c8933ab28"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Понедельник 09:00": {
+      "main": [
+        [
+          {
+            "node": "Период отчёта",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Проверить вручную": {
+      "main": [
+        [
+          {
+            "node": "Период отчёта",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Период отчёта": {
+      "main": [
+        [
+          {
+            "node": "Запрос bug",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Запрос bug": {
+      "main": [
+        [
+          {
+            "node": "Запрос task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Запрос task": {
+      "main": [
+        [
+          {
+            "node": "Запрос feature-request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Запрос feature-request": {
+      "main": [
+        [
+          {
+            "node": "Запрос needs-triage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Запрос needs-triage": {
+      "main": [
+        [
+          {
+            "node": "Группировка по типу и автору",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Группировка по типу и автору": {
+      "main": [
+        [
+          {
+            "node": "Прошлая неделя",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Прошлая неделя": {
+      "main": [
+        [
+          {
+            "node": "Изменение за неделю",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Изменение за неделю": {
+      "main": [
+        [
+          {
+            "node": "AI-комментарий недели",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Модель для аннотации": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI-комментарий недели",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI-комментарий недели": {
+      "main": [
+        [
+          {
+            "node": "HTML-письмо",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML-письмо": {
+      "main": [
+        [
+          {
+            "node": "Отправить отчёт Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Отправить отчёт Gmail": {
+      "main": [
+        [
+          {
+            "node": "Сохранить статистику недели",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timezone": "Europe/Moscow"
+  },
+  "versionId": "8139d42d-acde-4a4d-945f-02ddb4974289",
+  "meta": {
+    "instanceId": "68dbbb4e8fa686c3fd4e9982ade6836edb66976f207553e7ac22df961581c78c"
+  },
+  "nodeGroups": [],
+  "id": "0IDvCDVUSEhmUa5y",
+  "tags": []
+}

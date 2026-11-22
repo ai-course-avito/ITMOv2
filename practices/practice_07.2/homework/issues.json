@@ -1,0 +1,762 @@
+{
+  "name": "Практика 7.2 — обработка Issues",
+  "nodes": [
+    {
+      "parameters": {
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "bronY9"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ITMOv2"
+        },
+        "events": [
+          "issues"
+        ],
+        "options": {}
+      },
+      "name": "Открыт Issue",
+      "type": "n8n-nodes-base.githubTrigger",
+      "position": [
+        32,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "29f8656a-6c9c-4e2a-bc3d-8bf34d334875",
+      "webhookId": "758a3680-69bf-4690-855e-0c06f2888ff8",
+      "credentials": {
+        "githubApi": {
+          "id": "evxpWncjlZMqgRD0",
+          "name": "GitHub account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const p=$json.body??$json;if(p.action!=='opened'||p.repository?.full_name!=='bronY9/ITMOv2')return [];const i=p.issue;if(!i||i.pull_request)return [];return [{json:{issue_id:String(i.id),number:i.number,title:i.title,body:i.body??'',author:i.user.login,association:i.author_association,created_at:i.created_at}}];"
+      },
+      "name": "Данные обращения",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        272,
+        496
+      ],
+      "typeVersion": 2,
+      "id": "a02c2ff8-e863-4de4-aee1-dc712f7ed216"
+    },
+    {
+      "parameters": {
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "weO9YvcTaXckJHOF"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "issue_id",
+              "keyValue": "={{ $json.issue_id }}"
+            }
+          ]
+        }
+      },
+      "name": "Ещё не обработан",
+      "type": "n8n-nodes-base.dataTable",
+      "position": [
+        512,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "26bb7cf9-074f-4b57-a063-4e2555135b66"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "3uwzRFBhyqrX5s6H"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "name": "Вызвать классификатор",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        752,
+        496
+      ],
+      "typeVersion": 1.2,
+      "id": "c5b7aa32-9168-42fd-9096-b423495cb6ab"
+    },
+    {
+      "parameters": {
+        "jsCode": "const r=$json;const type=['bug','task','feature'].includes(r.type)&&r.confidence>=0.8?r.type:'unknown';return [{json:{...$('Данные обращения').first().json,type,confidence:r.confidence}}];"
+      },
+      "name": "Проверить уверенность",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        992,
+        496
+      ],
+      "typeVersion": 2,
+      "id": "63351577-54a0-4df4-b02c-ea5770cc7f06"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e594f188-9d6b-4eab-b872-3a97e9107eda",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "bug",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "bug"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c9cd83e2-6750-4451-bc51-aacfd45db985",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "task",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "task"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "411bf2fd-434e-40fe-8d47-c66058240a52",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "feature",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "feature"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "unknown"
+        }
+      },
+      "name": "Выбрать тип",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        1232,
+        496
+      ],
+      "typeVersion": 3.2,
+      "id": "39ea7065-4658-427e-a04f-a05dab5e9474"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://api.github.com/repos/bronY9/ITMOv2/issues/'+$('Проверить уверенность').first().json.number+'/labels' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"labels\": [\"bug\"]}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Метка bug",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1472,
+        272
+      ],
+      "typeVersion": 4.2,
+      "id": "3cf0afc2-c2b7-4cb4-bbad-b9e23b544b57",
+      "credentials": {
+        "githubApi": {
+          "id": "evxpWncjlZMqgRD0",
+          "name": "GitHub account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://api.github.com/repos/bronY9/ITMOv2/issues/'+$('Проверить уверенность').first().json.number+'/labels' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"labels\": [\"task\"]}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Метка task",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1472,
+        496
+      ],
+      "typeVersion": 4.2,
+      "id": "20264d1f-df9a-4c89-adb0-2a6d9f899b50",
+      "credentials": {
+        "githubApi": {
+          "id": "evxpWncjlZMqgRD0",
+          "name": "GitHub account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://api.github.com/repos/bronY9/ITMOv2/issues/'+$('Проверить уверенность').first().json.number+'/labels' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"labels\": [\"feature-request\"]}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Метка feature-request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1472,
+        720
+      ],
+      "typeVersion": 4.2,
+      "id": "49ed11cd-c0da-4f15-b8ba-189dfedbf9dd",
+      "credentials": {
+        "githubApi": {
+          "id": "evxpWncjlZMqgRD0",
+          "name": "GitHub account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://api.github.com/repos/bronY9/ITMOv2/issues/'+$('Проверить уверенность').first().json.number+'/labels' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"labels\": [\"needs-triage\"]}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Метка needs-triage",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1472,
+        944
+      ],
+      "typeVersion": 4.2,
+      "id": "12d94b89-bffe-4cb5-a9ea-121ce736fbaf",
+      "credentials": {
+        "githubApi": {
+          "id": "evxpWncjlZMqgRD0",
+          "name": "GitHub account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const i=$('Проверить уверенность').first().json;const replies={bug:'Спасибо за сообщение об ошибке. Обращение отмечено как bug. Для проверки полезны шаги воспроизведения и ожидаемый результат.',task:'Спасибо! Задача отмечена как task и добавлена в список технических работ.',feature:'Спасибо за предложение! Обращение отмечено как feature-request для обсуждения новой возможности.'};const first=i.association==='NONE';const welcome=first?'Добро пожаловать! Спасибо за первое обращение. Правила участия: https://github.com/bronY9/ITMOv2/blob/practice_07.2/practices/practice_07.2/homework/CONTRIBUTING.md\\n\\n':'';return [{json:{...i,first_time:first,comment:welcome+replies[i.type]}}];"
+      },
+      "name": "Подготовить ответ",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1728,
+        496
+      ],
+      "typeVersion": 2,
+      "id": "3f48e87d-57d0-43d7-9dde-c52e51779086"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0b2a9bc3-c45b-4fdc-b694-306d51c0eb0a",
+              "leftValue": "={{ $json.first_time }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Новый участник",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1968,
+        496
+      ],
+      "typeVersion": 2.2,
+      "id": "317abe6b-a596-44e9-ba92-7c865e987fba"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://api.github.com/repos/bronY9/ITMOv2/issues/'+$('Подготовить ответ').first().json.number+'/labels' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"labels\": [\"first-time-contributor\"]}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Метка нового участника",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2208,
+        384
+      ],
+      "typeVersion": 4.2,
+      "id": "e1badea8-fa1d-4fae-a9d5-c9bb1812d68f",
+      "credentials": {
+        "githubApi": {
+          "id": "evxpWncjlZMqgRD0",
+          "name": "GitHub account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://api.github.com/repos/bronY9/ITMOv2/issues/'+$('Подготовить ответ').first().json.number+'/comments' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({body:$('Подготовить ответ').first().json.comment}) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Комментарий по шаблону",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2448,
+        496
+      ],
+      "typeVersion": 4.2,
+      "id": "89b94b6f-306d-4107-a229-a24c0dee1f34",
+      "credentials": {
+        "githubApi": {
+          "id": "evxpWncjlZMqgRD0",
+          "name": "GitHub account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "weO9YvcTaXckJHOF"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "issue_id",
+              "keyValue": "={{ $('Данные обращения').first().json.issue_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "issue_id": "={{ $('Данные обращения').first().json.issue_id }}",
+            "author": "={{ $('Данные обращения').first().json.author }}",
+            "created_at": "={{ $('Данные обращения').first().json.created_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "issue_id",
+              "displayName": "issue_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "author",
+              "displayName": "author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "name": "Запомнить Issue",
+      "type": "n8n-nodes-base.dataTable",
+      "position": [
+        2704,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "9fcd8385-79e3-49b8-b67f-fd0bcf7e1a7e"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Открыт Issue": {
+      "main": [
+        [
+          {
+            "node": "Данные обращения",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Данные обращения": {
+      "main": [
+        [
+          {
+            "node": "Ещё не обработан",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ещё не обработан": {
+      "main": [
+        [
+          {
+            "node": "Вызвать классификатор",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Вызвать классификатор": {
+      "main": [
+        [
+          {
+            "node": "Проверить уверенность",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Проверить уверенность": {
+      "main": [
+        [
+          {
+            "node": "Выбрать тип",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Выбрать тип": {
+      "main": [
+        [
+          {
+            "node": "Метка bug",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Метка task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Метка feature-request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Метка needs-triage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Метка bug": {
+      "main": [
+        [
+          {
+            "node": "Подготовить ответ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Метка task": {
+      "main": [
+        [
+          {
+            "node": "Подготовить ответ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Метка feature-request": {
+      "main": [
+        [
+          {
+            "node": "Подготовить ответ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Метка needs-triage": {
+      "main": [
+        [
+          {
+            "node": "Запомнить Issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Подготовить ответ": {
+      "main": [
+        [
+          {
+            "node": "Новый участник",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Новый участник": {
+      "main": [
+        [
+          {
+            "node": "Метка нового участника",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Комментарий по шаблону",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Метка нового участника": {
+      "main": [
+        [
+          {
+            "node": "Комментарий по шаблону",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Комментарий по шаблону": {
+      "main": [
+        [
+          {
+            "node": "Запомнить Issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timezone": "Europe/Moscow"
+  },
+  "versionId": "6ff5937b-882c-4589-860c-5f347dde7e95",
+  "meta": {
+    "instanceId": "68dbbb4e8fa686c3fd4e9982ade6836edb66976f207553e7ac22df961581c78c"
+  },
+  "nodeGroups": [],
+  "id": "9PCI4Y1uTddcn5tE",
+  "tags": []
+}
