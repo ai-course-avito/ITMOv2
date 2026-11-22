@@ -1,0 +1,4 @@
+fastapi
+httpx
+pytest
+mcp>=2,<3

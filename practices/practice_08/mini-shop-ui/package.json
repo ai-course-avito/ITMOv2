@@ -1,0 +1,9 @@
+{
+  "name": "itmo-mini-shop-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"dev":"vite --host 127.0.0.1", "build":"vite build", "test":"vitest run"},
+  "dependencies": {"bootstrap":"5.3.8"},
+  "devDependencies": {"vite":"^7.2.0","vitest":"^4.0.0","jsdom":"^27.0.0"}
+}

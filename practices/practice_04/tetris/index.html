@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Тетрис</title>
+    <meta name="description" content="Тетрис на листе в клетку: собирайте полные строки." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;600&family=Neucha&display=swap"
+    />
+    <link rel="stylesheet" href="src/styles.css" />
+    <script type="module" src="src/ui.js"></script>
+  </head>
+  <body>
+    <main class="sheet">
+      <div class="layout">
+        <h1 class="title">
+          Тетрис
+          <svg class="title-underline" viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M2 8 C 40 3, 70 11, 110 6 S 170 4, 198 7" />
+          </svg>
+        </h1>
+
+        <section class="board-wrap" id="board-wrap" tabindex="-1" aria-label="Игровое поле">
+          <div class="board" id="board" aria-hidden="true"></div>
+
+          <div class="overlay" id="screen-start" role="dialog" aria-labelledby="start-title">
+            <h2 class="overlay-title" id="start-title">Новая партия</h2>
+            <p class="overlay-text">Двигайте и поворачивайте фигуры, собирайте полные строки — они исчезают и приносят очки.</p>
+            <button class="button" type="button" id="start-button" autofocus>Начать игру</button>
+          </div>
+
+          <div class="overlay" id="screen-pause" role="dialog" aria-labelledby="pause-title" hidden>
+            <h2 class="overlay-title overlay-title--mark" id="pause-title">Пауза</h2>
+            <p class="overlay-text">Нажмите P или Esc, чтобы продолжить.</p>
+            <button class="button" type="button" id="resume-button">Продолжить</button>
+          </div>
+
+          <div class="overlay" id="screen-over" role="dialog" aria-labelledby="over-title" hidden>
+            <h2 class="overlay-title overlay-title--mark" id="over-title">Игра окончена</h2>
+            <p class="overlay-text" id="over-summary" aria-live="polite"></p>
+            <button class="button" type="button" id="again-button">Играть снова</button>
+          </div>
+        </section>
+
+        <aside class="side" aria-label="Состояние игры">
+          <div class="stat stat--next">
+            <span class="label" id="next-label">следующая</span>
+            <div class="preview" id="next" role="img" aria-labelledby="next-label"></div>
+          </div>
+          <div class="stat stat--next">
+            <span class="label" id="hold-label">отложенная</span>
+            <div class="preview preview--hold" id="hold" role="img" aria-labelledby="hold-label">
+              <span class="hold-hint" id="hold-hint"><span class="hint-keys">клавиша C</span><span class="hint-touch">кнопка ⇄</span></span>
+            </div>
+          </div>
+          <div class="stat">
+            <span class="label" id="score-label">очки</span>
+            <output class="value" id="score" aria-labelledby="score-label">0</output>
+          </div>
+          <div class="stat">
+            <span class="label" id="level-label">уровень</span>
+            <output class="value" id="level" aria-labelledby="level-label">1</output>
+          </div>
+          <div class="stat">
+            <span class="label" id="lines-label">строки</span>
+            <output class="value" id="lines" aria-labelledby="lines-label">0</output>
+          </div>
+          <div class="stat" id="record-stat" hidden>
+            <span class="label" id="record-label">рекорд</span>
+            <output class="value" id="record" aria-labelledby="record-label">0</output>
+          </div>
+        </aside>
+
+        <dl class="keys" aria-label="Клавиши">
+          <div><dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>сдвиг</dd></div>
+          <div><dt><kbd>↓</kbd></dt><dd>вниз быстрее</dd></div>
+          <div><dt><kbd>↑</kbd> <kbd>X</kbd></dt><dd>поворот</dd></div>
+          <div><dt><kbd>пробел</kbd></dt><dd>сбросить</dd></div>
+          <div><dt><kbd>C</kbd> <kbd>Shift</kbd></dt><dd>отложить</dd></div>
+          <div><dt><kbd>P</kbd> <kbd>Esc</kbd></dt><dd>пауза</dd></div>
+        </dl>
+
+        <div class="touch" aria-label="Кнопки управления">
+          <button class="touch-button" type="button" data-action="left" aria-label="Сдвиг влево">←</button>
+          <button class="touch-button" type="button" data-action="rotate" aria-label="Поворот">↻</button>
+          <button class="touch-button" type="button" data-action="right" aria-label="Сдвиг вправо">→</button>
+          <button class="touch-button" type="button" data-action="soft" aria-label="Вниз быстрее">↓</button>
+          <button class="touch-button" type="button" data-action="hard" aria-label="Сбросить вниз">⤓</button>
+          <button class="touch-button" type="button" data-action="hold" aria-label="Отложить фигуру">⇄</button>
+          <button class="touch-button" type="button" data-action="pause" aria-label="Пауза">ǁ</button>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

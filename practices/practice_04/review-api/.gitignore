@@ -1,0 +1,4 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.opencode/check-after-edit.log

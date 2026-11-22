@@ -1,0 +1,29 @@
+{
+  "summary": "Эндпоинт POST /api/reviews вызывает LLM без входной валидации (422/413), передаёт diff в промт без удаления секретов и не задаёт timeout; ответ не содержит summary/risks/checks (OUT-1).",
+  "risks": [
+    {
+      "file": "app/api.py",
+      "line": 10,
+      "evidence": "return review_service.review(payload[\"diff\"])",
+      "risk": "Нет входной валидации: отсутствующее/нестроковое/пустое поле diff даёт KeyError или 200 вместо HTTP 422, diff длиннее 20 000 символов не отклоняется с HTTP 413 (API-1, фича A)."
+    },
+    {
+      "file": "app/review_service.py",
+      "line": 14,
+      "evidence": "prompt = f\"Review this pull request and find problems:\\n{diff}\"",
+      "risk": "Diff целиком попадает в промт внешнего LLM без предварительного удаления токенов, паролей и приватных ключей (SEC-1)."
+    },
+    {
+      "file": "app/review_service.py",
+      "line": 15,
+      "evidence": "answer = self.llm.generate(prompt)",
+      "risk": "Вызов LLM без timeout 10 секунд и без обработки ошибки — зависание или исключение не превращаются в контролируемый ответ (REL-1, фича B)."
+    }
+  ],
+  "checks": [
+    "Отправить POST /api/reviews без поля diff, с нестроковым diff, с пустым diff и убедиться, что вернётся HTTP 422 и LLM не вызывается.",
+    "Отправить POST /api/reviews с diff длиннее 20 000 символов и проверить ответ 413 с телом {\"detail\": \"diff too large\"}.",
+    "Замокать llm.generate так, чтобы он спал дольше 10 секунд или бросал исключение, и проверить ответы 504 и 502 без текста исключения.",
+    "Передать diff, содержащий фейковый токен, и убедиться, что в промт LLM он не попадает."
+  ]
+}

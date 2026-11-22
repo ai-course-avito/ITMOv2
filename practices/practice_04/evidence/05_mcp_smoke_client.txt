@@ -1,0 +1,29 @@
+Tool 'scan_diff' failed: "Error executing tool scan_diff: input is not a unified diff: no 'diff --git' header or '@@' hunk"
+Tool 'scan_diff' failed: 'Error executing tool scan_diff: file not found: samples/missing.diff'
+Tool 'scan_diff' failed: "Error executing tool scan_diff: diff_path must stay inside the project root, got '../../../etc/passwd'"
+tools: ['scan_diff']
+
+> scan_diff('samples/training_pr.diff') isError=False
+[
+  "{\n  \"diff_path\": \"samples/training_pr.diff\",\n  \"chars\": 1060,\n  \"limit\": 20000,\n  \"within_api1_limit\": true,\n  \"files\": [\n    \"app/review_service.py\",\n    \"app/api.py\"\n  ],\n  \"added_lines\": 12,\n  \"secrets\": [],\n  \"verdict\": \"ok\",\n  \"reasons\": []\n}"
+]
+
+> scan_diff('samples/with_secret.diff') isError=False
+[
+  "{\n  \"diff_path\": \"samples/with_secret.diff\",\n  \"chars\": 183,\n  \"limit\": 20000,\n  \"within_api1_limit\": true,\n  \"files\": [\n    \"app/settings.py\"\n  ],\n  \"added_lines\": 1,\n  \"secrets\": [\n    {\n      \"file\": \"app/settings.py\",\n      \"line\": 3,\n      \"kind\": \"github_token\",\n      \"snippet\": \"GITHUB_TOKEN = \\\"[REDACTED]\\\"\"\n    }\n  ],\n  \"verdict\": \"blocked\",\n  \"reasons\": [\n    \"SEC-1: 1 secret(s) in added lines\"\n  ]\n}"
+]
+
+> scan_diff('samples/not_a_diff.txt') isError=True
+[
+  "Error executing tool scan_diff: input is not a unified diff: no 'diff --git' header or '@@' hunk"
+]
+
+> scan_diff('samples/missing.diff') isError=True
+[
+  "Error executing tool scan_diff: file not found: samples/missing.diff"
+]
+
+> scan_diff('../../../etc/passwd') isError=True
+[
+  "Error executing tool scan_diff: diff_path must stay inside the project root, got '../../../etc/passwd'"
+]

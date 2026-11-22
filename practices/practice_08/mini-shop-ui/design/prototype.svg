@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="550" viewBox="0 0 860 550">
+  <title>Mini Shop — прототип оформления заказа</title>
+  <rect width="860" height="550" fill="#f4f2e9"/>
+  <text x="50" y="94" font-family="Georgia" font-size="64" fill="#172b24">Mini Shop</text>
+  <text x="53" y="132" font-family="sans-serif" font-size="21" fill="#172b24">Выберите товар и оформите заказ.</text>
+  <rect x="50" y="155" width="760" height="250" rx="9" fill="#fffdf7" stroke="#d3dbd0"/>
+  <g font-family="sans-serif" font-size="18" fill="#172b24">
+    <text x="74" y="193">Товар</text><rect x="74" y="207" width="708" height="40" rx="5" fill="white" stroke="#c6d1c9"/>
+    <text x="88" y="233">Стул · 5 000 ₽</text>
+    <text x="74" y="282">Имя пользователя</text><text x="440" y="282">Пароль</text>
+    <rect x="74" y="291" width="342" height="36" rx="5" fill="white" stroke="#c6d1c9"/><rect x="440" y="291" width="342" height="36" rx="5" fill="white" stroke="#c6d1c9"/>
+    <rect x="74" y="345" width="197" height="40" rx="6" fill="#215443"/><text x="91" y="371" fill="white">Оформить заказ</text>
+    <text x="53" y="435">Загрузка: «Оформляем заказ…» · кнопка недоступна</text>
+    <text x="53" y="467">Результат: «Заказ №3 оформлен. Стул · 5 000 ₽»</text>
+    <text x="53" y="499" fill="#852f22">Ошибка: «Проверьте имя пользователя и пароль.»</text>
+    <text x="53" y="531">Пустой каталог: «В каталоге пока нет товаров.»</text>
+  </g>
+</svg>

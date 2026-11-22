@@ -1,0 +1,12 @@
+
+> itmo-mini-shop-ui@1.0.0 test
+> vitest run
+
+
+ RUN  v4.1.12 .
+
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  01:18:50
+   Duration  700ms (transform 18ms, setup 0ms, import 49ms, tests 234ms, environment 339ms)
