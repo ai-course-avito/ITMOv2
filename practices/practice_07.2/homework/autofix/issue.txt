@@ -1,0 +1,2 @@
+[autofix] Sunday is not recognized as a weekend
+The demo isWeekend function treats Sunday (0) as a weekday and 7 as a weekend. Expected: only 0 and 6 return true. Repro: isWeekend(0) should be true and isWeekend(7) should be false.
