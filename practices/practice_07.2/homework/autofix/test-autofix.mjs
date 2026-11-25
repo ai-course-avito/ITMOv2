@@ -60,4 +60,3 @@ assert.throws(() => run('Основная ветка не изменилась',
 assert.equal(run('Основная ветка не изменилась', { object: { sha: base } })[0].json.sha, head);
 assert.throws(() => run('Подтвердить merge', { merged: false }));
 console.log('OK: фильтр Issues, 13 проверок isWeekend, один файл и SHA, блокировка merge, контроль main.');
-
